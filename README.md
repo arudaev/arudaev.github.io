@@ -30,15 +30,29 @@ Around the harbor there's a guestbook (messages wash up as bottles), a mail buoy
 
 ## How to play
 
-| | Desk | Phone |
+| | Keyboard / mouse | Touch / pen |
 |---|---|---|
-| Sail | arrows / WASD | drag anywhere on the sea |
-| Dock | Enter | tap the prompt |
-| The chart | M | `chart` |
-| Quack | Space | `quack` |
-| CRT curve on/off | C | – |
-| Full view (no bezel) | V | always |
-| Fullscreen | starts with *sail*; F or hold Esc to leave | starts with *sail*; `[ exit ]` |
+| Sail | arrows / WASD; drag the cabinet's stick if shown | drag on the sea or the cabinet's stick |
+| Dock | Enter, or click the prompt | prompt or `dock` button |
+| The chart | M, or `chart` | `chart` / deck B |
+| Quack | Space, or `quack` | `quack` / deck A when nothing nearby |
+| CRT curve on/off | C, bezel button, or Options | Options → CRT TUBE |
+| Monitor / full view | V, view link, or Options → SCREEN | Options → SCREEN when a monitor fits |
+| Step back / lean in | `−` / `+`, or labelled controls | Options → STEP BACK; then LEAN IN |
+| Text, sound and share links | Options | Options |
+| Guided tour | title → TOUR, or T in the world | Options → TITLE → TOUR |
+| Browser fullscreen | F or fullscreen control, when supported | Options → FULLSCREEN, when offered |
+| Plain project index | skip / power light / Options | Options → SKIP THE BOAT |
+
+Phones start in full view, filling the tab; upright phones can choose a monitor
+with a joystick deck. Tablets and Surface computers use the layout that fits
+their window. Touch changes hints, not the layout. Full view differs from browser
+fullscreen: Sail requests fullscreen where supported, but the browser can decline.
+
+Options uses one service menu across devices. Share View copies room, monitor or
+full links; choose LARGE there for a recipient who needs larger text. Normal
+links omit the text flag. View-only links keep startup; project island links
+arrive docked.
 
 To install: **Install app** in Chrome or Edge, or **Share → Add to Home Screen** on an iPhone.
 

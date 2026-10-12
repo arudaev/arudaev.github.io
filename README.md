@@ -79,3 +79,5 @@ Found something broken? Leave a bottle in the guestbook, or [open an issue](http
 
 Stepped back, click or tap the shelf ducks, moka pot or plant to make the room
 answer. Keyboard users can Tab to each object and press Enter or Space.
+
+Small seasonal decorations also answer a click or tap—try the cocoa, pinwheel or festival print.

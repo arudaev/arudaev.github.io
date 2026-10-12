@@ -75,3 +75,7 @@ Built with TypeScript, three.js through React Three Fiber, Vite and zustand; the
 It holds only the compiled site that GitHub Pages serves; the source is private. Every commit here is one published build, named after the source commit it came from.
 
 Found something broken? Leave a bottle in the guestbook, or [open an issue](https://github.com/arudaev/arudaev.github.io/issues).
+
+
+Stepped back, click or tap the shelf ducks, moka pot or plant to make the room
+answer. Keyboard users can Tab to each object and press Enter or Space.

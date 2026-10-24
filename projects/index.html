@@ -105,7 +105,7 @@ footer { padding-top: 24px; }
 <p>My portfolio is also a game: sail Harold the rubber duck through the flooded internet of 1999. You can read the same projects here without starting the game.</p>
 <nav aria-label="Contact"><a href="https://github.com/arudaev">github</a> <a href="https://www.linkedin.com/in/arudaev/">linkedin</a> <a href="mailto:alex.rudaev@outlook.com">contact</a></nav>
 </header>
-<section id="projects" aria-label="Projects"><nav aria-label="Project index"><a href="#ribcage">CheXVision</a> <a href="#containership">Titanic ML Platform</a> <a href="#campus-rock">THD Room Finder</a> <a href="#elevated-rail">Deutsche Bahn Delay Predictor</a> <a href="#sorting-buoys">Waste Sorting Assistant</a></nav>
+<section id="projects" aria-label="Projects"><nav aria-label="Project index"><a href="#ribcage">CheXVision</a> <a href="#containership">Titanic ML Platform</a> <a href="#campus-rock">THD Room Finder</a> <a href="#elevated-rail">Deutsche Bahn Delay Predictor</a> <a href="#sorting-buoys">Waste Sorting Assistant</a> <a href="#notebook-boat">CheXVision Mini</a> <a href="#postcard-rack">iTravel</a> <a href="#apero-bar">Project Apero</a> <a href="#hell-freezes-over">Devablos</a> <a href="#listening-field">UNICorn</a> <a href="#wild-clearing">WildForFood</a> <a href="#edge-garden">Zelara</a></nav>
 <article id="ribcage">
     <h2>CheXVision</h2>
     <p class="summary">two models looked at 112,120 chest x-rays. the borrowed one did better.</p>
@@ -150,6 +150,69 @@ footer { padding-top: 24px; }
 <p>i did the devops and the deployment. the lesson: start from a pretrained model, but photograph your own bins.</p>
     <dl><div><dt>photos</dt><dd>466</dd></div><div><dt>map@0.5</dt><dd>95%+</dd></div><div><dt>bin types</dt><dd>4</dd></div></dl>
     <nav aria-label="Waste Sorting Assistant links"><a href="https://waste-sorting-assistant.streamlit.app/">live</a> <a href="https://github.com/arudaev/Painfully-Trivial">visit repo</a> <a href="/#/island/sorting-buoys">sail there</a></nav>
+  </article>
+<article id="notebook-boat">
+    <h2>CheXVision Mini</h2>
+    <p class="summary">the same x-rays at 64 by 64, and every gradient written by hand.</p>
+    <p>chexvision&#39;s small sibling: a network written in plain numpy, the forward pass and every gradient by hand. no pytorch, no autograd, cpu only, on purpose.</p>
+<p>a 64×64 x-ray, flattened to 4,096 numbers, through 1,024, 256 and 64 to one answer. the gradients pass a check against finite differences.</p>
+<p>it doesn&#39;t reach the big model&#39;s numbers, and doesn&#39;t pretend to. it reached a test auc of 0.650 after four hours on a kaggle cpu.</p>
+    <dl><div><dt>test auc</dt><dd>0.650</dd></div><div><dt>parameters</dt><dd>4.5m</dd></div><div><dt>frameworks</dt><dd>0</dd></div></dl>
+    <nav aria-label="CheXVision Mini links"><a href="https://github.com/arudaev/chexvision-mini">visit repo</a> <a href="https://huggingface.co/arudaev/chexvision-mini">the model</a> <a href="/#/island/notebook-boat">sail there</a></nav>
+  </article>
+<article id="postcard-rack">
+    <h2>iTravel</h2>
+    <p class="summary">you can only review a place from within 100 m of it.</p>
+    <p>an android travel app, built as a favour for a friend&#39;s media technology course. not my major.</p>
+<p>sixty hand-picked places in more than thirty countries, a photo feed and the live weather for each.</p>
+<p>a review needs fifty characters and a gps fix within 100 m of the place. no reviews from the sofa.</p>
+    <dl><div><dt>destinations</dt><dd>60</dd></div><div><dt>countries</dt><dd>30+</dd></div><div><dt>review radius</dt><dd>100 m</dd></div></dl>
+    <nav aria-label="iTravel links"><a href="https://github.com/arudaev/iTravel">visit repo</a> <a href="/#/island/postcard-rack">sail there</a></nav>
+  </article>
+<article id="apero-bar">
+    <h2>Project Apero</h2>
+    <p class="summary">assessing personal event risks online. out here, on the rocks.</p>
+    <p>a course project for assistant systems at thd, winter 2024/25: a chatbot that walks you through a stroke-risk model.</p>
+<p>streamlit in front, a rasa assistant to talk to, and three scikit-learn models behind it: logistic regression, a random forest and an svm, trained on the public kaggle stroke set of 5,110 rows, padded with about 30% synthetic ones.</p>
+<p>strokes are rare in the data, so the honest number is low: an f1 of 0.21 on the real rows. the name came first, the acronym later.</p>
+    <dl><div><dt>rows</dt><dd>5,110</dd></div><div><dt>models</dt><dd>3</dd></div><div><dt>synthetic</dt><dd>~30%</dd></div></dl>
+    <nav aria-label="Project Apero links"><a href="https://github.com/arudaev/Project-Arepo">visit repo</a> <a href="/#/island/apero-bar">sail there</a></nav>
+  </article>
+<article id="hell-freezes-over">
+    <h2>Devablos</h2>
+    <p class="summary">dev + diablos: a chatbot with a sense of humour and a weather forecast.</p>
+    <p>a five-person student project at thd, for internet technologies in summer 2024.</p>
+<p>the second version is a full stack: a react client, a node and express server, websockets with an https fallback you switch from the ui, the openai assistants api, live weather, swagger docs and docker compose.</p>
+<p>the bot is called devabot. say hello there, and it answers general kenobi.</p>
+    <dl><div><dt>team</dt><dd>5</dd></div><div><dt>protocols</dt><dd>ws · https</dd></div><div><dt>course</dt><dd>ss 24</dd></div></dl>
+    <nav aria-label="Devablos links"><a href="https://github.com/THD-AI-2023/Devablos-Project-V2">visit repo</a> <a href="/#/island/hell-freezes-over">sail there</a></nav>
+  </article>
+<article id="listening-field">
+    <h2>UNICorn</h2>
+    <p class="summary">unic + corn. a university chatbot from early 2023, built by listening.</p>
+    <p>a chatbot for the university of nicosia, from early 2023, before anyone called this retrieval.</p>
+<p>it embedded the university website and transcribed conversations, found the closest passages and let gpt-3 write the reply. recordings were transcribed, cut into chunks and summarised.</p>
+<p>mostly, it was a lesson in what language models could and couldn’t do yet. archived as a 2023 project.</p>
+    <dl><div><dt>year</dt><dd>2023</dd></div><div><dt>embeddings</dt><dd>ada-002</dd></div><div><dt>reply cap</dt><dd>257 tokens</dd></div></dl>
+    <nav aria-label="UNICorn links"><a href="https://github.com/arudaev/AI-Conversational-Engine">visit repo</a> <a href="/#/island/listening-field">sail there</a></nav>
+  </article>
+<article id="wild-clearing">
+    <h2>WildForFood</h2>
+    <p class="summary">animals from the wild, gone wild for your cookie. make two of them crash: +13.</p>
+    <p>a small low-poly unity game for a january showcase in 2021, made while learning unity, with a 22-day dev diary in the readme.</p>
+<p>you run forward and only steer. a cookie spins over your head. every second another animal comes out of the woods for it.</p>
+<p>one touch and the cookie is gone. make two of them crash into each other instead, and you get 13 points.</p>
+    <dl><div><dt>per crash</dt><dd>+13</dd></div><div><dt>dev diary</dt><dd>22 days</dd></div><div><dt>engine</dt><dd>unity</dd></div></dl>
+    <nav aria-label="WildForFood links"><a href="https://github.com/arudaev/WildForFood">visit repo</a> <a href="/#/island/wild-clearing">sail there</a></nav>
+  </article>
+<article id="edge-garden">
+    <h2>Zelara</h2>
+    <p class="summary">it grows at the edge. no cloud.</p>
+    <p>zelara, from a word for green: one app that adapts to how you live, edge-first and private.</p>
+<p>do a verified good deed, like photographing your paper recycling, earn points, and unlock modules. each module is a git submodule, so your build only holds what you have unlocked.</p>
+<p>the desktop app reached v0.6.0, with a local ai that reads receipts. it has been on the shelf since april 2026.</p>
+    <dl><div><dt>cloud servers</dt><dd>0</dd></div><div><dt>desktop app</dt><dd>v0.6.0</dd></div><div><dt>finance unlock</dt><dd>50 pts</dd></div></dl>
+    <nav aria-label="Zelara links"><a href="https://github.com/zelara-ai/core">visit repo</a> <a href="/#/island/edge-garden">sail there</a></nav>
   </article></section>
 <footer><a href="/">[ back to the game ]</a></footer>
 </main></body></html>

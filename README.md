@@ -23,8 +23,15 @@ I'm Alex, an AI student at TH Deggendorf. – [LinkedIn](https://www.linkedin.co
 | Campus Rock | **THD Room Finder** – which study rooms are free right now, and for how long | [live](https://thd-room-finder.vercel.app/) · [repo](https://github.com/arudaev/THD-Room-Finder) |
 | The Elevated Rail | **Deutsche Bahn Delay Predictor** – 2.06 million train records, one random forest | [paper](https://arudaev.github.io/ml-db-delay-paper/) · [repo](https://github.com/arudaev/ml-db-delay-paper) |
 | Sorting Buoys | **Waste Sorting Assistant** – 466 photos of real German bins and a camera that knows which is which | [live](https://waste-sorting-assistant.streamlit.app/) · [repo](https://github.com/arudaev/Painfully-Trivial) |
+| The Notebook Boat | **CheXVision Mini** – the same X-rays at 64×64, every gradient written by hand in NumPy | [repo](https://github.com/arudaev/chexvision-mini) · [model](https://huggingface.co/arudaev/chexvision-mini) |
+| The Postcard Rack | **iTravel** – 60 destinations; you can only review a place from within 100 m of it | [repo](https://github.com/arudaev/iTravel) |
+| The Apéro Bar | **Project Apero** – a chatbot that walks you through a stroke-risk model | [repo](https://github.com/arudaev/Project-Arepo) |
+| When Hell Freezes Over | **Devablos** – a five-person chatbot with a sense of humour and the weather | [repo](https://github.com/THD-AI-2023/Devablos-Project-V2) |
+| The Listening Field | **UNICorn** – a university chatbot from early 2023 | [repo](https://github.com/arudaev/AI-Conversational-Engine) |
+| The Wild Clearing | **WildForFood** – a small Unity game: make the animals crash for +13 | [repo](https://github.com/arudaev/WildForFood) |
+| The Edge Garden | **Zelara** – edge-first, no cloud; good deeds unlock modules | [repo](https://github.com/zelara-ai/core) |
 
-Each island links straight in, too: [`/#/island/ribcage`](https://arudaev.github.io/#/island/ribcage) skips the boot and arrives docked (also `containership`, `campus-rock`, `elevated-rail`, `sorting-buoys`).
+Each island links straight in, too: [`/#/island/ribcage`](https://arudaev.github.io/#/island/ribcage) skips the boot and arrives docked (also `containership`, `campus-rock`, `elevated-rail`, `sorting-buoys`, `notebook-boat`, `postcard-rack`, `apero-bar`, `hell-freezes-over`, `listening-field`, `wild-clearing`, `edge-garden`).
 
 Around the harbor there's a guestbook (messages wash up as bottles), a mail buoy, and a lighthouse whose keeper's log says who made this and how. Thirteen ducks are adrift somewhere. Past the last ring the sea stops existing.
 

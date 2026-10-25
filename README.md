@@ -33,7 +33,7 @@ I'm Alex, an AI student at TH Deggendorf. – [LinkedIn](https://www.linkedin.co
 
 Each island links straight in, too: [`/#/island/ribcage`](https://arudaev.github.io/#/island/ribcage) skips the boot and arrives docked (also `containership`, `campus-rock`, `elevated-rail`, `sorting-buoys`, `notebook-boat`, `postcard-rack`, `apero-bar`, `hell-freezes-over`, `listening-field`, `wild-clearing`, `edge-garden`).
 
-Around the harbor there's a guestbook (messages wash up as bottles), a mail buoy, and a lighthouse whose keeper's log says who made this and how. Thirteen ducks are adrift somewhere. Past the last ring the sea stops existing.
+Around the harbor there's a guestbook (messages wash up as bottles), a mail buoy, and a lighthouse whose keeper's log says who made this and how. Thirteen ducks are adrift somewhere. Past the last island the sea stops existing.
 
 ## How to play
 
@@ -49,7 +49,7 @@ Around the harbor there's a guestbook (messages wash up as bottles), a mail buoy
 | Text, sound and share links | Options | Options |
 | Guided tour | title → TOUR, or T in the world | Options → TITLE → TOUR |
 | Browser fullscreen | F or fullscreen control, when supported | Options → FULLSCREEN, when offered |
-| Plain project index | skip / power light / Options | Options → SKIP THE BOAT |
+| Plain project index | project list / power light / Options | Options → PROJECT LIST |
 
 Phones start in full view, filling the tab; upright phones can choose a monitor
 with a joystick deck. Tablets and Surface computers use the layout that fits

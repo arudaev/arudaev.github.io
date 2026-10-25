@@ -4,7 +4,7 @@
 //   · everything else from this origin (JS/CSS, models, images) and the three
 //     bitmap webfonts: straight from the cache, refreshed in the background
 // Bump VERSION to drop every cached file at once.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `voyager56k-${VERSION}`;
 
 self.addEventListener('install', (event) => {
@@ -30,6 +30,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || !(ours || font)) return;
 
   if (req.mode === 'navigate') {
+    // Only the game's own page. Other sites on this origin (/THD-Room-Finder/
+    // and its /thd-room-finder/ redirect) must never be cached as the start page.
+    if (url.pathname !== '/' && url.pathname !== '/index.html') return;
     event.respondWith(
       fetch(req)
         .then((res) => {

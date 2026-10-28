@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Webkeeper</title>
+<style>
+/* the same webfont Voyager uses (src/ds/tokens/fonts.css), served from here (OFL): the game draws nothing
+   until it has loaded, so it can't wait on another site */
+@font-face { font-family: 'VT323'; font-style: normal; font-weight: 400; font-display: block;
+  src: url(fonts/vt323.woff2) format('woff2'); }
+html, body { margin: 0; background: #0A1416; overflow: hidden; touch-action: none; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<!-- Webkeeper, the couch game (design/couch-games). Plain scripts, each setting one global, in this order.
+     Played on its own here, or inside Voyager on the couch (src/ui/CouchGame.tsx loads this page in the glass).
+     ?debug opens the debug panel (lib/debug.js); ?ms shows bake and draw time in the corner. -->
+<script src="lib/webkeeper.js"></script>
+<script src="lib/decisions.js"></script>
+<script src="lib/sound.js"></script>
+<script src="lib/brushes.js"></script>
+<script src="lib/tree.js"></script>
+<script src="lib/cast/cast.js"></script>
+<script src="lib/cast/friends.js"></script>
+<script src="lib/cast/mishka.js"></script>
+<script src="lib/cast/uniclones.js"></script>
+<script src="lib/actors.js"></script>
+<script src="lib/bear.js"></script>
+<script src="lib/layers.js"></script>
+<script src="lib/place.js"></script>
+<script src="lib/room.js"></script>
+<script src="lib/marks.js"></script>
+<script src="lib/world.js"></script>
+<script src="lib/host.js"></script>
+<script>
+  const q = new URLSearchParams(location.search);
+  // ?shot=<area> (or ?shot=title): no clock of its own – scripts/motion/capture.mjs asks for each moment with __frame(t)
+  // &still: Harold stands where the area starts him, so the camera holds and only the world moves (the motion probe)
+  const shot = q.has('shot') ? (q.get('shot') === 'title' ? { title: true, area: 0 } : { area: +q.get('shot') || 0, still: q.has('still') }) : null;
+  // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/PUZZLES.md) instead of chapter 0's meadow
+  const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? ['lab', 'lab-2'] : undefined });
+  WK_HOST.attach(world);
+  if (q.has('debug')) {
+    const s = document.createElement('script');
+    s.src = 'lib/debug.js';
+    // on the couch the panel waits for the game to start: Voyager's menu shows it once you're playing
+    s.onload = () => { WK_DEBUG.attach(world); if (WK_HOST.hosted()) WK_DEBUG.show(false); };
+    document.body.appendChild(s);
+  }
+</script>
+</body>
+</html>

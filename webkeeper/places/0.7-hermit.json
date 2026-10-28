@@ -1,0 +1,1107 @@
+{
+ "place": "0.7",
+ "name": "the hermit",
+ "chapter": 0,
+ "idea": "lord malifex, silent, then '...hi.'; switch to him: he reads Bug's trail in hidden letters – then a first chase: quack ahead of Bug and he skids and drops the counter's digit",
+ "learn": "a friend; a puppy to understand",
+ "version": 1,
+ "seed": 707,
+ "grade": "night",
+ "light": {
+  "ambient": 0.2,
+  "pools": [
+   {
+    "at": [
+     58,
+     26
+    ],
+    "rad": 260,
+    "k": 0.75
+   }
+  ]
+ },
+ "fog": {
+  "far": 0.3,
+  "banks": 0.6,
+  "streaks": 0.18
+ },
+ "ground": [
+  {
+   "brush": "short",
+   "rect": [
+    -4,
+    -4,
+    164,
+    49
+   ],
+   "amt": 0.9,
+   "edge": 3
+  },
+  {
+   "brush": "grass",
+   "disc": [
+    96,
+    34,
+    34,
+    7
+   ],
+   "amt": 0.6,
+   "edge": 3
+  },
+  {
+   "brush": "grass",
+   "disc": [
+    58,
+    27,
+    16,
+    4
+   ],
+   "amt": 0.8,
+   "edge": 2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     70,
+     34
+    ],
+    [
+     96,
+     39
+    ],
+    [
+     122,
+     34
+    ],
+    [
+     96,
+     29
+    ],
+    [
+     70,
+     34
+    ]
+   ],
+   "width": 3,
+   "amt": 0.9
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    96,
+    34,
+    8,
+    1.8
+   ]
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    140,
+    38,
+    6,
+    1.6
+   ]
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    30,
+    37
+   ],
+   "r": [
+    8.399999999999999,
+    2.9700000000000006
+   ],
+   "seed": 71,
+   "moss": 0.4
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    146,
+    22
+   ],
+   "r": [
+    7,
+    2.43
+   ],
+   "seed": 72
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     70,
+     34
+    ],
+    [
+     96,
+     39
+    ],
+    [
+     122,
+     34
+    ],
+    [
+     96,
+     29
+    ],
+    [
+     72,
+     33
+    ]
+   ],
+   "gap": 2.4
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "tree",
+   "kind": "windswept",
+   "seed": 771,
+   "at": [
+    20,
+    18
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 702,
+   "at": [
+    126,
+    18
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "ruin",
+   "c0": 46,
+   "c1": 72,
+   "foot": 18,
+   "h": 6,
+   "seed": 77,
+   "door": {
+    "c": 59,
+    "w": 5,
+    "h": 4
+   }
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    90,
+    16
+   ],
+   "r": [
+    6,
+    2
+   ],
+   "seed": 73
+  }
+ ],
+ "front": [
+  {
+   "brush": "tall",
+   "rect": [
+    -4,
+    42.5,
+    164,
+    49
+   ],
+   "edge": 1.5,
+   "amt": 0.6
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    44,
+    32,
+    7,
+    1.8
+   ]
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    6,
+    46
+   ],
+   "r": [
+    12,
+    3.2
+   ],
+   "seed": 74
+  }
+ ],
+ "things": [],
+ "words": [
+  {
+   "id": "trail",
+   "text": "BUG RAN EAST",
+   "at": [
+    30,
+    40
+   ],
+   "dir": "row",
+   "hidden": true
+  },
+  {
+   "id": "mp3a",
+   "text": "FREE MP3 FREE MP3",
+   "at": [
+    40,
+    21
+   ],
+   "dir": "row",
+   "hidden": true
+  },
+  {
+   "id": "mp3b",
+   "text": "FREE MP3",
+   "at": [
+    120,
+    42
+   ],
+   "dir": "row",
+   "hidden": true
+  }
+ ],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    66,
+    36
+   ],
+   "face": "east"
+  },
+  {
+   "who": "malifex",
+   "id": "malifex",
+   "at": [
+    59,
+    19.4
+   ],
+   "face": "east",
+   "talk": {
+    "first": [
+     {
+      "who": "malifex",
+      "text": "..."
+     },
+     {
+      "who": "harold",
+      "text": "what do you do, out here?"
+     },
+     {
+      "who": "malifex",
+      "text": "...i read what's hidden. B, and you're me."
+     },
+     {
+      "who": "malifex",
+      "text": "...letters hide where nobody looks. i look."
+     },
+     {
+      "who": "harold",
+      "text": "that's a lot of looking."
+     },
+     {
+      "who": "malifex",
+      "text": "...nobody visits. there's time."
+     }
+    ],
+    "again": [
+     [
+      {
+       "who": "malifex",
+       "text": "...bug runs a loop. quack where he's going, not where he is."
+      },
+      {
+       "who": "harold",
+       "text": "ahead of him."
+      },
+      {
+       "who": "malifex",
+       "text": "...like a cookie. you get there first."
+      }
+     ],
+     [
+      {
+       "who": "malifex",
+       "text": "..."
+      },
+      {
+       "who": "harold",
+       "text": "you're staring."
+      },
+      {
+       "who": "malifex",
+       "text": "...you're perceiving me. it's worse."
+      }
+     ],
+     [
+      {
+       "who": "malifex",
+       "text": "...the seven goes back on the counter. then it says seventeen again."
+      },
+      {
+       "who": "malifex",
+       "text": "...it's been sixteen all night. it was wrong."
+      }
+     ],
+     [
+      {
+       "who": "harold",
+       "text": "is the cat a spell?"
+      },
+      {
+       "who": "malifex",
+       "text": "...we don't talk about the cat."
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "who": "uniclone",
+   "id": "uni1",
+   "at": [
+    52,
+    21.8
+   ],
+   "face": "west",
+   "talk": {
+    "first": [
+     {
+      "who": "uni1",
+      "name": "uni",
+      "text": "halt."
+     },
+     {
+      "who": "harold",
+      "text": "i'm already in."
+     },
+     {
+      "who": "uni1",
+      "name": "uni",
+      "text": "...status: halted anyway."
+     }
+    ],
+    "again": [
+     [
+      {
+       "who": "uni1",
+       "name": "uni",
+       "text": "i guard the door."
+      }
+     ],
+     [
+      {
+       "who": "uni1",
+       "name": "uni",
+       "text": "we follow malifex. shift, and we follow you, sort of."
+      }
+     ],
+     [
+      {
+       "who": "uni1",
+       "name": "uni",
+       "text": "i'm the original."
+      },
+      {
+       "who": "harold",
+       "text": "he said that too."
+      },
+      {
+       "who": "uni1",
+       "name": "uni",
+       "text": "...he would."
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "who": "uniclone",
+   "id": "uni2",
+   "at": [
+    66,
+    21.8
+   ],
+   "face": "west",
+   "talk": {
+    "first": [
+     {
+      "who": "uni2",
+      "name": "uni (1)",
+      "text": "halt."
+     },
+     {
+      "who": "harold",
+      "text": "he said that."
+     },
+     {
+      "who": "uni2",
+      "name": "uni (1)",
+      "text": "copy."
+     }
+    ],
+    "again": [
+     [
+      {
+       "who": "uni2",
+       "name": "uni (1)",
+       "text": "i also guard the door."
+      }
+     ],
+     [
+      {
+       "who": "uni2",
+       "name": "uni (1)",
+       "text": "paste."
+      }
+     ],
+     [
+      {
+       "who": "uni2",
+       "name": "uni (1)",
+       "text": "i'm the original."
+      },
+      {
+       "who": "harold",
+       "text": "of course you are."
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "who": "bug",
+   "id": "bug",
+   "at": [
+    70,
+    34
+   ],
+   "hidden": true
+  }
+ ],
+ "events": [],
+ "bug": {
+  "here": true,
+  "route": [
+   [
+    70,
+    34
+   ],
+   [
+    96,
+    39.5
+   ],
+   [
+    122,
+    34
+   ],
+   [
+    96,
+    29
+   ]
+  ],
+  "drops": "7",
+  "note": "he runs his loop round the clearing with the counter's last digit; quack ahead of him and he skids and drops it"
+ },
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    28,
+    32
+   ],
+   "to": "0.6i",
+   "way": "back"
+  },
+  {
+   "edge": "east",
+   "rows": [
+    26,
+    34
+   ],
+   "to": "1.1",
+   "way": "on",
+   "needs": "digit"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    20,
+    160,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 7
+ },
+ "demo": {
+  "loop": 23,
+  "script": [
+   {
+    "wait": 4.6
+   },
+   {
+    "b": 1
+   },
+   {
+    "go": [
+     48,
+     34
+    ]
+   },
+   {
+    "go": [
+     42,
+     37
+    ]
+   },
+   {
+    "wait": 1
+   },
+   {
+    "b": 1
+   },
+   {
+    "go": [
+     92,
+     43
+    ]
+   },
+   {
+    "aWhen": "bugAhead",
+    "within": 30,
+    "giveUp": 7
+   },
+   {
+    "wait": 0.4
+   },
+   {
+    "goTo": "digit"
+   },
+   {
+    "go": [
+     130,
+     31
+    ]
+   },
+   {
+    "go": [
+     161,
+     30
+    ]
+   }
+  ],
+  "chase": {
+   "loop": 17,
+   "script": [
+    {
+     "wait": 5.8
+    },
+    {
+     "go": [
+      92,
+      43
+     ]
+    },
+    {
+     "aWhen": "bugAhead",
+     "within": 30,
+     "giveUp": 7
+    },
+    {
+     "wait": 0.4
+    },
+    {
+     "goTo": "digit"
+    },
+    {
+     "go": [
+      130,
+      31
+     ]
+    },
+    {
+     "go": [
+      161,
+      30
+     ]
+    }
+   ]
+  }
+ },
+ "think": [
+  "are you a cookie",
+  "seventeen"
+ ],
+ "scenes": [
+  {
+   "id": "meet",
+   "on": {
+    "enter": [
+     38,
+     20,
+     84,
+     36
+    ]
+   },
+   "steps": [
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "i'm the original."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "i'm the original."
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "...we can't both be the original."
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "status: confused."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "status: also confused."
+    },
+    {
+     "do": {
+      "do": "walk",
+      "who": "uni1",
+      "to": [
+       [
+        56.5,
+        22.2
+       ]
+      ],
+      "speed": 20
+     }
+    },
+    {
+     "do": {
+      "do": "walk",
+      "who": "uni2",
+      "to": [
+       [
+        61.5,
+        22.2
+       ]
+      ],
+      "speed": 20
+     }
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "halt. who goes there."
+    },
+    {
+     "say": "harold",
+     "text": "a duck."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "is a duck on the list?"
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "the list says: no visitors."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "the list is also a visitor."
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "...status: confused."
+    },
+    {
+     "wait": 1.2
+    },
+    {
+     "do": {
+      "do": "walk",
+      "who": "uni1",
+      "to": [
+       [
+        52,
+        22.4
+       ]
+      ],
+      "speed": 20
+     }
+    },
+    {
+     "do": {
+      "do": "walk",
+      "who": "uni2",
+      "to": [
+       [
+        66,
+        22.4
+       ]
+      ],
+      "speed": 20
+     }
+    },
+    {
+     "wait": 0.8
+    },
+    {
+     "do": {
+      "do": "walk",
+      "who": "malifex",
+      "to": [
+       [
+        59,
+        23
+       ]
+      ],
+      "speed": 10
+     }
+    },
+    {
+     "wait": 1.0
+    },
+    {
+     "say": "malifex",
+     "text": "..."
+    },
+    {
+     "say": "malifex",
+     "text": "...are you a cookie."
+    },
+    {
+     "say": "harold",
+     "text": "i'm a duck."
+    },
+    {
+     "say": "malifex",
+     "text": "...that's what a cookie would say."
+    },
+    {
+     "say": "harold",
+     "text": "your puppy took my friends."
+    },
+    {
+     "say": "malifex",
+     "text": "...not my puppy."
+    },
+    {
+     "do": {
+      "do": "appear",
+      "who": "bug",
+      "route": [
+       [
+        70,
+        34
+       ],
+       [
+        96,
+        39.5
+       ],
+       [
+        122,
+        34
+       ],
+       [
+        96,
+        29
+       ],
+       [
+        70,
+        34
+       ]
+      ],
+      "speed": 24,
+      "loop": true
+     }
+    },
+    {
+     "sound": "yip"
+    },
+    {
+     "bubble": "bug",
+     "text": "yip!",
+     "for": 1.2
+    },
+    {
+     "wait": 1.0
+    },
+    {
+     "say": "malifex",
+     "text": "...he took my seven."
+    },
+    {
+     "say": "harold",
+     "text": "you had seventeen visitors?"
+    },
+    {
+     "say": "malifex",
+     "text": "...sixteen were me. checking it worked."
+    },
+    {
+     "say": "harold",
+     "text": "and the seventeenth?"
+    },
+    {
+     "say": "malifex",
+     "text": "...someone. in 1998. they wrote \"nice page\"."
+    },
+    {
+     "say": "harold",
+     "text": "...that was me."
+    },
+    {
+     "do": {
+      "do": "blush",
+      "who": "malifex",
+      "for": 2.4
+     }
+    },
+    {
+     "wait": 2.0
+    },
+    {
+     "do": {
+      "do": "poof",
+      "who": "malifex"
+     }
+    },
+    {
+     "wait": 0.8
+    },
+    {
+     "bubble": "malifex",
+     "text": "...meow.",
+     "for": 1.8
+    },
+    {
+     "wait": 1.2
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "it happens when he's perceived."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "copy."
+    },
+    {
+     "do": {
+      "do": "poof",
+      "who": "malifex"
+     }
+    },
+    {
+     "wait": 0.8
+    },
+    {
+     "say": "malifex",
+     "text": "...we don't talk about the cat."
+    },
+    {
+     "think": [
+      "are you a cookie",
+      "seventeen",
+      "the cat"
+     ]
+    },
+    {
+     "hint": "B: switch to malifex – he reads what's hidden · A next to anyone: talk",
+     "for": 6
+    },
+    {
+     "set": "met"
+    }
+   ],
+   "goal": true,
+   "label": "who lives here"
+  },
+  {
+   "id": "mp3",
+   "on": {
+    "flag": "read"
+   },
+   "free": true,
+   "steps": [
+    {
+     "wait": 1.0
+    },
+    {
+     "bubble": "malifex",
+     "text": "...forty-one times.",
+     "for": 2.4
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "on": {
+    "flag": "digit"
+   },
+   "steps": [
+    {
+     "wait": 0.8
+    },
+    {
+     "text": "here. your seven.",
+     "say": "harold"
+    },
+    {
+     "text": "...",
+     "say": "malifex"
+    },
+    {
+     "do": {
+      "do": "blush",
+      "who": "malifex",
+      "for": 1.6
+     }
+    },
+    {
+     "text": "...seventeen again.",
+     "say": "malifex"
+    },
+    {
+     "wait": 0.6
+    },
+    {
+     "say": "harold",
+     "text": "that bug took my friends."
+    },
+    {
+     "say": "malifex",
+     "text": "...it's not a bug."
+    },
+    {
+     "say": "harold",
+     "text": "he's made of zeros."
+    },
+    {
+     "say": "malifex",
+     "text": "...it's a puppy."
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "it's not a bug."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "it's a feature."
+    },
+    {
+     "think": [
+      "bug",
+      "fix",
+      "ctrl+z",
+      "not a bug"
+     ]
+    },
+    {
+     "say": "harold",
+     "text": "fine. then we fix the puppy."
+    },
+    {
+     "say": "malifex",
+     "text": "...you don't fix puppies."
+    },
+    {
+     "say": "harold",
+     "text": "watch me."
+    },
+    {
+     "wait": 0.8
+    },
+    {
+     "say": "malifex",
+     "text": "...you came back. that's eighteen."
+    },
+    {
+     "do": {
+      "do": "blush",
+      "who": "malifex",
+      "for": 2.0
+     }
+    },
+    {
+     "wait": 1.6
+    },
+    {
+     "say": "harold",
+     "text": "i keep everything."
+    },
+    {
+     "say": "malifex",
+     "text": "...i'm coming."
+    },
+    {
+     "say": "uni1",
+     "name": "uni",
+     "text": "copy."
+    },
+    {
+     "say": "uni2",
+     "name": "uni (1)",
+     "text": "paste."
+    },
+    {
+     "say": "harold",
+     "text": "you don't have to."
+    },
+    {
+     "say": "malifex",
+     "text": "...my page has been quiet since 1997."
+    },
+    {
+     "say": "malifex",
+     "text": "...i could use the noise."
+    },
+    {
+     "wait": 0.6
+    },
+    {
+     "title": [
+      "1 / 6",
+      "the guestbook meadow"
+     ],
+     "voice": "...is it time?"
+    },
+    {
+     "set": "ch0"
+    },
+    {
+     "hint": "chapter 1 is still being written – thank you for playing chapter 0",
+     "for": 8
+    }
+   ]
+  }
+ ]
+}

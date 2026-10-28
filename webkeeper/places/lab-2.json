@@ -1,0 +1,511 @@
+{
+ "place": "lab-2",
+ "name": "the thief",
+ "chapter": 0,
+ "idea": "Kingdom's night in the lab: L A M P lie in the lamp's light, their tracks run east through the dark to where a second lamp should stand, and Bug's den is out there. He runs out for any letter left in the dark with Harold not by it; quacked head on he drops it. Spelled, the new lamp lights his den and he sleeps.",
+ "learn": "light keeps what's yours",
+ "version": 1,
+ "seed": 919,
+ "grade": "night",
+ "light": {
+  "ambient": 0.26,
+  "pools": [
+   {
+    "at": [
+     60,
+     27
+    ],
+    "rad": 240,
+    "k": 0.7
+   }
+  ]
+ },
+ "fog": {
+  "far": 0.24,
+  "banks": 0.55,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     112,
+     31,
+     16,
+     5
+    ],
+    "k": 0.7
+   },
+   {
+    "disc": [
+     140,
+     38,
+     14,
+     4
+    ],
+    "k": 0.5
+   }
+  ]
+ },
+ "deep": {
+  "stars": 0.6,
+  "words": [
+   "<blink>",
+   "lost & found"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    164,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    30,
+    42,
+    14,
+    3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    130,
+    20,
+    12,
+    2.6
+   ],
+   "amt": 0.85,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    146,
+    40,
+    12,
+    3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    52,
+    36,
+    6,
+    1.8
+   ]
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     31.6
+    ],
+    [
+     40,
+     31.4
+    ],
+    [
+     80,
+     31.8
+    ],
+    [
+     120,
+     31.6
+    ],
+    [
+     164,
+     31.4
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     31.6
+    ],
+    [
+     40,
+     31.4
+    ],
+    [
+     80,
+     31.8
+    ],
+    [
+     120,
+     31.6
+    ],
+    [
+     164,
+     31.4
+    ]
+   ],
+   "width": 5,
+   "amt": 0.8
+  },
+  {
+   "brush": "dug",
+   "disc": [
+    114,
+    30.4,
+    7,
+    2
+   ],
+   "amt": 0.7
+  },
+  {
+   "brush": "clear",
+   "disc": [
+    114,
+    30.4,
+    5,
+    1.5
+   ]
+  },
+  {
+   "brush": "soil",
+   "disc": [
+    114,
+    30.4,
+    4,
+    1.2
+   ],
+   "amt": 0.8,
+   "edge": 0.8
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     112,
+     31
+    ],
+    [
+     100,
+     30.6
+    ],
+    [
+     86,
+     29.6
+    ],
+    [
+     74,
+     28.8
+    ]
+   ]
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    122,
+    27
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 91,
+   "moss": 0.4
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    90,
+    38
+   ],
+   "r": [
+    4.4,
+    1.6
+   ],
+   "seed": 92,
+   "moss": 0.4
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     164,
+     -2.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 94
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 758,
+   "at": [
+    20,
+    16
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 721,
+   "at": [
+    120,
+    15
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 746,
+   "at": [
+    140,
+    14
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    84,
+    17
+   ],
+   "r": [
+    5,
+    1.8
+   ],
+   "seed": 95
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     160,
+     -2
+    ],
+    [
+     160,
+     54
+    ]
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 96
+  }
+ ],
+ "front": [
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 736,
+   "at": [
+    70,
+    47
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    128,
+    48
+   ],
+   "r": [
+    8,
+    2.4
+   ],
+   "seed": 97
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     164,
+     52.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 98
+  }
+ ],
+ "things": [
+  {
+   "id": "lamp",
+   "thing": "lamp",
+   "foot": [
+    60,
+    28
+   ],
+   "rad": 260
+  }
+ ],
+ "words": [
+  {
+   "id": "lampw",
+   "text": "LAMP",
+   "cells": [
+    [
+     66,
+     29
+    ],
+    [
+     68,
+     28
+    ],
+    [
+     70,
+     27
+    ],
+    [
+     72,
+     26
+    ]
+   ],
+   "lying": true,
+   "rails": [
+    [
+     [
+      100,
+      29
+     ],
+     [
+      100,
+      30
+     ]
+    ],
+    [
+     [
+      101,
+      28
+     ],
+     [
+      101,
+      30
+     ]
+    ],
+    [
+     [
+      102,
+      27
+     ],
+     [
+      102,
+      30
+     ]
+    ],
+    [
+     [
+      103,
+      26
+     ],
+     [
+      103,
+      30
+     ]
+    ]
+   ]
+  }
+ ],
+ "solve": [
+  {
+   "word": "lampw",
+   "at": [
+    100,
+    30
+   ],
+   "dir": "row"
+  }
+ ],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    6,
+    31
+   ],
+   "face": "east"
+  },
+  {
+   "who": "bug",
+   "id": "bug",
+   "at": [
+    114,
+    30
+   ],
+   "den": [
+    114,
+    30
+   ],
+   "steals": true,
+   "face": "west"
+  }
+ ],
+ "bug": {
+  "here": true,
+  "every": 4,
+  "note": "he waits in his den and runs out for a letter left in the dark; quack ahead of him and he drops it; a quack at the den sends his hoard home; a lit den and he sleeps"
+ },
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    26,
+    36
+   ],
+   "to": "lab",
+   "way": "back"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    17,
+    158,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 8
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ]
+}

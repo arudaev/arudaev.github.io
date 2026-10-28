@@ -1,0 +1,1144 @@
+{
+ "place": "0.6",
+ "name": "the yard",
+ "chapter": 0,
+ "idea": "the oldest homepage, a hole dug through it, the door shut: two of its letters lie on the doorstep, T E R in the grass – push them into the row",
+ "learn": "spelling is placing",
+ "version": 2,
+ "seed": 606,
+ "grade": "night",
+ "light": {
+  "ambient": 0.3,
+  "pools": [
+   {
+    "at": [
+     80,
+     25
+    ],
+    "rad": 300,
+    "k": 0.8
+   }
+  ]
+ },
+ "fog": {
+  "far": 0.22,
+  "banks": 0.6,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     99,
+     24,
+     7,
+     2
+    ],
+    "k": 0.5
+   },
+   {
+    "disc": [
+     30,
+     38,
+     14,
+     3.6
+    ],
+    "k": 0.5
+   }
+  ]
+ },
+ "deep": {
+  "stars": 0.7,
+  "words": [
+   "<blink>",
+   "visitors"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    196,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    116,
+    -3.1,
+    14.7,
+    2
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    99.5,
+    44,
+    11.5,
+    3.3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    161.6,
+    16.9,
+    11,
+    3.4
+   ],
+   "amt": 0.9,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    103.4,
+    50.6,
+    11.5,
+    2.2
+   ],
+   "amt": 0.7,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    44.2,
+    43.3,
+    13.4,
+    3.4
+   ],
+   "amt": 0.7,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    21.5,
+    23.8,
+    14.8,
+    3.6
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    158.2,
+    8.2,
+    9,
+    2.9
+   ],
+   "amt": 0.6,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    82.6,
+    13.1,
+    10.9,
+    2.6
+   ],
+   "amt": 0.7,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    178.2,
+    2.9,
+    10.4,
+    2.2
+   ],
+   "amt": 0.6,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    146.2,
+    24.4,
+    7.5,
+    2.1
+   ]
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    124.8,
+    38.6,
+    8.3,
+    2.1
+   ]
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    179.7,
+    40.1,
+    8.3,
+    1.9
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    35.1,
+    34.7,
+    10.7,
+    2.4
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    28.4,
+    22.7,
+    11.9,
+    2.7
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    173.6,
+    38.9,
+    10.6,
+    2.1
+   ]
+  },
+  {
+   "brush": "soil",
+   "disc": [
+    30,
+    38,
+    15,
+    4.2
+   ],
+   "amt": 0.45,
+   "edge": 1.6
+  },
+  {
+   "brush": "clear",
+   "disc": [
+    30,
+    38,
+    12.5,
+    3.3
+   ],
+   "amt": 0.8
+  },
+  {
+   "brush": "water",
+   "disc": [
+    30,
+    38,
+    12,
+    3
+   ],
+   "edge": 0.8
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    19,
+    37.6,
+    4,
+    2
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    41,
+    39,
+    4,
+    2
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    30,
+    35.4,
+    4,
+    1
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "moss",
+   "disc": [
+    20.4,
+    40.7,
+    4.800000000000001,
+    1
+   ],
+   "amt": 0.6
+  },
+  {
+   "brush": "short",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     24,
+     30.6
+    ],
+    [
+     50,
+     30.4
+    ],
+    [
+     66,
+     29
+    ],
+    [
+     78,
+     27
+    ],
+    [
+     80,
+     24.6
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.7,
+   "edge": 1.4
+  },
+  {
+   "brush": "soil",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     24,
+     30.6
+    ],
+    [
+     50,
+     30.4
+    ],
+    [
+     66,
+     29
+    ],
+    [
+     78,
+     27
+    ],
+    [
+     80,
+     24.6
+    ]
+   ],
+   "width": 3,
+   "edge": 1
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     24,
+     30.6
+    ],
+    [
+     50,
+     30.4
+    ],
+    [
+     66,
+     29
+    ],
+    [
+     78,
+     27
+    ],
+    [
+     80,
+     24.6
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     24,
+     30.6
+    ],
+    [
+     50,
+     30.4
+    ],
+    [
+     66,
+     29
+    ],
+    [
+     78,
+     27
+    ],
+    [
+     80,
+     24.6
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.8
+  },
+  {
+   "brush": "soil",
+   "rect": [
+    70,
+    22,
+    92,
+    26
+   ],
+   "edge": 1.2
+  },
+  {
+   "brush": "clear",
+   "rect": [
+    72,
+    22.4,
+    90,
+    25.6
+   ],
+   "edge": 1
+  },
+  {
+   "brush": "water",
+   "disc": [
+    87,
+    31.4,
+    2.4,
+    0.55
+   ],
+   "edge": 0.5
+  },
+  {
+   "brush": "dug",
+   "disc": [
+    99,
+    24,
+    8,
+    2.2
+   ],
+   "amt": 0.6
+  },
+  {
+   "brush": "clear",
+   "disc": [
+    99,
+    24,
+    7.4,
+    2
+   ]
+  },
+  {
+   "brush": "ditch",
+   "disc": [
+    99,
+    24.2,
+    6,
+    1.6
+   ],
+   "edge": 0.4
+  },
+  {
+   "brush": "light",
+   "disc": [
+    44,
+    36,
+    9,
+    2.4
+   ],
+   "amt": 0.42,
+   "edge": 4
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    124,
+    36
+   ],
+   "r": [
+    8.4,
+    3
+   ],
+   "seed": 61,
+   "moss": 0.5
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    36,
+    26
+   ],
+   "r": [
+    5.6,
+    2
+   ],
+   "seed": 62,
+   "moss": 0.35
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     99,
+     26
+    ],
+    [
+     104,
+     32
+    ],
+    [
+     118,
+     34
+    ],
+    [
+     150,
+     30
+    ],
+    [
+     190,
+     28
+    ]
+   ]
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 753,
+   "at": [
+    26,
+    20
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "tree",
+   "kind": "blossom",
+   "seed": 744,
+   "at": [
+    134,
+    20
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 747,
+   "at": [
+    146,
+    12
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 719,
+   "at": [
+    154,
+    14
+   ],
+   "h": 13
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 734,
+   "at": [
+    161,
+    12
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    44,
+    21
+   ],
+   "r": [
+    5,
+    1.8
+   ],
+   "seed": 63
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    40,
+    20.4
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 67
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    116,
+    21.5
+   ],
+   "r": [
+    5,
+    1.8
+   ],
+   "seed": 64
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    121,
+    20.8
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 66
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     196,
+     -2.4
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 97
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 720,
+   "at": [
+    20,
+    3
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 760,
+   "at": [
+    130,
+    4
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 735,
+   "at": [
+    176,
+    20
+   ],
+   "h": 15
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 721,
+   "at": [
+    186,
+    34
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     166,
+     -4
+    ],
+    [
+     166,
+     54
+    ]
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 98
+  }
+ ],
+ "front": [
+  {
+   "brush": "tall",
+   "rect": [
+    -4,
+    45,
+    196,
+    51
+   ],
+   "edge": 1.5,
+   "amt": 0.6
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 722,
+   "at": [
+    60,
+    47
+   ],
+   "h": 15
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 748,
+   "at": [
+    104,
+    46
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    150,
+    47
+   ],
+   "r": [
+    12,
+    3
+   ],
+   "seed": 65
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    140,
+    48
+   ],
+   "r": [
+    7,
+    2
+   ],
+   "seed": 68
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     196,
+     52.4
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 99
+  }
+ ],
+ "things": [
+  {
+   "id": "page",
+   "thing": "page",
+   "foot": [
+    80,
+    21
+   ],
+   "box": [
+    50,
+    3,
+    110,
+    21
+   ],
+   "door": [
+    77,
+    83
+   ],
+   "opens": "ENTER",
+   "holes": [
+    [
+     94,
+     9,
+     101,
+     15
+    ]
+   ],
+   "lines": [
+    "welcome to my home page",
+    "",
+    "#you are visitor 000017",
+    "",
+    "my links    the guestbook",
+    "",
+    "best viewed at 800 x 600",
+    "last updated 1997"
+   ]
+  },
+  {
+   "id": "lamp",
+   "thing": "lamp",
+   "foot": [
+    118,
+    23
+   ],
+   "rad": 300
+  }
+ ],
+ "words": [
+  {
+   "id": "en",
+   "text": "EN",
+   "at": [
+    78,
+    23
+   ],
+   "dir": "row",
+   "rails": [
+    [],
+    []
+   ]
+  },
+  {
+   "id": "ter",
+   "text": "TER",
+   "cells": [
+    [
+     77,
+     28
+    ],
+    [
+     83,
+     28
+    ],
+    [
+     88,
+     27
+    ]
+   ],
+   "lying": true,
+   "rails": [
+    [
+     [
+      80,
+      28
+     ],
+     [
+      80,
+      23
+     ]
+    ],
+    [
+     [
+      81,
+      28
+     ],
+     [
+      81,
+      23
+     ]
+    ],
+    [
+     [
+      82,
+      27
+     ],
+     [
+      82,
+      23
+     ]
+    ]
+   ]
+  }
+ ],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    70,
+    34
+   ],
+   "face": "east"
+  }
+ ],
+ "bug": {
+  "here": false,
+  "note": "he dug through the page, came out of the hole by the doorstep and ran east; he took the E N T E R off the door"
+ },
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    24,
+    34
+   ],
+   "to": "0.5",
+   "way": "back"
+  },
+  {
+   "cells": [
+    77,
+    19,
+    84,
+    22
+   ],
+   "to": "0.6i",
+   "way": "on",
+   "arrive": [
+    80,
+    25
+   ]
+  },
+  {
+   "edge": "east",
+   "rows": [
+    22,
+    45
+   ],
+   "to": "0.7",
+   "way": "on",
+   "needs": "never",
+   "wait": "the way on is through the page's door"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    22,
+    160,
+    45
+   ],
+   [
+    77,
+    19,
+    84,
+    22
+   ]
+  ]
+ },
+ "solve": [
+  {
+   "word": "ter",
+   "text": "ENTER",
+   "at": [
+    78,
+    23
+   ],
+   "dir": "row"
+  }
+ ],
+ "air": {
+  "fireflies": 14
+ },
+ "demo": {
+  "loop": 16,
+  "script": [
+   {
+    "wait": 0.3
+   },
+   {
+    "go": [
+     77,
+     32
+    ]
+   },
+   {
+    "go": [
+     77,
+     24.8
+    ]
+   },
+   {
+    "go": [
+     77,
+     32
+    ]
+   },
+   {
+    "go": [
+     83,
+     32
+    ]
+   },
+   {
+    "go": [
+     83,
+     24.8
+    ]
+   },
+   {
+    "go": [
+     83,
+     32
+    ]
+   },
+   {
+    "go": [
+     88,
+     32
+    ]
+   },
+   {
+    "go": [
+     88,
+     24.8
+    ]
+   },
+   {
+    "go": [
+     88,
+     30
+    ]
+   },
+   {
+    "until": "enter"
+   },
+   {
+    "wait": 1
+   },
+   {
+    "go": [
+     80,
+     25
+    ]
+   },
+   {
+    "go": [
+     80,
+     20
+    ]
+   }
+  ]
+ },
+ "extent": [
+  0,
+  -10,
+  200,
+  57
+ ],
+ "think": [
+  "1997",
+  "press any key"
+ ],
+ "scenes": [
+  {
+   "id": "stable",
+   "on": {
+    "enter": [
+     60,
+     22,
+     100,
+     45
+    ]
+   },
+   "free": true,
+   "steps": [
+    {
+     "bubble": "harold",
+     "text": "last updated 1997.",
+     "for": 2.0
+    },
+    {
+     "wait": 2.0
+    },
+    {
+     "bubble": "harold",
+     "text": "it's not abandoned. it's stable.",
+     "for": 2.6
+    }
+   ]
+  },
+  {
+   "id": "anykey",
+   "on": {
+    "press": [
+     76,
+     18,
+     85,
+     22
+    ]
+   },
+   "unless": "enter",
+   "label": "the door",
+   "steps": [
+    {
+     "say": "harold",
+     "text": "it says press any key."
+    },
+    {
+     "say": "harold",
+     "text": "...which one is the any key."
+    }
+   ]
+  },
+  {
+   "id": "entered",
+   "on": {
+    "flag": "enter"
+   },
+   "free": true,
+   "steps": [
+    {
+     "wait": 0.9
+    },
+    {
+     "sound": "theme"
+    }
+   ]
+  }
+ ]
+}

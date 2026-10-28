@@ -1,0 +1,590 @@
+{
+ "place": "0.6i",
+ "name": "inside the page",
+ "chapter": 0,
+ "idea": "the homepage from the inside: its links, its counter, its guestbook on the back wall, lamps on the floorboards. Bug's hole comes up through the floor at the east end, his paws run to the counter and back – the counter's last digit is gone – and his tunnel runs on east, out to the hermit's clearing",
+ "learn": "pages have insides",
+ "version": 1,
+ "seed": 616,
+ "grade": "indoors",
+ "light": {
+  "ambient": 0.16
+ },
+ "fog": {
+  "far": 0.06,
+  "banks": 0.5,
+  "streaks": 0.16
+ },
+ "deep": {
+  "stars": 0.3,
+  "words": [
+   "<blink>",
+   "under construction"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     22
+    ],
+    [
+     142,
+     22.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 22
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     25
+    ],
+    [
+     142,
+     25.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 25
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     28
+    ],
+    [
+     142,
+     28.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 28
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     31
+    ],
+    [
+     142,
+     31.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 31
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     34
+    ],
+    [
+     142,
+     34.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 34
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     37
+    ],
+    [
+     142,
+     37.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 37
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     40
+    ],
+    [
+     142,
+     40.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 40
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     18,
+     43
+    ],
+    [
+     142,
+     43.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 43
+  },
+  {
+   "brush": "dug",
+   "line": [
+    [
+     122,
+     31
+    ],
+    [
+     140,
+     31
+    ],
+    [
+     164,
+     30.6
+    ]
+   ],
+   "width": 3.2,
+   "amt": 0.8
+  },
+  {
+   "brush": "soil",
+   "line": [
+    [
+     124,
+     31
+    ],
+    [
+     140,
+     31
+    ],
+    [
+     164,
+     30.6
+    ]
+   ],
+   "width": 2.8,
+   "edge": 1
+  },
+  {
+   "brush": "dug",
+   "disc": [
+    127,
+    36,
+    6.4,
+    2.2
+   ],
+   "amt": 0.95
+  },
+  {
+   "brush": "clear",
+   "disc": [
+    127,
+    36,
+    4.6,
+    1.4
+   ]
+  },
+  {
+   "brush": "ditch",
+   "disc": [
+    127,
+    36,
+    3.8,
+    1.1
+   ],
+   "edge": 0.4
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    121,
+    37
+   ],
+   "r": [
+    2.4,
+    1
+   ],
+   "seed": 63,
+   "moss": 0.2
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    133,
+    35.4
+   ],
+   "r": [
+    2,
+    0.9
+   ],
+   "seed": 64,
+   "moss": 0.2
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     125,
+     34
+    ],
+    [
+     110,
+     28
+    ],
+    [
+     92,
+     23
+    ],
+    [
+     82,
+     21.4
+    ]
+   ]
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     84,
+     22.6
+    ],
+    [
+     100,
+     26
+    ],
+    [
+     118,
+     30
+    ],
+    [
+     150,
+     31
+    ]
+   ]
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "ruin",
+   "c0": 16,
+   "c1": 144,
+   "foot": 20,
+   "h": 9,
+   "seed": 61,
+   "fallen": 0
+  }
+ ],
+ "front": [
+  {
+   "stamp": "ruin",
+   "c0": 16,
+   "c1": 144,
+   "foot": 45,
+   "h": 2,
+   "seed": 62,
+   "fallen": 0,
+   "door": {
+    "c": 80.5,
+    "w": 9,
+    "h": 2
+   }
+  }
+ ],
+ "things": [
+  {
+   "id": "links",
+   "thing": "page",
+   "foot": [
+    38,
+    19
+   ],
+   "box": [
+    24,
+    8,
+    52,
+    19
+   ],
+   "lines": [
+    "my links",
+    "",
+    "> cool sites (2)",
+    "> my other page",
+    "> theme.mid ♪"
+   ]
+  },
+  {
+   "id": "counter",
+   "thing": "page",
+   "foot": [
+    80,
+    19
+   ],
+   "box": [
+    63,
+    6,
+    97,
+    19
+   ],
+   "lines": [
+    "welcome to my home page",
+    "",
+    "#you are visitor 00001_",
+    "",
+    "best viewed at 800 x 600"
+   ]
+  },
+  {
+   "id": "guestbook",
+   "thing": "page",
+   "foot": [
+    122,
+    19
+   ],
+   "box": [
+    108,
+    8,
+    136,
+    19
+   ],
+   "lines": [
+    "the guestbook",
+    "",
+    "nice page! – harold, 1998",
+    "first!! – malifex, 3:04am",
+    "sign it :)"
+   ]
+  },
+  {
+   "id": "lamp1",
+   "thing": "lamp",
+   "foot": [
+    44,
+    27
+   ],
+   "rad": 280
+  },
+  {
+   "id": "lamp2",
+   "thing": "lamp",
+   "foot": [
+    112,
+    27
+   ],
+   "rad": 260
+  },
+  {
+   "id": "lamp3",
+   "thing": "lamp",
+   "foot": [
+    136,
+    28
+   ],
+   "rad": 220
+  }
+ ],
+ "words": [],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    80,
+    39
+   ],
+   "face": "north"
+  },
+  {
+   "who": "patch",
+   "id": "patch",
+   "at": [
+    80,
+    22
+   ],
+   "hidden": true
+  }
+ ],
+ "bug": {
+  "here": false,
+  "note": "he came up through the floor, took the counter's 7 and went on down his tunnel east"
+ },
+ "exits": [
+  {
+   "cells": [
+    76,
+    42,
+    86,
+    44
+   ],
+   "to": "0.6",
+   "way": "back",
+   "arrive": [
+    80,
+    39
+   ]
+  },
+  {
+   "edge": "east",
+   "rows": [
+    29,
+    33
+   ],
+   "to": "0.7",
+   "way": "on"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    18,
+    21,
+    142,
+    43
+   ],
+   [
+    120,
+    29,
+    160,
+    33
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 0
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ],
+ "think": [
+  "temporary internet files",
+  "nice page"
+ ],
+ "scenes": [
+  {
+   "id": "guestbook",
+   "on": {
+    "press": [
+     108,
+     18,
+     136,
+     22
+    ]
+   },
+   "label": "read the guestbook",
+   "steps": [
+    {
+     "say": "harold",
+     "text": "nice page. harold, 1998."
+    },
+    {
+     "say": "harold",
+     "text": "...i've been here."
+    },
+    {
+     "think": [
+      "temporary internet files",
+      "nice page",
+      "i've been here"
+     ]
+    },
+    {
+     "say": "harold",
+     "text": "he signed his own guestbook. at three in the morning."
+    }
+   ]
+  },
+  {
+   "id": "counter",
+   "on": {
+    "press": [
+     63,
+     18,
+     97,
+     22
+    ]
+   },
+   "label": "look at the counter",
+   "steps": [
+    {
+     "say": "harold",
+     "text": "someone took his seven."
+    }
+   ]
+  },
+  {
+   "id": "theme",
+   "on": {
+    "press": [
+     24,
+     18,
+     52,
+     22
+    ]
+   },
+   "label": "theme.mid",
+   "steps": [
+    {
+     "sound": "theme"
+    },
+    {
+     "do": {
+      "do": "dance",
+      "who": "patch",
+      "at": [
+       80,
+       23
+      ],
+      "for": 12.8,
+      "then": [
+       [
+        110,
+        30
+       ],
+       [
+        127,
+        35
+       ]
+      ]
+     }
+    },
+    {
+     "wait": 4.6
+    },
+    {
+     "think": [
+      "there are two of them"
+     ]
+    },
+    {
+     "say": "harold",
+     "text": "...that's not the seven."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,262 @@
+{
+ "place": "cast",
+ "name": "the cast in the world",
+ "chapter": 0,
+ "idea": "harold, mishka, bug and malifex at their size on the big grid, each with a gap of ink round them",
+ "seed": 909,
+ "light": {
+  "ambient": 0.2,
+  "pools": [
+   {
+    "at": [
+     80,
+     30
+    ],
+    "rad": 520,
+    "k": 0.8
+   }
+  ]
+ },
+ "fog": {
+  "far": 0.25,
+  "banks": 0.6,
+  "streaks": 0.12
+ },
+ "ground": [
+  {
+   "brush": "short",
+   "rect": [
+    -4,
+    -4,
+    164,
+    49
+   ],
+   "amt": 0.9,
+   "edge": 3
+  },
+  {
+   "brush": "grass",
+   "disc": [
+    80,
+    31,
+    60,
+    8
+   ],
+   "amt": 0.9,
+   "edge": 3
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    60,
+    36,
+    10,
+    2
+   ]
+  },
+  {
+   "brush": "soil",
+   "line": [
+    [
+     -4,
+     31
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 3,
+   "edge": 1
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     31
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 2.2
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    142,
+    36
+   ],
+   "r": [
+    7,
+    2.6
+   ],
+   "seed": 5,
+   "moss": 0.4
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 700,
+   "at": [
+    16,
+    19
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 726,
+   "at": [
+    146,
+    19
+   ],
+   "h": 15
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    80,
+    17
+   ],
+   "r": [
+    8,
+    2.2
+   ],
+   "seed": 3
+  }
+ ],
+ "front": [
+  {
+   "brush": "tall",
+   "rect": [
+    -4,
+    42.5,
+    164,
+    49
+   ],
+   "edge": 1.5,
+   "amt": 0.6
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    112,
+    33.5,
+    6,
+    1.4
+   ]
+  }
+ ],
+ "things": [],
+ "words": [],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    36,
+    30
+   ],
+   "face": "east"
+  },
+  {
+   "who": "mishka",
+   "id": "mishka",
+   "at": [
+    62,
+    30
+   ],
+   "face": "east"
+  },
+  {
+   "who": "bug",
+   "id": "bug",
+   "at": [
+    112,
+    30
+   ],
+   "hidden": true
+  },
+  {
+   "who": "malifex",
+   "id": "malifex",
+   "at": [
+    88,
+    29.6
+   ],
+   "face": "west"
+  }
+ ],
+ "events": [
+  {
+   "at": 0,
+   "do": "appear",
+   "who": "bug",
+   "route": [
+    [
+     112,
+     30
+    ],
+    [
+     124,
+     31
+    ],
+    [
+     112,
+     32
+    ],
+    [
+     100,
+     31
+    ]
+   ],
+   "speed": 10,
+   "loop": true
+  }
+ ],
+ "exits": [],
+ "walk": {
+  "area": [
+   [
+    0,
+    20,
+    160,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 4
+ },
+ "demo": {
+  "loop": 8,
+  "script": [
+   {
+    "go": [
+     42,
+     31
+    ]
+   },
+   {
+    "go": [
+     36,
+     30
+    ]
+   },
+   {
+    "wait": 2
+   },
+   {
+    "a": 1
+   },
+   {
+    "wait": 3
+   }
+  ]
+ }
+}

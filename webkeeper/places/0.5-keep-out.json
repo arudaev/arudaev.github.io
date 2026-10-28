@@ -1,0 +1,974 @@
+{
+ "place": "0.5",
+ "name": "KEEP OUT",
+ "chapter": 0,
+ "idea": "lines of KEEP OUT fill the gap in a hedge: quack, and push the letters aside or let the gust carry them",
+ "learn": "pushing",
+ "version": 2,
+ "seed": 505,
+ "grade": "night",
+ "light": {
+  "ambient": 0.3,
+  "pools": [
+   {
+    "at": [
+     84,
+     28
+    ],
+    "rad": 280,
+    "k": 0.75
+   }
+  ]
+ },
+ "wind": {
+  "toward": "east",
+  "k": 1.1,
+  "area": [
+   60,
+   16,
+   140,
+   42
+  ]
+ },
+ "fog": {
+  "far": 0.22,
+  "banks": 0.6,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     112,
+     39,
+     15,
+     3.6
+    ],
+    "k": 0.5
+   },
+   {
+    "disc": [
+     30,
+     40,
+     16,
+     4
+    ],
+    "k": 0.4
+   }
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    164,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    34.7,
+    19.1,
+    10.2,
+    3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    51.8,
+    24.2,
+    9,
+    2
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    89.6,
+    36.3,
+    13.9,
+    2.8
+   ],
+   "amt": 0.6,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    118.7,
+    11.5,
+    8.7,
+    2.9
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    36.4,
+    17.2,
+    14,
+    2.7
+   ],
+   "amt": 0.9,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    132.3,
+    5.5,
+    8.9,
+    2
+   ],
+   "amt": 0.6,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    54.8,
+    26.5,
+    9.4,
+    2.3
+   ],
+   "amt": 0.5,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    69.7,
+    5.2,
+    9.6,
+    2
+   ],
+   "amt": 0.7,
+   "edge": 2.5
+  },
+  {
+   "brush": "dry",
+   "disc": [
+    19.3,
+    29.5,
+    9.3,
+    2.1
+   ],
+   "amt": 0.6,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    102.1,
+    25.5,
+    6,
+    2.3
+   ]
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    13.7,
+    32.2,
+    6.6,
+    2.1
+   ]
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    79.9,
+    22.7,
+    7.2,
+    2
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    141.3,
+    4.4,
+    7.7,
+    2
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    122.5,
+    46.5,
+    7.4,
+    1.8
+   ]
+  },
+  {
+   "brush": "daisies",
+   "disc": [
+    23.9,
+    40.9,
+    7.6,
+    1.9
+   ]
+  },
+  {
+   "brush": "soil",
+   "disc": [
+    112,
+    38.6,
+    15,
+    4.2
+   ],
+   "amt": 0.45,
+   "edge": 1.6
+  },
+  {
+   "brush": "clear",
+   "disc": [
+    112,
+    38.6,
+    12.5,
+    3.3
+   ],
+   "amt": 0.8
+  },
+  {
+   "brush": "water",
+   "disc": [
+    112,
+    38.6,
+    12,
+    3
+   ],
+   "edge": 0.8
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    100,
+    38,
+    4,
+    2
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    123,
+    39.6,
+    4,
+    2
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "reeds",
+   "disc": [
+    112,
+    35.8,
+    5,
+    1
+   ],
+   "amt": 0.85,
+   "edge": 1.2
+  },
+  {
+   "brush": "moss",
+   "disc": [
+    102.4,
+    41.300000000000004,
+    4.800000000000001,
+    1
+   ],
+   "amt": 0.6
+  },
+  {
+   "brush": "short",
+   "line": [
+    [
+     -4,
+     27.2
+    ],
+    [
+     30,
+     28.6
+    ],
+    [
+     60,
+     28.8
+    ],
+    [
+     84,
+     28.6
+    ],
+    [
+     110,
+     29
+    ],
+    [
+     140,
+     29.8
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.7,
+   "edge": 1.4
+  },
+  {
+   "brush": "soil",
+   "line": [
+    [
+     -4,
+     27.2
+    ],
+    [
+     30,
+     28.6
+    ],
+    [
+     60,
+     28.8
+    ],
+    [
+     84,
+     28.6
+    ],
+    [
+     110,
+     29
+    ],
+    [
+     140,
+     29.8
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 3,
+   "edge": 1
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     27.2
+    ],
+    [
+     30,
+     28.6
+    ],
+    [
+     60,
+     28.8
+    ],
+    [
+     84,
+     28.6
+    ],
+    [
+     110,
+     29
+    ],
+    [
+     140,
+     29.8
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     27.2
+    ],
+    [
+     30,
+     28.6
+    ],
+    [
+     60,
+     28.8
+    ],
+    [
+     84,
+     28.6
+    ],
+    [
+     110,
+     29
+    ],
+    [
+     140,
+     29.8
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.8
+  },
+  {
+   "brush": "light",
+   "disc": [
+    130,
+    34,
+    9,
+    2.4
+   ],
+   "amt": 0.42,
+   "edge": 4
+  },
+  {
+   "brush": "light",
+   "disc": [
+    30,
+    38,
+    9,
+    2.4
+   ],
+   "amt": 0.34,
+   "edge": 4
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    40,
+    38
+   ],
+   "r": [
+    8.4,
+    3
+   ],
+   "seed": 51,
+   "moss": 0.5
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    128,
+    20
+   ],
+   "r": [
+    5.6,
+    2
+   ],
+   "seed": 52,
+   "moss": 0.35
+  },
+  {
+   "stamp": "paws",
+   "line": [
+    [
+     70,
+     30
+    ],
+    [
+     80,
+     31
+    ],
+    [
+     92,
+     31.5
+    ],
+    [
+     110,
+     30
+    ],
+    [
+     150,
+     29.6
+    ]
+   ]
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     84,
+     0
+    ],
+    [
+     84,
+     24.4
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 60
+  },
+  {
+   "stamp": "tree",
+   "kind": "tall",
+   "seed": 760,
+   "at": [
+    30,
+    16
+   ],
+   "h": 16
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 745,
+   "at": [
+    120,
+    12
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 705,
+   "at": [
+    128,
+    14
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 732,
+   "at": [
+    136,
+    12
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    58,
+    16
+   ],
+   "r": [
+    6,
+    2
+   ],
+   "seed": 61
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    64,
+    15.4
+   ],
+   "r": [
+    5,
+    1.8
+   ],
+   "seed": 62
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    69,
+    16.4
+   ],
+   "r": [
+    4,
+    1.5
+   ],
+   "seed": 63
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    100,
+    16
+   ],
+   "r": [
+    5,
+    1.8
+   ],
+   "seed": 64
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     164,
+     -2.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 95
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 718,
+   "at": [
+    10,
+    3
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 758,
+   "at": [
+    60,
+    4
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 746,
+   "at": [
+    150,
+    4
+   ],
+   "h": 11
+  }
+ ],
+ "front": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     84,
+     33.2
+    ],
+    [
+     84,
+     52
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 70
+  },
+  {
+   "brush": "tall",
+   "rect": [
+    -4,
+    45,
+    164,
+    51
+   ],
+   "edge": 1.5,
+   "amt": 0.5
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 733,
+   "at": [
+    40,
+    46
+   ],
+   "h": 15
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 759,
+   "at": [
+    146,
+    47
+   ],
+   "h": 15
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    20,
+    48
+   ],
+   "r": [
+    9,
+    2.6
+   ],
+   "seed": 71
+  },
+  {
+   "stamp": "bush",
+   "at": [
+    104,
+    48
+   ],
+   "r": [
+    8,
+    2.4
+   ],
+   "seed": 72
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     164,
+     52.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 96
+  }
+ ],
+ "things": [
+  {
+   "id": "lamp",
+   "thing": "lamp",
+   "foot": [
+    64,
+    24
+   ],
+   "rad": 300
+  }
+ ],
+ "words": [
+  {
+   "id": "ko0",
+   "text": "KEEP OUT",
+   "at": [
+    80,
+    26
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "ko1",
+   "text": "OUT KEEP",
+   "at": [
+    80,
+    27
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "ko2",
+   "text": "KEEP OUT",
+   "at": [
+    80,
+    28
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "ko3",
+   "text": "OUT KEEP",
+   "at": [
+    80,
+    29
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "ko4",
+   "text": "KEEP OUT",
+   "at": [
+    80,
+    30
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "ko5",
+   "text": "OUT KEEP",
+   "at": [
+    80,
+    31
+   ],
+   "dir": "row",
+   "wall": true
+  },
+  {
+   "id": "please",
+   "text": "...please.",
+   "at": [
+    92,
+    33
+   ],
+   "voice": true
+  }
+ ],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    50,
+    29
+   ],
+   "face": "east"
+  }
+ ],
+ "bug": {
+  "here": false,
+  "note": "he wrote KEEP OUT in the gap behind him – his prints go through it"
+ },
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    24,
+    30
+   ],
+   "to": "0.4",
+   "way": "back"
+  },
+  {
+   "edge": "east",
+   "rows": [
+    26,
+    34
+   ],
+   "to": "0.6",
+   "way": "on"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    17,
+    160,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 14
+ },
+ "demo": {
+  "loop": 10,
+  "script": [
+   {
+    "wait": 0.4
+   },
+   {
+    "go": [
+     64,
+     29
+    ]
+   },
+   {
+    "a": 1
+   },
+   {
+    "wait": 1.6
+   },
+   {
+    "go": [
+     78,
+     29
+    ]
+   },
+   {
+    "go": [
+     96,
+     28.8
+    ]
+   },
+   {
+    "go": [
+     130,
+     29.6
+    ]
+   },
+   {
+    "go": [
+     161,
+     30
+    ]
+   }
+  ]
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ],
+ "think": [
+  "keep out",
+  "shy"
+ ],
+ "scenes": [
+  {
+   "id": "shy",
+   "on": {
+    "enter": [
+     64,
+     17,
+     78,
+     43
+    ]
+   },
+   "free": true,
+   "steps": [
+    {
+     "bubble": "harold",
+     "text": "keep out. keep out. keep out.",
+     "for": 2.2
+    },
+    {
+     "wait": 2.2
+    },
+    {
+     "bubble": "harold",
+     "text": "someone here is very shy.",
+     "for": 2.4
+    }
+   ]
+  }
+ ]
+}

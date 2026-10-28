@@ -1,0 +1,333 @@
+// friends.js – the friends and Bug, after the rule in brief/GAME.md ("## The cast"): every
+// character is what their name already says, drawn first as a tiny grid sprite you could type –
+// like Harold's >(.)__ – at most 4 rows × 9 cells, one colour of their own, one prop, one gag.
+// Up close they come loose: the same idea in more glyphs, each a little off its cell.
+// Loaded after cast.js. Every idle loops in 4 s.
+(function () {
+  const C = WK_CAST, P = C.P, { hash } = Webkeeper, loop4 = C.loop4;
+  // the colour key for a sprite's colour map: one letter per cell
+  const KEY = { y: P.yellow, r: P.red, R: P.redDim, b: P.beige, d: P.beigeDim, t: P.tealHi, T: P.tealUp, g: P.phosphor, G: P.phosphorDim, u: P.burgundy };
+  // Lex's colours: the palette's tints, one per sound
+  const LEX_TINTS = [P.phosphor, P.tealHi, P.red, P.beige, P.phosphorDim, P.redDim];
+
+  // a sprite at grid size: rows of text + a colour map of the same shape. (x, y): its feet, centred,
+  // in px. At s = 1 it sits exactly on the grid; o.dx[] shifts single rows by px (a sway);
+  // o.tint replaces the letter L in the map.
+  function sprite(W, x, y, rows, cmap, o = {}) {
+    const s = o.s || 1, gw = W.cw * s, gh = W.ch * s, w = Math.max(...rows.map((r) => r.length));
+    const left = s === 1 ? Math.round(x / W.cw - w / 2) * W.cw : x - w * gw / 2, top = y - rows.length * gh;
+    W.reset();
+    rows.forEach((row, i) => { for (let j = 0; j < row.length; j++) if (row[j] !== ' ') {
+      W.g.fillStyle = P.ink; W.g.fillRect(left + j * gw + ((o.dx || [])[i] || 0), top + i * gh, gw, gh);
+    } });
+    rows.forEach((row, i) => { for (let j = 0; j < row.length; j++) if (row[j] !== ' ') {
+      const k = (cmap[i] || '')[j] || 'b', col = k === 'L' ? o.tint : KEY[k] || P.beige;
+      if (s === 1) { W.reset(); W.g.fillStyle = col; W.g.fillText(row[j], left + j * gw + ((o.dx || [])[i] || 0), top + i * gh); }
+      else W.loose(left + (j + 0.5) * gw + ((o.dx || [])[i] || 0), top + (i + 0.5) * gh, row[j], col, 0, gh);
+    } });
+    W.reset();
+  }
+  // the same art come loose, for close-ups: every glyph a little off its cell and a little turned,
+  // the same every frame (so nothing shimmers); the whole figure bobs as one piece
+  function loose(W, x, y, rows, cmap, o = {}) {
+    const s = o.s || 3, gw = W.cw * s, gh = W.ch * s, w = Math.max(...rows.map((r) => r.length));
+    const left = x - w * gw / 2, top = y - rows.length * gh + (o.oy || 0);
+    W.reset(); W.g.fillStyle = P.ink;
+    rows.forEach((row, i) => { for (let j = 0; j < row.length; j++) if (row[j] !== ' ') W.g.fillRect(left + j * gw - 2, top + i * gh - 2, gw + 4, gh + 4); });
+    rows.forEach((row, i) => { for (let j = 0; j < row.length; j++) if (row[j] !== ' ') {
+      const h1 = hash(i * 31 + j, o.seed || 1, 5), h2 = hash(j * 17 + i, o.seed || 1, 6);
+      const k = (cmap[i] || '')[j] || 'b', col = k === 'L' ? o.tint : KEY[k] || P.beige;
+      W.loose(left + (j + 0.5 + (h1 - 0.5) * 0.3) * gw, top + (i + 0.5 + (h2 - 0.5) * 0.18) * gh, row[j], col, (h1 - 0.5) * 0.16, gh * (0.92 + h2 * 0.16));
+    } });
+    W.reset();
+  }
+  // a colour map from one letter per row, with per-glyph exceptions: paint(rows, 'tdd', { o: 'b' })
+  const paint = (rows, rowKeys, glyphKeys = {}, rowGlyphKeys = {}) => rows.map((row, i) =>
+    [...row].map((ch) => ((rowGlyphKeys[i] || {})[ch] || glyphKeys[ch] || rowKeys[i] || rowKeys[rowKeys.length - 1])).join(''));
+  const say = (W, x, y, str, col = P.beige) => C.sayAt(W, x, y, str, col);
+  const talking = (t) => Math.floor(loop4(t) * 8) % 2 === 1;
+
+  // ── Sid – a sloth, hanging from a hyperlink like a branch ─────────────────────────
+  // the way sloths hang in every picture book: hooked claws over the link's underline, long arms
+  // up, the body hanging below, a sleepy face the right way up with the dark mask round his eyes,
+  // a red tuft on top. Gag: protects the last of anything; blinks once a minute.
+  const SID = ['___________', ' J  ,,,  L ', '  \\(=-.-=)/', '   (    )  ', '    "  "   '];
+  const SID_MAP = ['ttttttttttt', ' d  rrr  d ', '  ddRbdbRdd', '   dddddd  ', '    d  d   '];
+  const SID_CLOSE = [
+    '     the last page      ',
+    '________________________',
+    '    J              L    ',
+    '     \\\\   ,,,,,,  //     ',
+    '      \\\\ (=- . -=)//     ',
+    '        (        )      ',
+    '        (        )      ',
+    '         ""    ""       ',
+  ];
+  const SID_CLOSE_MAP = paint(SID_CLOSE, 'ttddddddd', { J: 'd', L: 'd' }, { 3: { ',': 'r' }, 4: { '=': 'R', '-': 'b', '.': 'b' } });
+  const sid = {
+    name: 'sid', pron: 'he', key: 'beige dim, a dark eye mask, a red tuft', prop: 'a hyperlink to hang from', gag: 'blinks once a minute',
+    rows: SID, line: 'this is the last page. so we keep it.',
+    sprite(W, x, y, t, o = {}) {
+      const l = loop4(t), shut = l >= 1.2 && l < 2.4;   // one very slow blink
+      const swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8];   // a slow swing, a pixel a step
+      const rows = SID.slice(); if (shut) rows[2] = '  \\(=_._=)/';
+      sprite(W, x, y, rows, SID_MAP, { ...o, dx: [0, 0, swing * 0.5, swing, swing * 1.5] });
+    },
+    close(W, x, y, t, o = {}) {
+      const l = loop4(t), rows = SID_CLOSE.slice();
+      if (l >= 1.2 && l < 2.4) rows[4] = '      \\\\ (=_ . _=)//     ';
+      if (o.talk) rows[5] = '        (   o    )      ';
+      loose(W, x, y, rows, SID_CLOSE_MAP, { s: o.s, seed: 11, oy: C.breathe(t) });
+    },
+  };
+
+  // ── Swift – a swift (the bird), in a paper boat hat folded from printed lyrics ──────
+  // long scythe wings, wider than he is, swept back; a forked tail; on his head the hat, with an
+  // eye doodled on its front. Gag: knows every word, sings all of them. Idle: sings, wings flick.
+  const SWIFT = ['    /\\     ', '   /o=\\    ', "_.-(o>)-._ ", " `-._V_.-' ", '    \\/     '];
+  const SWIFT_MAP = ['    bb     ', '   bbdb    ', 'ttttbdtttt ', ' ttttttttt ', '    tt     '];
+  const SWIFT_CLOSE = [
+    '             /\\              ',
+    '            /<o>\\            ',
+    '           /=-=-=\\           ',
+    "__..--''-._(  o  )_.-''--..__",
+    " `''--..___\\  <  /___..--''` ",
+    '            \\___/            ',
+    '             \\/              ',
+  ];
+  const SWIFT_CLOSE_MAP = paint(SWIFT_CLOSE, 'bbdttttt', { o: 'b', '<': 'd' }, { 1: { '<': 'b', '>': 'b' }, 2: { '/': 'b', '\\': 'b' } });
+  const swiftNotes = (W, x, y, t, s) => {
+    const l = loop4(t);
+    for (let i = 0; i < 3; i++) {
+      const age = (l + i * 1.33) % 4;
+      if (age > 2) continue;
+      W.loose(x + (4 + age * 1.5 + Math.sin(age * 4 + i) * 0.5) * W.cw * s, y - (5 + age * 1.8) * W.ch * s, i % 2 ? '♫' : '♪', age < 1.2 ? P.beige : P.beigeDim, 0, W.ch * 1.1 * Math.sqrt(s));
+    }
+  };
+  const swift = {
+    name: 'swift', pron: 'he', key: 'teal hi', prop: 'a paper hat folded from song lyrics', gag: 'sings every word',
+    rows: SWIFT, line: 'wait – i know this one. every word.',
+    sprite(W, x, y, t, o = {}) {
+      const rows = SWIFT.slice();
+      if (Math.floor(loop4(t) * 2) % 2) { rows[2] = "'-.(o>).-' "; rows[3] = '   `-V-\'   '; }   // the flick, on the beat
+      sprite(W, x, y, rows, SWIFT_MAP, o);
+      if (!o.quiet) swiftNotes(W, x, y, t, o.s || 1);
+    },
+    close(W, x, y, t, o = {}) {
+      const rows = SWIFT_CLOSE.slice();
+      if (Math.floor(loop4(t) * 2) % 2) { rows[3] = "  ''--.._(  o  )_..--''    "; rows[4] = "  ,--''__\\  <  /__''--,    "; }
+      if (o.talk) rows[4] = rows[4].replace('<', 'o');
+      loose(W, x, y, rows, SWIFT_CLOSE_MAP, { s: o.s, seed: 12, oy: C.breathe(t) });
+    },
+  };
+
+  // ── Lex – a chameleon on a branch ───────────────────────────────────────────────────
+  // the side profile everyone knows: an arched back, a casque on his head, a bulging turret eye,
+  // feet gripping the branch, a tail curled into a spiral; his colour follows every sound, in
+  // steps. Gag: the most confused in the room. Idle: the eye rolls, the tongue flicks out, '?'.
+  const LEX = ['    __/^\\  ', " .-'  (o) \\", '/        _>', '\\(@)\\_/\\_/ ', '==========='];
+  const LEX_MAP = ['    LLLLL  ', ' LLL  LbL L', 'LLLLLLLLLLL', 'LLLLLLLLLL ', 'ddddddddddd'];
+  const EYE = ['o', '<', '^', '>', 'v', 'o'];
+  const lexEye = (t) => EYE[Math.floor(loop4(t) * 1.5) % EYE.length];
+  const lexTint = (t) => LEX_TINTS[Math.floor(loop4(t) * 2) % LEX_TINTS.length];
+  const lexTongue = (t) => { const l = loop4(t); return l >= 2.6 && l < 3.1; };
+  const LEX_CLOSE = [
+    '           /^\\__          ',
+    "        .-' (o)  '-.      ",
+    "      .'            '.    ",
+    '     <_               \\   ',
+    "      \\_/\\___/\\__/(@)  |   ",
+    "                  '--'    ",
+    '==========================',
+  ];
+  const LEX_CLOSE_MAP = paint(LEX_CLOSE, 'LLLLLLd', {}, { 1: { o: 'b' } });
+  const lex = {
+    name: 'lex', pron: 'he', key: 'whatever he hears', prop: 'a branch', gag: 'his eye rolls, his tongue flicks',
+    rows: LEX, line: 'you sound… teal? is that bad?',
+    sprite(W, x, y, t, o = {}) {
+      const rows = LEX.slice(), map = LEX_MAP.slice();
+      rows[1] = ` .-'  (${lexEye(t)}) \\`;
+      if (lexTongue(t)) { rows[2] = '/        _>====o'; map[2] = 'LLLLLLLLLLLrrrrr'; }
+      sprite(W, x, y, rows, map, { ...o, tint: lexTint(t) });
+      if (!o.quiet && Math.floor(loop4(t) * 1.5) % 3 === 0) say(W, x + 3 * W.cw * (o.s || 1), y - 6.5 * W.ch * (o.s || 1), '?');
+    },
+    close(W, x, y, t, o = {}) {
+      const rows = LEX_CLOSE.slice(), map = LEX_CLOSE_MAP.slice();
+      rows[1] = `        .-' (${lexEye(t)})  '-.      `;
+      if (lexTongue(t) || o.talk) { rows[3] = 'o====<_               \\   '; map[3] = 'rrrrr' + map[3].slice(5); }
+      loose(W, x, y, rows, map, { s: o.s, seed: 13, tint: lexTint(t), oy: C.breathe(t) });
+    },
+  };
+
+  // ── Currywurst – a sausage cut in slices, in a paper tray, wearing a headset ────────
+  // red slices under a blanket of sauce dots, the end slice with a sleepy face between the
+  // headset's ear cups, the mic at his mouth; a beige tray; a can beside him. Gag: asleep till
+  // the energy drink pops. Idle: snores 'z' – then the can pops and he jolts awake.
+  const CURRY = ['    .---.  ', '(O:O[-.-]=o', ' \\_______/ '];
+  const CURRY_MAP = ['    ttttt  ', 'rrRrtbbbttb', ' bbbbbbbbb '];
+  const CAN = ['[=]'], CAN_MAP = ['rbr'];
+  const CURRY_CLOSE = [
+    '              .-------.     ',
+    '  . : . : .  /         \\    ',
+    ' (O : O : O [  - . -  ]==o  ',
+    '  \\______________________/  ',
+  ];
+  const CURRY_CLOSE_MAP = paint(CURRY_CLOSE, 'tRrb', { O: 'r', ':': 'R', '[': 't', ']': 't', '=': 't', '-': 'b', '.': 'b' }, { 1: { '/': 't', '\\': 't' }, 2: { o: 'b' } });
+  const curryPhase = (t) => { const l = loop4(t); return l < 2.6 ? 'asleep' : l < 3.0 ? 'pop' : 'awake'; };
+  const currywurst = {
+    name: 'currywurst', pron: 'he', key: 'red', prop: 'a headset, and an energy can', gag: 'asleep till the can pops',
+    rows: CURRY, line: "five more minutes. then i'll save the world.",
+    sprite(W, x, y, t, o = {}) {
+      const s = o.s || 1, ph = o.talk ? 'awake' : curryPhase(t), rows = CURRY.slice();
+      if (ph === 'pop') rows[1] = '(O:O[O.O]=o'; else if (ph === 'awake') rows[1] = '(O:O[o.o]=o';
+      sprite(W, x, y - (ph === 'pop' ? 3 : 0), rows, CURRY_MAP, o);
+      sprite(W, x + 7.5 * W.cw * s, y, ph === 'asleep' ? CAN : ['[*]'], CAN_MAP, { s });
+      if (o.quiet) return;
+      if (ph === 'asleep') { const a = loop4(t) % 1.3; say(W, x + (3 + a * 2) * W.cw * s, y - (3.5 + a * 2) * W.ch * s, a < 0.65 ? 'z' : 'Z', P.beigeDim); }
+      else say(W, x + 6 * W.cw * s, y - 2.5 * W.ch * s, ph === 'pop' ? 'psst!' : '!', P.beige);
+    },
+    close(W, x, y, t, o = {}) {
+      const ph = o.talk ? 'awake' : curryPhase(t), rows = CURRY_CLOSE.slice();
+      if (ph === 'pop') rows[2] = ' (O : O : O [  O . O  ]==o  ';
+      else if (ph === 'awake') rows[2] = ` (O : O : O [  o ${o.talk && Math.floor(loop4(t) * 8) % 2 ? 'o' : '.'} o  ]==o  `;
+      loose(W, x, y + (ph === 'pop' ? -4 : 0), rows, CURRY_CLOSE_MAP, { s: o.s, seed: 14, oy: C.breathe(t) });
+      if (ph === 'asleep' && !o.quiet) say(W, x + 6 * W.cw * o.s, y - 5.5 * W.ch * o.s, 'z z', P.beigeDim);
+    },
+  };
+
+  // ── Pterodactyl – a small pterodactyl with a pencil behind her ear ──────────────────
+  // a long crest and a longer beak, membrane wings stretched between her fingers, a rolled
+  // blueprint in her feet; she's an architect. Gag: laughs like a seagull – the HA's turn into gulls.
+  const PTERO = ['     ____/ ', '<====(o)/  ', ' /\\ / \\ /\\ ', '/  V   V  \\', '    [=]    '];
+  const PTERO_MAP = ['     RRRRr ', 'ddddRbRR   ', ' RR R R RR ', 'R  R   R  R', '    tTt    '];
+  const PTERO_CLOSE = [
+    '                ________/    ',
+    ' <===========(  o  )/        ',
+    '              \\___/          ',
+    '   /\\     /\\   |   /\\     /\\ ',
+    '  /  \\   /  \\  "  /  \\   /  \\',
+    ' /    \\_/    \\   /    \\_/    \\',
+    '            [=====]          ',
+  ];
+  const PTERO_CLOSE_MAP = paint(PTERO_CLOSE, 'RdRRRRt', { o: 'b', '<': 'd', '=': 'd' }, { 0: { '/': 'r' }, 1: { '(': 'R', ')': 'R', '/': 'R' }, 4: { '"': 'd' }, 6: { '[': 't', ']': 't', '=': 'T' } });
+  const laughing = (t, o) => !o.quiet && !o.talk && loop4(t) >= 1.0 && loop4(t) < 2.4;
+  const pterodactyl = {
+    name: 'pterodactyl', pron: 'she', key: 'red dim', prop: 'a pencil behind her ear, a rolled blueprint', gag: 'laughs like a seagull',
+    rows: PTERO, line: 'the bridge is wrong. HA – i love it.',
+    sprite(W, x, y, t, o = {}) {
+      const s = o.s || 1, l = loop4(t), rows = PTERO.slice(), laugh = laughing(t, o);
+      if (laugh) { rows[0] = '      ___/ '; rows[1] = '<=<==(^)/  '; }
+      sprite(W, x, y, rows, PTERO_MAP, o);
+      if (laugh) for (let i = 0; i < 3; i++) {
+        const age = l - 1.0 - i * 0.35;
+        if (age < 0) continue;
+        const hx = x + (2 + i * 1.5 + age * 2) * W.cw * s, hy = y - (6 + age * 3) * W.ch * s;
+        if (age < 0.7) say(W, hx, hy, 'HA'); else W.loose(hx, hy, 'v', P.beigeDim, 0, W.ch * Math.sqrt(s));
+      }
+    },
+    close(W, x, y, t, o = {}) {
+      const rows = PTERO_CLOSE.slice();
+      if (o.talk) rows[1] = ' <=====<=====(  o  )/        ';
+      loose(W, x, y, rows, PTERO_CLOSE_MAP, { s: o.s, seed: 15, oy: C.breathe(t) });
+    },
+  };
+
+  // ── Pilot – a paper airplane with tiny goggles on its nose ──────────────────────────
+  // folded beige paper, teal goggles at the tip. Gag: draws as she flies – her trail is a pencil
+  // line. Idle: she loops, and the dotted trail draws a little duck.
+  const PILOT = ['\\`-.__   ', ' >===oo> ', "/_.-'    "];
+  const PILOT_MAP = ['bbbbbb   ', ' dbbbttb ', 'bbbbb    '];
+  // the duck her trail draws, in cells round her anchor: a head, a beak, a back and a tail
+  const DUCK_PATH = (() => {
+    const p = [];
+    for (let i = 0; i <= 10; i++) { const a = Math.PI * 0.9 + i / 10 * Math.PI * 2; p.push([-1 + Math.cos(a) * 1.6, -5 + Math.sin(a) * 0.9]); }   // head
+    p.push([1.2, -4.6], [0.6, -4.4], [0.4, -4.2]);                                                                                                // beak
+    for (let i = 0; i <= 12; i++) { const a = Math.PI * 1.05 - i / 12 * Math.PI * 1.1; p.push([-1 + Math.cos(a) * 4, -2.2 - Math.sin(a) * -1.4]); } // body
+    p.push([-5.6, -3.2], [-4.8, -3.0]);                                                                                                            // tail
+    return p;
+  })();
+  const pilot = {
+    name: 'pilot', pron: 'she', key: 'beige paper', prop: 'goggles on her nose', gag: 'her trail is a pencil line',
+    rows: PILOT, line: "hold still, harold. you're my best drawing.",
+    sprite(W, x, y, t, o = {}) {
+      const s = o.s || 1;
+      if (o.quiet) { sprite(W, x, y, PILOT, PILOT_MAP, o); return; }
+      const l = loop4(t), n = Math.floor(l / 3.4 * DUCK_PATH.length);
+      // the trail: dots along the duck so far
+      for (let i = 0; i < Math.min(n, DUCK_PATH.length); i++) W.loose(x + DUCK_PATH[i][0] * W.cw * s * 1.1, y + DUCK_PATH[i][1] * W.ch * s * 0.9, '.', P.beigeDim, 0, W.ch * s);
+      const at = DUCK_PATH[Math.min(n, DUCK_PATH.length - 1)];
+      sprite(W, x + at[0] * W.cw * s * 1.1 + 3 * W.cw * s, y + at[1] * W.ch * s * 0.9 + 1.5 * W.ch * s, PILOT, PILOT_MAP, { s: s === 1 ? 1.0001 : s });
+    },
+    close(W, x, y, t, o = {}) {
+      const rows = [
+        '              _.-\'/   ',
+        '         _.-\'    /    ',
+        '  <(oo)=========<     ',
+        '         \'-._    \\    ',
+        '              \'-._\\   ',
+      ];
+      if (o.talk) rows[2] = '  <(oo)====o====<     ';
+      loose(W, x, y, rows, paint(rows, 'bbdbb', { o: 't', '(': 't', ')': 't' }), { s: o.s, seed: 16, oy: C.breathe(t) });
+    },
+  };
+
+  // ── Bug – a husky pup made of zeros ─────────────────────────────────────────────────
+  // pointed ears, two blue eyes, a pale face mask and a darker back, a curled tail. Our own pup,
+  // nobody's likeness. States: scared (ears flat, tail tucked, shaking), called ("bug bug bug":
+  // ears up, tail wagging), digging (glyph dirt flying), howling (head up, aWOO).
+  const BUG = {
+    calm: { rows: [' ^_^   ', '(0 0)  ', '(000)@ ', ' "  "  '], map: [' dbd   ', 'bt tb  ', 'dddddd ', ' b  b  '] },
+    scared: { rows: [' -_-   ', '(o o)  ', '(000)  ', ' "  "  '], map: [' dbd   ', 'bt tb  ', 'ddddd  ', ' b  b  '] },
+    called: { rows: [' ^_^   ', '(0u0)  ', '(000)@ ', ' "  "  '], map: [' dbd   ', 'btrtb  ', 'dddddd ', ' b  b  '] },
+    dig: { rows: ['    _@ ', ' ^(000)', '(0 0)" ', '  ""   '], map: ['    dd ', ' dddddd', 'bt tbb ', '  bb   '] },
+    howl: { rows: ['  ^ ^  ', ' (- -) ', '(000)o ', ' "  "  '], map: ['  d d  ', ' bb bb ', 'ddddd  ', ' b  b  '] },
+  };
+  BUG.howl.rows = ['   ^^  ', '  (-o) ', '(000)@ ', ' "  "  ']; BUG.howl.map = ['   dd  ', '  bbbb ', 'dddddd ', ' b  b  '];
+  function bug(W, x, y, t, state = 'calm', o = {}) {
+    const s = o.s || 1, l = loop4(t), B = BUG[state], rows = B.rows.slice();
+    let dx = 0;
+    if (state === 'scared') dx = Math.floor(l * 12) % 2 ? 1 : -1;   // shaking
+    if (state === 'called') { rows[1] = '(0u0)  '; rows[2] = Math.floor(l * 4) % 2 ? '(000)@ ' : '(000)Q '; }   // tongue out, the tail wags
+    sprite(W, x + dx * s, y, rows, B.map, { s });
+    if (o.quiet) return;
+    if (state === 'called') say(W, x + 1 * W.cw * s, y - 5 * W.ch * s, ['bug', 'bug bug', 'bug bug bug', ''][Math.floor(l) % 4], P.beige);
+    if (state === 'howl') say(W, x + 2 * W.cw * s, y - (5 + Math.floor(l * 2) % 2) * W.ch * s, 'aWOO', P.beige);
+    if (state === 'dig') for (let i = 0; i < 6; i++) {
+      const age = (l * 1.5 + i / 6) % 1;
+      W.loose(x + (-2 - age * 5) * W.cw * s, y - (1 + Math.sin(age * Math.PI) * 3) * W.ch * s, '.,:\'`.'[i], P.beigeDim, 0, W.ch * Math.sqrt(s));
+    }
+  }
+  // up close he must read as a husky, not a cat: wide-set triangle ears, a pale mask with dark
+  // eyebrow marks, blue eyes, a longer muzzle with a dark nose and an open mouth, a thick ruff
+  const BUG_CLOSE = [
+    "   /\\              /\\   ",
+    "  /##\\____________/##\\  ",
+    " |    '.   ||   .'    | ",
+    " |    (0)  ||  (0)    | ",
+    "  \\       .-''-.     /  ",
+    "   '.    /  ▼▼  \\   .'   ",
+    "     '--|  \\__/  |--'    ",
+    "        |   UU   |       ",
+    "  ((((((('------')))))))  ",
+    "      (0000000000)@      ",
+  ];
+  // white mask, dark ears and forehead stripe, blue eyes, a dark nose, a red tongue, a grey ruff
+  const BUG_CLOSE_MAP = BUG_CLOSE.map((row, i) => [...row].map((ch) => {
+    if (ch === '0') return i === 3 ? 't' : 'd';
+    if (ch === '#') return 'R';
+    if (ch === '▼') return 'R';
+    if (ch === 'U') return 'r';
+    if (ch === '|' && i < 4 && row.indexOf('||') >= 0 && row.indexOf(ch) !== row.lastIndexOf(ch)) return 'd';
+    if (i <= 1 || i >= 8 || ch === '@') return 'd';
+    if (i === 8 && "'-".includes(ch)) return 'b';
+    return 'b';
+  }).join(''));
+  function bugClose(W, x, y, t, o = {}) {
+    const rows = BUG_CLOSE.slice();
+    if (o.talk) rows[6] = "     '--|  \\/\\/  |--'    ";
+    if (Math.floor(loop4(t) * 4) % 2) rows[9] = '      (0000000000)Q      ';
+    loose(W, x, y, rows, BUG_CLOSE_MAP, { s: o.s, seed: 17, oy: C.breathe(t) });
+  }
+
+  window.WK_FRIENDS = { KEY, sprite, loose, paint, FRIENDS: { sid, swift, lex, currywurst, pterodactyl, pilot }, ORDER: ['sid', 'swift', 'lex', 'currywurst', 'pterodactyl', 'pilot'], bug, BUG, bugClose };
+})();

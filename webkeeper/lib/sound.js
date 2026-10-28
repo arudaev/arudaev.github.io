@@ -118,6 +118,23 @@
     for (const u of MEW_URLS) fetch(u).then((r) => r.arrayBuffer()).then((ab) => S.ctx.decodeAudioData(ab)).then((buf) => MEWS.push(buf)).catch(() => {});
   }
 
+  // the NES band (the theme's): MEL is [semitones from C5, quavers] for pulse 1; HALF the chord of each half bar, which
+  // pulse 2 rolls, the triangle bounces and the drums keep time under – as long as the chords last
+  function nes(MEL, HALF) {
+    if (!fx()) return;
+    const n = (k) => 523.25 * Math.pow(2, k / 12), q = 0.2, L = 0.4;   // C5 + semitones; a quaver at 150 bpm; L: its level
+    let at = 0;
+    for (const [k, d] of MEL) { chip(0.25, n(k), q * d * 0.92, 0.07 * L, at, { vib: d >= 3, decay: d >= 3 ? 0.45 : 0.6 }); at += q * d; }
+    // the chords, rolled a note every two frames
+    const CH = { C: [-12, -8, -5], F: [-7, -3, 0], G: [-5, -1, 2], Am: [-3, 0, 4], Dm: [-10, -7, -3] };
+    HALF.forEach((ch, h) => { const tones = CH[ch]; for (let k = 0; k < 24; k++) chip(0.125, n(tones[k % 3]), 1 / 30, 0.022 * L, h * q * 4 + k / 30, { decay: 0 }); });
+    // the bass: a quaver each, root then its octave
+    const ROOT = { C: -24, F: -19, G: -17, Am: -15, Dm: -22 };
+    HALF.forEach((ch, h) => { for (let k = 0; k < 4; k++) chip('tri', n(ROOT[ch] + (k % 2 ? 12 : 0)), q * 0.85, 0.12 * L, h * q * 4 + k * q, { decay: 0.2 }); });
+    // the drums: a hat on every quaver, a kick on one and three, a snare on two and four
+    for (let i = 0; i < HALF.length * 4; i++) { knock(2400, 0.018 * L, i * q); if (i % 4 === 0) knock(160, 0.1 * L, i * q); if (i % 4 === 2) { knock(700, 0.07 * L, i * q); knock(1300, 0.04 * L, i * q + 0.02); } }
+  }
+
   const W = {
     get on() { return S.on; }, set on(v) { S.on = !!v; },
     set play(v) { S.play = !!v; },
@@ -172,26 +189,20 @@
     // Harold's theme, our own, as an NES would play it: eight bars at 150 bpm. Pulse 1 (25 %) has the tune – a fanfare
     // up the C chord, a hook that climbs and lands on G, an answer that dips into A minor and back, a last climb home –
     // with a late vibrato on held notes; pulse 2 (12.5 %) rolls each chord as a fast arpeggio under it; the triangle
-    // bounces root and octave; the noise channel keeps a hat on every quaver and a snare on two and four. 12.8 s
+    // bounces root and octave; the noise channel keeps a hat on every quaver and a snare on two and four. 12.8 s – the
+    // whole of it only where it's the point (the page's theme.mid, Patch dancing to it)
     theme() {
-      if (!fx()) return;
-      const n = (k) => 523.25 * Math.pow(2, k / 12), q = 0.2, L = 0.4;   // C5 + semitones; a quaver at 150 bpm; L: its level
-      const MEL = [
+      nes([
         [-5, 1], [0, 1], [4, 1], [7, 3], [4, 1], [7, 1],      [9, 2], [7, 1], [4, 1], [5, 2], [2, 2],
         [-5, 1], [0, 1], [4, 1], [7, 3], [9, 1], [12, 1],     [11, 2], [9, 1], [7, 1], [7, 4],
         [9, 1], [9, 1], [12, 2], [9, 1], [7, 1], [4, 2],      [5, 1], [5, 1], [9, 2], [5, 1], [4, 1], [2, 2],
-        [4, 1], [7, 1], [12, 1], [7, 1], [14, 2], [12, 1], [11, 1], [12, 3], [7, 1], [0, 4]];
-      let at = 0;
-      for (const [k, d] of MEL) { chip(0.25, n(k), q * d * 0.92, 0.07 * L, at, { vib: d >= 3, decay: d >= 3 ? 0.45 : 0.6 }); at += q * d; }
-      // the chords, half a bar each: C C | F G | C C | G G | Am Am | Dm F | C C | G C – rolled a note every two frames
-      const CH = { C: [-12, -8, -5], F: [-7, -3, 0], G: [-5, -1, 2], Am: [-3, 0, 4], Dm: [-10, -7, -3] };
-      const HALF = ['C', 'C', 'F', 'G', 'C', 'C', 'G', 'G', 'Am', 'Am', 'Dm', 'F', 'C', 'C', 'G', 'C'];
-      HALF.forEach((ch, h) => { const tones = CH[ch]; for (let k = 0; k < 24; k++) chip(0.125, n(tones[k % 3]), 1 / 30, 0.022 * L, h * q * 4 + k / 30, { decay: 0 }); });
-      // the bass: a quaver each, root then its octave
-      const ROOT = { C: -24, F: -19, G: -17, Am: -15, Dm: -22 };
-      HALF.forEach((ch, h) => { for (let k = 0; k < 4; k++) chip('tri', n(ROOT[ch] + (k % 2 ? 12 : 0)), q * 0.85, 0.12 * L, h * q * 4 + k * q, { decay: 0.2 }); });
-      // the drums: a hat on every quaver, a kick on one and three, a snare on two and four
-      for (let i = 0; i < 64; i++) { knock(2400, 0.018 * L, i * q); if (i % 4 === 0) knock(160, 0.1 * L, i * q); if (i % 4 === 2) { knock(700, 0.07 * L, i * q); knock(1300, 0.04 * L, i * q + 0.02); } }
+        [4, 1], [7, 1], [12, 1], [7, 1], [14, 2], [12, 1], [11, 1], [12, 3], [7, 1], [0, 4]],
+      ['C', 'C', 'F', 'G', 'C', 'C', 'G', 'G', 'Am', 'Am', 'Dm', 'F', 'C', 'C', 'G', 'C']);
+    },
+    // a puzzle solved (a bridge spelled, a door opened): the theme's first bar, landing on the high C – 2.4 s, so it
+    // says "done" and gets out of the way (the whole theme after every puzzle was too much)
+    solved() {
+      nes([[-5, 1], [0, 1], [4, 1], [7, 3], [4, 1], [7, 1], [12, 4]], ['C', 'C', 'C']);
     },
     // Mishka's hum: five hummed notes a beat apart (the bear's NOTE, 0.35 s) – a closed-mouth "mm": a soft triangle
     // with its octave below, a slow vibrato, everything above the voice cut away

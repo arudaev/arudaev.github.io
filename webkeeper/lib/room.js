@@ -410,6 +410,8 @@
       for (const l of st.letters) { if (!stealable(l) || litIn(LS, l.x, l.y) || guarded(l)) continue; const d = Math.hypot(l.x / 8 - den[0], (l.y / 16 - den[1]) * 3.6); if (d < bd) { bd = d; best = l; } }
       if (best) { a.target = best; a.job = 'go'; }
     }
+    // the digit Bug drops (p.bug.drops): a loose letter of no word, until Harold walks over it
+    const digitAt = (ch, x, y) => ({ ch, word: 'digit', j: 0, x, y, z: 0, vx: 0, vy: 0, vz: 0, home: [-9, -9], cell: [0, 0], state: 'loose', touched: st.t, digit: true, reveal: 0 });
     const bugAhead = (b, k) => { const hx = st.h.c - b.c, hy = (st.h.r - b.r) * 3.6, d = Math.hypot(hx, hy), dir = b.flip ? 1 : -1; return d < k && hx * dir > 0; };
     // ── events by the room's clock
     function fire(ev) {
@@ -457,6 +459,9 @@
       st.t += dt;
       const inp = input || (o.demo ? demoInput() : { x: 0, y: 0 });
       for (let k = 0; k < (p.events || []).length; k++) if (!st.fired.has(k) && st.t >= p.events[k].at) { st.fired.add(k); fire(p.events[k]); }
+      // played as Malifex when he goes (hidden, pulled, walked off): Harold again – A gave orders from no one (and threw
+      // with two uniclones there), and B couldn't switch back without him
+      if (st.as === 'malifex' && !mal()) st.as = 'harold';
       if (inp.b && !st.bWas) toggle();
       if (inp.a && !st.aWas) act();
       st.aWas = !!inp.a; st.bWas = !!inp.b;
@@ -474,7 +479,7 @@
           if (bugAhead(b, 40)) {
             b.skid = st.t; say('yip!', b.id, 1.2); if (window.WK_SOUND && !o.demo) WK_SOUND.yip();
             if (b.steals) { const l = b.carry; b.carry = null; b.target = null; b.job = 'back'; if (l) { giveBack(l); hint('he dropped the ' + l.ch, 2); } continue; }
-            if (p.bug && p.bug.drops && !st.flags.dropped) { st.flags.dropped = true; st.letters.push({ ch: p.bug.drops, word: 'digit', j: 0, x: (b.c + 0.5) * 8, y: (b.r + 0.5) * 16, z: 10, vx: (b.flip ? -1 : 1) * 24, vy: 0, vz: 90, home: [-9, -9], cell: [0, 0], state: 'loose', touched: st.t, digit: true, reveal: 0 }); hint('he dropped the counter\'s ' + p.bug.drops); }
+            if (p.bug && p.bug.drops && !st.flags.dropped) { st.flags.dropped = true; st.letters.push(Object.assign(digitAt(p.bug.drops, (b.c + 0.5) * 8, (b.r + 0.5) * 16), { z: 10, vx: (b.flip ? -1 : 1) * 24, vz: 90 })); hint('he dropped the counter\'s ' + p.bug.drops); }
           } else hint('too late – quack ahead of him');
         }
         // a quack that reaches Mishka: his next hum ends in a mew (lib/world.js reads st.mewNext)
@@ -530,6 +535,8 @@
           letters: st.letters.filter((l) => !l.digit).map((l, k) => (l.cell[0] !== l.home[0] || l.cell[1] !== l.home[1] || l.state === 'word' || (l.rail && l.ri > 0)
             ? [k, l.cell[0], l.cell[1], l.state === 'den' || l.state === 'carried' || l.state === 'flying' ? 'settled' : l.state, l.rail ? l.ri : -1] : null)).filter(Boolean),
           becomes: st.becomes.map((b) => ({ text: b.text, at: b.at, dir: b.dir, letters: b.letters })),
+          // the digit Bug dropped and Harold hasn't picked up yet: `dropped` alone, it would never come back
+          digit: st.letters.filter((l) => l.digit && l.state !== 'gone').map((l) => [l.ch, Math.round(l.x), Math.round(l.y)])[0] || null,
           cast: st.cast.map((a) => ({ id: a.id, c: +a.c.toFixed(2), r: +a.r.toFixed(2), gone: !!a.gone, order: a.order || null, flip: !!a.flip, route: a.route || null, speed: a.speed || 0, loop: a.loop !== false, u: a.u || 0, cat: !!a.cat })) };
       },
       restore(m) {
@@ -543,6 +550,7 @@
           l.state = state === 'loose' || state === 'settling' ? 'settled' : state; if (l.rail && ri >= 0) l.ri = ri;
         }
         for (const b of m.becomes || []) st.becomes.push({ ...b, t: -99, thing: sc.thing(b.text, b.at, b.dir) });
+        if (m.digit && !st.letters.some((l) => l.digit)) st.letters.push(digitAt(...m.digit));
         for (const s0 of m.cast || []) { const a = st.cast.find((x) => x.id === s0.id); if (a) Object.assign(a, { c: s0.c, r: s0.r, gone: s0.gone, order: s0.order || undefined, flip: s0.flip, route: s0.route, speed: s0.speed, loop: s0.loop, u: s0.u, cat: s0.cat }); }   // (Bug keeps running his loop)
         for (const s2 of slots) s2.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s2.c && l.cell[1] === s2.r && l.ch === s2.ch) || null;
         occ = null; walkG = null;

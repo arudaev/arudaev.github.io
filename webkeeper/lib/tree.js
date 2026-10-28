@@ -65,7 +65,6 @@
         const steps = Math.max(1, Math.round(l / 0.5)), chr = woodChr(nx - px, ny - py);
         for (let s = 0; s < steps; s++) {
           const f = (s + 0.5) / steps, gx = px + (nx - px) * f, gy = py + (ny - py) * f;
-          const half = w / 2;
           if (w > 0.7) {
             // thick wood: a glyph every half column across it – the moonlit edge, bark texture
             // inside, the shadowed edge – so a trunk has body instead of two thin lines

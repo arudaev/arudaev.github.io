@@ -4,7 +4,7 @@
 // eyes close to ^ ^ while he hums; five notes rise from him; he bobs a pixel or two on each note, moved as one piece.
 // Replaces the flat grid sprite (lib/actors.js) for him in the world: lib/layers.js asks here first.
 //   WK_BEAR.draw(W, x, y, t)   feet at (x, y) in the screen's px, t the area's clock
-//   WK_BEAR.hum(t)             start a hum at time t
+//   WK_BEAR.hum(t, meow)       start a hum at time t (meow: its last note a small cat face)
 (() => {
   const P = Webkeeper.P, hash = Webkeeper.hash;
   const MATS = [null, null, null, null,

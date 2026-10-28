@@ -5,7 +5,7 @@
 //   WK_ACTORS.draw(W, who, x, y, { pose, flip, t })   x, y: the middle of the feet, in stage px; flip: faces east
 //   WK_ACTORS.SIZE[who] = [cols, rows]                 the footprint on the ground, in big cells (for walking and pushing)
 //   WK_ACTORS.ready(W)                                 true once VT323 is in (baking waits for it)
-// who: 'harold' · 'mishka' · 'bug' · 'malifex' · 'uniclone' · 'friend:sid' … – needs cards/cast/{cast,friends,mishka,uniclones}.js
+// who: 'harold' · 'mishka' · 'bug' · 'malifex' · 'uniclone' · 'friend:sid' … – needs lib/cast/{cast,friends,mishka,uniclones}.js
 // for all but Harold. Poses: harold idle · walk; bug calm · run · scared · dig; mishka idle; malifex idle · talk; uniclone idle · talk.
 (function () {
   const { P } = Webkeeper;
@@ -22,7 +22,7 @@
 
   // a grid sprite: rows of text and a colour per glyph, its feet centred on (x, y)
   function gridSprite(V, x, y, rows, colOf) {
-    const g = V.g, w = Math.max(...rows.map((r) => r.length)), left = Math.round(x - (w * 8) / 2), top = y - rows.length * 16;
+    const w = Math.max(...rows.map((r) => r.length)), left = Math.round(x - (w * 8) / 2), top = y - rows.length * 16;
     rows.forEach((row, i) => { for (let j = 0; j < row.length; j++) if (row[j] !== ' ') V.loose(left + j * 8 + 4, top + i * 16 + 8, row[j], colOf(row[j], i, j), 0, 16); });
   }
   const HAROLD = { west: Webkeeper.HAROLD, east: ['  _   ', '__(.)< ', '\\___)  '] };
@@ -42,7 +42,7 @@
       let rows = pose === 'run' ? BUGRUN[f % 2] : st.rows, map = (st || B.calm).map;
       // Patch, his sister, is made of ones; dancing, she bounces from paw to paw and her ears flick
       if (who === 'patch') {
-        if (pose === 'dance') rows = f % 2 ? [' ^_^   ', '(1 1)/ ', '(111)@ ', '"   "  '] : ['\^_^   ', '(1 1)  ', '(111)@ ', ' "  "  '];
+        if (pose === 'dance') rows = f % 2 ? [' ^_^   ', '(1 1)/ ', '(111)@ ', '"   "  '] : ['\\^_^   ', '(1 1)  ', '(111)@ ', ' "  "  '];
         rows = rows.map((r) => r.replace(/0/g, '1'));
       }
       const R = flip ? flipRows(rows) : rows, M = flip ? flipRows(map) : map;

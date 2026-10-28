@@ -3,7 +3,7 @@
 // type – 4 rows × 9 cells – then the same come loose for close-ups. The rainbow comes out of the
 // horn, six stacked bands in blocky steps. Loaded after cast.js and friends.js.
 (function () {
-  const C = WK_CAST, F = WK_FRIENDS, P = C.P, loop4 = C.loop4;
+  const C = WK_CAST, F = WK_FRIENDS, loop4 = C.loop4;
   const UNI = ['   ,=/=  ', ' ,_/o >  ', ' (####)  ', '  "  "   '];
   const UNI_MAP = ['   rdbd  ', ' bbbbbb  ', ' uuuuuu  ', '  d  d   '];
   // mirror a sprite to face the other way

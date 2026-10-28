@@ -1237,7 +1237,7 @@
     // let a canvas go: its tile images back to the pool, its marks and fields to the collector
     C.free = () => { GLD = null; GLG = null; if (TILES) memDrop(TILES.flatMap((T) => T.im.filter(Boolean))); TILES = null; S = null; PG = null; WG = null; layers.clear(); frames.clear(); prepGen = -1; };
     C.warmRing = (Wscreen) => { W = Wscreen; if (S && prepGen === gen) warm(); };
-    C.bare = (v, t) => { if (!TILES) return 0; const tb = Math.floor(t * 12) / 12; let n = 0; for (const T of TILES) if (inView(T.bb, v, 0) && !T.im.some(Boolean)) n++; return n; };
+    C.bare = (v) => { if (!TILES) return 0; let n = 0; for (const T of TILES) if (inView(T.bb, v, 0) && !T.im.some(Boolean)) n++; return n; };
     C.touchGL = () => { if (tr1 < 0) return null; const r = { data: touchRG, r0: tr0, r1: tr1 }; tr0 = 1e9; tr1 = -1; return r; };
     C.drawLive = (Wscreen, t, o = {}) => {
       W = Wscreen; if (!S || prepGen !== gen) return;

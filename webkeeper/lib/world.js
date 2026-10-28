@@ -1,9 +1,10 @@
-// world.js – one meadow (STEP3-ROUND2.md, SCREENS.md). Rooms 0.2–0.6 are areas of one continuous meadow: their place
+// world.js – one meadow (STEP3-ROUND2.md, SCREENS.md). Rooms 0.2–0.7 are areas of one continuous meadow: their place
 // files are joined at their edges, each with its rims of trees and hedges, and past the page's edge the night below
 // with the far pages. The picture takes its window's shape; a big cell is 8 × 16 css px, scaled by whole numbers so the
 // view keeps 36–60 rows; the camera follows Harold. The areas next to Harold's are built, prepared and baked in slices
 // of a few ms while he walks – no slide, no "the page loads". The key art is the title and the first area.
-//   const G = WK_WORLD.create({ canvas, base, css: [w, h], dpr, budget, shot: { area, title }, bench })
+//   const G = WK_WORLD.create({ canvas, base, css: [w, h], dpr, budget, shot: { area, title }, bench, areas })
+//   (areas: other place files than chapter 0's – the lab's)
 //   window.__frame(t) (shot mode): the world replayed from 0 to t, the area's demo script walking Harold
 //   G.bench(opt) → per-frame bake and draw times while Harold walks from 0.2 to 0.6
 (function () {
@@ -15,7 +16,7 @@
   // (saves, ?shot=) stay as they were
   const SLOT = { '0.1-couch': -2 };
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-  const ink2 = L.mix('ink', 'tealUp', 0.5), STAR = [L.mix('ink', 'ocean', 0.8), P.ocean, L.mix('ocean', 'tealUp', 0.6), P.tealUp, L.mix('tealUp', 'tealHi', 0.5)];
+  const STAR = [L.mix('ink', 'ocean', 0.8), P.ocean, L.mix('ocean', 'tealUp', 0.6), P.tealUp, L.mix('tealUp', 'tealHi', 0.5)];
   const LEAF = [L.mix('phosphorDeep', 'tealUp', 0.5), L.mix('phosphorDim', 'tealHi', 0.35), L.mix('phosphorDeep', 'beigeDim', 0.4)];
   const SOIL = B.T5.soil;
   const CONTROLS = ['arrows · wasd · stick · drag left: walk', 'space · j · A · tap right: quack, push', 'shift · k · B: switch to malifex', 'esc · start · [=]: the menu'];
@@ -34,7 +35,7 @@
     let Wm = null, U = null, Um = null, Fb = null, Ab = null, phase = 0, loaded = false, err = null, cur = null, T = 0, DEADLINE = 0;
     let mode = SHOT && !SHOT.title ? 'play' : 'title', liftT = -9, startT = -9, sel = 0, showControls = false, hintW = null, nameW = null;
     let idle = 0, attract = null, visitors = 256, lastHum = -7, mewNext = false, mewBy = 0, stats = { bake: 0, draw: 0, miss: 0 };
-    let lastStep = -1, lastActs = -1, lastRings = -1, airDue = false, forceU = true, ready = false;
+    let lastStep = -1, lastActs = -1, lastRings = -1, forceU = true, ready = false;
 
     // ── the view: css size, the whole-number zoom, device pixels per world px, the size in world px
     function size() {
@@ -86,7 +87,7 @@
       const sc = r.value;
       for (const cv of sc.layers()) while (!cv.prepare(Wm, left())) yield 'prep';
       if (GL()) {
-        A.glh = {};
+        A.glh = {}; A.marks = 0;   // (an area built again counts its marks again, not on top of the last build's)
         for (const L of ['G', 'M', 'F']) { const cv = sc[L]; if (!cv) continue; while (!cv.glBuild(GLR.glyph, left())) yield 'gl'; A.glh[L] = GLR.upload(cv.glData()); cv.dropMarks(); A.marks = (A.marks || 0) + cv.glData().n; yield 'gl'; }
       }
       for (const cv of sc.becomeCanvases()) { while (!cv.prepare(Wm)) yield 'prep'; while (cv.bakeOne(Wm, 6)) yield 'bake'; }
@@ -110,11 +111,14 @@
     }
 
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
-    const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [];
+    const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
     const items = () => (mode === 'menu' ? ['continue', 'controls', 'save code', 'load code', 'restart: prologue', 'sit back'] : ['play']);
     function choose(i) {
       const it = items()[i];
+      // (the A that chose is still held as the game starts – PLAY, continue, a new night, a loaded code: holdA keeps it
+      // from quacking until it's let go)
+      holdA = true;
       if (it === 'play' || it === 'continue') { if (mode === 'title') { mode = 'lift'; liftT = T; startT = T; attract = null; resume = true; if (window.WK_HOST) WK_HOST.fullscreen(); } else mode = 'play'; showControls = false; }
       else if (it === 'save code') { const code = SAVE.code(), shown = () => hint('save code: ' + code, 8); try { navigator.clipboard.writeText(code).then(() => hint('save code copied – paste it into "load code" on any device', 4), shown); } catch (e) { shown(); } }
       else if (it === 'load code') { const code = prompt('paste a webkeeper save code'); if (code && SAVE.load(code)) { mode = 'play'; talk = null; scene = null; card = null; hint('loaded – welcome back', 2.6); } else if (code) hint('that code doesn\'t look like a save', 2.6); }
@@ -135,11 +139,15 @@
       }
       // on the couch the menu is Voyager's (one menu for the game and the couch: src/ui/CouchGame.tsx)
       if (k === 'escape' || k === 'p') { if (window.WK_HOST && WK_HOST.hosted()) { keys.clear(); WK_HOST.send('menu'); } else { mode = 'menu'; sel = 0; } return; }
+      // a key held down since it chose in the menu repeats into the game: not a walk or a quack until it's pressed again
+      if (e.repeat && !keys.has(k)) return;
       keys.add(k);
       // a tap shorter than a frame still counts (a slow frame, a quick thumb)
       if (k === ' ' || k === 'j') tapA = true; else if (k === 'shift' || k === 'k') tapB = true;
     });
     addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+    // the window losing focus (another tab, Voyager's own menu round the frame) never sends the keyup: nothing stays held
+    addEventListener('blur', () => { keys.clear(); stick = null; });
     const local = (e) => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / V.s, y: (e.clientY - r.top) / V.s }; };
     canvas.addEventListener('pointerdown', (e) => {
       const p = local(e); idle = 0; if (e.pointerType !== 'mouse') touchUI = true;
@@ -149,7 +157,9 @@
       else { const P2 = pads(); if (Math.hypot(p.x - P2.B[0], p.y - P2.B[1]) < P2.r * 1.3) tapB = true; else tapA = true; }
     });
     canvas.addEventListener('pointermove', (e) => { if (stick && e.pointerId === stick.id) { const p = local(e); stick.x = p.x; stick.y = p.y; } });
-    addEventListener('pointerup', (e) => { if (stick && e.pointerId === stick.id) stick = null; });
+    // (a touch the browser takes over – a scroll, a system gesture – ends in pointercancel, not pointerup)
+    const lift = (e) => { if (stick && e.pointerId === stick.id) stick = null; };
+    addEventListener('pointerup', lift); addEventListener('pointercancel', lift);
     // A and B on a phone: both on the arc the right thumb sweeps from where it rests (the screen's bottom-right corner),
     // about a third of the short side out – A higher, B lower and further in, like a handheld's pair – in css px turned
     // into world px. Anywhere else on the right half is A too, so a thumb that misses still quacks.
@@ -177,6 +187,7 @@
         padWas = { u: bt(12), d: bt(13), a: bt(0) || st, s: st };
         if (Math.abs(x) + Math.abs(y) > 0 || a || b) idle = 0;
       }
+      if (holdA) { if (a) a = false; else holdA = false; }
       return { x, y, a, b };
     }
     const hint = (text, dur = 2.6) => { hintW = { text, till: T + dur }; };
@@ -186,7 +197,9 @@
     // PLAY on the title carries on from it. An area unloaded keeps its memory on itself (A.mem) until it's built again
     let resume = false, savedAt = 0, wantArea = -1;
     const SAVE = {
-      key: 'webkeeper.save.v2',   // v2: the prologue came (27 October) – saves from before it start a new night
+      // v2: the prologue came (27 October) – saves from before it start a new night. Another list of areas (the lab)
+      // keeps its own, so playing it never overwrites the chapter's
+      key: 'webkeeper.save.v2' + (cfg.areas ? '.' + cfg.areas.join('+') : ''),
       data() {
         if (!cur || !cur.sim) return null;
         const h = cur.sim.st().h, mem = {};
@@ -197,14 +210,23 @@
       // (a title's walk-about isn't a save)
       // (not while PLAY is still carrying on from the save: Harold isn't where the save is yet)
       write() { const d = SAVE.data(); if (!d || SHOT || resume || mode === 'title' || mode === 'lift' || (cur && cur.place.place === '0.1')) return; SAVE.store(d); },
-      store(d) { try { localStorage.setItem(SAVE.key, JSON.stringify(d)); } catch (e) { /* private window */ } },
+      // kept here too: where storage is blocked (a private window, a sandboxed frame) a save – a loaded code's
+      // included – lasts as long as the page, instead of being read back as missing and starting a new night
+      kept: null,
+      store(d) { SAVE.kept = d; try { localStorage.setItem(SAVE.key, JSON.stringify(d)); } catch (e) { /* private window */ } },
+      clear() { SAVE.kept = null; try { localStorage.removeItem(SAVE.key); } catch (e) { /* private window */ } },
       areaOf(d) { const i = d && d.place ? areas.findIndex((A) => A.place.place === d.place) : d ? d.area : -1; return i >= 0 && areas[i] ? i : -1; },
-      read() { try { return JSON.parse(localStorage.getItem(SAVE.key) || 'null'); } catch (e) { return null; } },
+      // a save these areas can't carry on from (the lab's, written here before it had its own key) is no save: PLAY
+      // starts a new night instead of doing nothing
+      read() { let d = SAVE.kept; if (!d) try { d = JSON.parse(localStorage.getItem(SAVE.key) || 'null'); } catch (e) { /* private window */ } return d && (d.v === 1 || d.v === 2) && SAVE.areaOf(d) >= 0 ? d : null; },
       // every area's memory back (built ones at once, the rest when they're built), then Harold where he was
       apply(d) {
         const i = SAVE.areaOf(d); if (!d || (d.v !== 1 && d.v !== 2) || i < 0) return false;
         for (const A of areas) {
-          const m = d.mem && d.mem[A.place.place]; if (!m) continue;
+          const m = d.mem && d.mem[A.place.place];
+          // an area the save doesn't remember comes back as a new night has it, not as this page left it (a code from
+          // another device came back mixed with this one's play). A v1 save remembers no area: it only moves Harold
+          if (!m) { if (d.mem) { A.mem = null; A.done = null; A.met = false; if (A.sim) { A.sim.reset(); if (A !== cur) A.sim.leave(); } } continue; }
           A.mem = m; A.done = new Set(m.done || []);
           if (A.sim) { A.sim.reset(); A.sim.restore(m); A.met = true; if (A !== cur) A.sim.leave(); }
         }
@@ -338,7 +360,7 @@
       cam.x += (t.x - cam.x) * k; cam.y += (t.y - cam.y) * k;
     }
 
-    // ── the title's own clock: the attract loop (0.1's countdown, the jam, Bug tumbling out), Mishka humming
+    // ── the title's own clock: the attract loop (Bug tumbling out over the landing, one visitor more), Mishka humming
     let fresh = null;   // no save on this device: PLAY starts a new night on the couch, so it's built behind the title
     function titleTick(dt) {
       const A0 = areas[0]; if (!A0.ready) return;
@@ -377,11 +399,6 @@
         if (T - lastHum > 9 || (mewNext && T >= mewBy)) hum(cur, mewNext || (!talk && mode === 'play' && hash(Math.floor(T), 7, 77) < 0.2));
       }
     }
-    function counter() {
-      if (!attract) return { text: 'you are visitor ' + String(visitors).padStart(6, '0'), col: P.tealUp };
-      const a = T - attract.t0, jam = a >= 3;
-      return { text: jam ? '23:59:5?' : '23:59:5' + (7 + Math.floor(a)), col: jam && Math.floor(T * 8) % 3 === 0 ? P.red : jam ? P.redDim : P.beige };
-    }
 
     // ── drawing. Three buffers a little bigger than the view, drawn at the world's step (twelve a second) or at once
     // when a foot or a ring makes a new patch live: U (the night, the holes, the ground, prints, what stands behind),
@@ -403,7 +420,8 @@
       [900, 1120, 28, 8, ['404', 'not found', 'the page moved']], [2200, 1080, 34, 9, ['the old web', 'harold kept a copy']], [4300, 1100, 26, 8, ['ring of pages', '< prev  next >']]];
     let farCv = null;
     function farPage(X, f) {
-      if (!farCv) farCv = new Map();
+      // drawn at the view's scale, and again when it changes (a zoom, another screen) so it never draws blurry
+      if (!farCv || farCv.k !== V.k) { farCv = new Map(); farCv.k = V.k; }
       let cv = farCv.get(f);
       if (!cv) {
         const [, , cw, rw, lines] = f, d = V.k; cv = document.createElement('canvas'); cv.width = Math.ceil(cw * 6 * d) + 12; cv.height = Math.ceil(rw * 12 * d) + 12;
@@ -711,7 +729,7 @@
     //   { enter: box } (he walks into it) · { flag: f } (a word became f, or a scene set it) · { quacks: n }
     //   (needs / unless: a flag) – and play step by step:
     //   say (the box at the bottom; A goes on) · bubble (a line over a head) · wait (s) · do (an event for the room,
-    //   lib/room.js fire) · think (the sky: Harold's mind) · hint · set (a flag) · sound · title (a title card).
+    //   lib/room.js fire) · think (Harold's mind: words in the dark) · hint · set (a flag) · sound · title (a title card).
     //   While one plays Harold stands still, unless the scene is `free`.
     let scene = null, card = null, thinkW = null, arrived = null;
     // a scene's press: cells, or a thing's id (the couch's remote) – a few cells round where that thing stands in this
@@ -738,6 +756,9 @@
     }
     function playScene(def) { if (def.once !== false) cur.done.add(def.id); scene = { A: cur, def, i: 0, t0: T }; }
     function sceneStep() {
+      // a scene of an area Harold has left (a free one, still playing as he went through a door) ends here, before the
+      // new area's arrival is looked for – it used to clear the arrival and only then be dropped
+      if (scene && scene.A !== cur) scene = null;
       if (!scene) { const d = sceneFor(false); if (d) playScene(d); }
       if (arrived === cur) arrived = null;
       for (let guard = 0; scene && guard < 24; guard++) {
@@ -757,10 +778,8 @@
         next();
       }
     }
-    // Harold's mind is the sky: what he's thinking drifts across the top of the view, slow as clouds – the area's
-    // own words (its `think`), or what a scene last thought
-    // Harold's mind: the place's words float in the dark past the page's edge – below it, above it, beside it –
-    // wherever the view shows the void, swaying slowly, never over the play
+    // Harold's mind: the area's own words (its `think`), or what a scene last thought, float in the dark past the
+    // page's edge – below it, above it, beside it – wherever the view shows the void, swaying slowly, never over the play
     function thoughts() {
       const ws = thinkW && thinkW.A === cur ? thinkW.words : (cur && cur.place.think) || [];
       if (!ws.length || !cur) return;
@@ -956,7 +975,7 @@
       unload();
       // the areas round Harold, and the one a save is waiting to carry on in
       const want = areas.filter((A) => !A.ready && (Math.abs(A.slot - cur.slot) <= 2 || A.i === wantArea)).sort((a, b) => (b.i === wantArea) - (a.i === wantArea) || Math.abs(a.slot - cur.slot) - Math.abs(b.slot - cur.slot));
-      for (const A of visible(cam)) for (const cv of A.sc.layers()) if (cv.bare(viewOf(A, cam), T)) cv.bakeSome(Wm, Math.min(deadline, performance.now() + budget * 0.5), viewOf(A, cam), T, 0);
+      for (const A of visible(cam)) for (const cv of A.sc.layers()) if (cv.bare(viewOf(A, cam))) cv.bakeSome(Wm, Math.min(deadline, performance.now() + budget * 0.5), viewOf(A, cam), T, 0);
       for (const A of want) { runJob(A, Math.min(deadline, performance.now() + budget * (A.slot === cur.slot + 1 || A.i === wantArea ? 0.8 : 0.5))); if (performance.now() >= deadline) return; }
       for (const A of visible(cam)) for (const cv of A.sc.layers()) if (cv.bakeSome(Wm, deadline, viewOf(A, cam), T)) return;
     }
@@ -989,7 +1008,7 @@
         if (window.WK_SOUND) WK_SOUND.play = mode === 'play';
         stepAll(dt, inp);
         titleTick(dt);
-      }
+      } else input();   // (the world waits; a gamepad still moves through the menu and chooses)
       moveCam(dt, false);
       bake(performance.now() + budget);
       const b1 = performance.now();
@@ -1034,7 +1053,7 @@
       while (!loaded || !fontOk()) await tick();
       const w0 = performance.now(); while (performance.now() - w0 < 400) await tick();
       const t0 = performance.now(); let first = 0;
-      while (!ready) { await tick(); const r = frame(DT); if (ready) first = performance.now() - t0; }
+      while (!ready) { await tick(); frame(DT); if (ready) first = performance.now() - t0; }
       mode = 'play'; startT = -9; ghost = true;
       const route = o.route || [[34, 29], [158, 29], [318, 29], [478, 27.4], [560, 30], [620, 30.4], [718, 26]], out = [];
       let seg = 0, u = 0, stall = 0;
@@ -1059,14 +1078,16 @@
     const G = {
       V, cam, areas, get T() { return T; }, get mode() { return mode; }, set mode(m) { mode = m; sel = 0; }, frame, render, bench, get cur() { return cur; }, stats,
       get ready() { return ready; }, get loaded() { return loaded; }, get err() { return err; }, get gl() { return GL(); }, budget,
-      paused: false, held: false, steps: 0, speed: 1, onFrame: () => {}, off: new Set(),
+      paused: false, steps: 0, speed: 1, onFrame: () => {}, off: new Set(),
+      /** the clock held (Voyager's menu is open, lib/host.js); let go, the A that closed the menu isn't a quack */
+      get held() { return held; }, set held(v) { if (held && !v) holdA = true; held = !!v; },
       menu() { if (mode === 'play') { mode = 'menu'; sel = 0; } },
-      start() { if (!ready) return; if (mode === 'title') choose(0); else if (mode === 'menu') mode = 'play'; },
+      start() { if (!ready) return; if (mode === 'title') choose(0); else if (mode === 'menu') { mode = 'play'; holdA = true; } },
       title() { mode = 'title'; sel = 0; idle = 0; attract = null; showControls = false; },
       saveCode() { return SAVE.code(); },
       /** start again from the couch: the save gone, every area as it was (words unspelled, scenes unplayed) */
       newNight() {
-        try { localStorage.removeItem(SAVE.key); } catch (e) { /* private window */ }
+        SAVE.clear();
         for (const A of areas) {
           A.done = null; A.met = false; A.mem = null; if (A.sim) A.sim.reset(); if (A !== cur && A.sim) A.sim.leave();
           for (const a of A.place.actors || []) delete a.talked;   // everyone says their first lines again
@@ -1085,10 +1106,11 @@
       want(i) { if (areas[i] && !areas[i].ready) wantArea = i; },
       walkable(i, c, r) { const A = areas[i]; return !!(A && A.ready && A.sim.walkable(c, r)); },
       hero,
-      /** the talk that's open, if any: who's speaking, which line of how many */
       /** the scene that's playing (its id and step), and the title card if one is up */
       get scene() { return scene && { id: scene.def.id, i: scene.i, n: scene.def.steps.length }; }, get card() { return card && card.lines; },
+      /** where the course line points: what's next to do */
       get goal() { const g = goal(); return g && g.what; },
+      /** the talk that's open, if any: who's speaking, which line of how many */
       get talk() { return talk && { i: talk.i, n: talk.lines.length, who: talk.lines[talk.i].who, text: talk.lines[talk.i].text, pages: talk.pages || 1, page: talk.page || 0 }; },
       /** wading, for the debug panel and the checks: rings on the water, drops, wet or not */
       get wade() { return { wet: WADE.wet, rings: WADE.rings.length, drops: WADE.drops.length }; },

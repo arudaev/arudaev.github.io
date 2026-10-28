@@ -45,7 +45,6 @@
   const paint = (rows, rowKeys, glyphKeys = {}, rowGlyphKeys = {}) => rows.map((row, i) =>
     [...row].map((ch) => ((rowGlyphKeys[i] || {})[ch] || glyphKeys[ch] || rowKeys[i] || rowKeys[rowKeys.length - 1])).join(''));
   const say = (W, x, y, str, col = P.beige) => C.sayAt(W, x, y, str, col);
-  const talking = (t) => Math.floor(loop4(t) * 8) % 2 === 1;
 
   // ── in the room: line figures (28 October) ─────────────────────────────────────────
   // In the room the friends are drawn like Lord Malifex and his cat: outlines of their key shapes in loose lines,
@@ -189,7 +188,6 @@
   // up, the body hanging below, a sleepy face the right way up with the dark mask round his eyes,
   // a red tuft on top. Gag: protects the last of anything; blinks once a minute.
   const SID = ['___________', ' J  ,,,  L ', '  \\(=-.-=)/', '   (    )  ', '    "  "   '];
-  const SID_MAP = ['ttttttttttt', ' d  rrr  d ', '  ddRbdbRdd', '   dddddd  ', '    d  d   '];
   const SID_CLOSE = [
     '     the last page      ',
     '________________________',
@@ -219,7 +217,6 @@
   // long scythe wings, wider than he is, swept back; a forked tail; on his head the hat, with an
   // eye doodled on its front. Gag: knows every word, sings all of them. Idle: sings, wings flick.
   const SWIFT = ['    /\\     ', '   /o=\\    ', "_.-(o>)-._ ", " `-._V_.-' ", '    \\/     '];
-  const SWIFT_MAP = ['    bb     ', '   bbdb    ', 'ttttbdtttt ', ' ttttttttt ', '    tt     '];
   const SWIFT_CLOSE = [
     '             /\\              ',
     '            /<o>\\            ',
@@ -258,7 +255,6 @@
   // feet gripping the branch, a tail curled into a spiral; his colour follows every sound, in
   // steps. Gag: the most confused in the room. Idle: the eye rolls, the tongue flicks out, '?'.
   const LEX = ['    __/^\\  ', " .-'  (o) \\", '/        _>', '\\(@)\\_/\\_/ ', '==========='];
-  const LEX_MAP = ['    LLLLL  ', ' LLL  LbL L', 'LLLLLLLLLLL', 'LLLLLLLLLL ', 'ddddddddddd'];
   const EYE = ['o', '<', '^', '>', 'v', 'o'];
   const lexEye = (t) => EYE[Math.floor(loop4(t) * 1.5) % EYE.length];
   const lexTint = (t) => LEX_TINTS[Math.floor(loop4(t) * 2) % LEX_TINTS.length];
@@ -293,8 +289,6 @@
   // headset's ear cups, the mic at his mouth; a beige tray; a can beside him. Gag: asleep till
   // the energy drink pops. Idle: snores 'z' – then the can pops and he jolts awake.
   const CURRY = ['    .---.  ', '(O:O[-.-]=o', ' \\_______/ '];
-  const CURRY_MAP = ['    ttttt  ', 'rrRrtbbbttb', ' bbbbbbbbb '];
-  const CAN = ['[=]'], CAN_MAP = ['rbr'];
   const CURRY_CLOSE = [
     '              .-------.     ',
     '  . : . : .  /         \\    ',
@@ -326,7 +320,6 @@
   // a long crest and a longer beak, membrane wings stretched between her fingers, a rolled
   // blueprint in her feet; she's an architect. Gag: laughs like a seagull – the HA's turn into gulls.
   const PTERO = ['     ____/ ', '<====(o)/  ', ' /\\ / \\ /\\ ', '/  V   V  \\', '    [=]    '];
-  const PTERO_MAP = ['     RRRRr ', 'ddddRbRR   ', ' RR R R RR ', 'R  R   R  R', '    tTt    '];
   const PTERO_CLOSE = [
     '                ________/    ',
     ' <===========(  o  )/        ',
@@ -362,7 +355,6 @@
   // folded beige paper, teal goggles at the tip. Gag: draws as she flies – her trail is a pencil
   // line. Idle: she loops, and the dotted trail draws a little duck.
   const PILOT = ['\\`-.__   ', ' >===oo> ', "/_.-'    "];
-  const PILOT_MAP = ['bbbbbb   ', ' dbbbttb ', 'bbbbb    '];
   // the duck her trail draws, in cells round her anchor: a head, a beak, a back and a tail
   const DUCK_PATH = (() => {
     const p = [];

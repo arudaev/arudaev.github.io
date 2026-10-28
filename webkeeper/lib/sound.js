@@ -7,6 +7,7 @@
 //   WK_SOUND.meow(pitch)       a real cat's shy mew, one of two 8-bit samples (sounds/mew-1.wav, mew-2.wav): Mishka at the end of a hum (quacked at, or now and then on his own)
 //   WK_SOUND.poof()            Malifex turning back from the cat
 //   WK_SOUND.wizard()          the cat's spell: a robot voice's ba-la-la-la-la, gliding up and down
+//   WK_SOUND.solved()          a puzzle solved (a scene's sound): the theme's first bar
 //   WK_SOUND.theme()           Harold's theme: an 8-bar adventure march of our own, on NES-style voices (Patch dances to it)
 //   WK_SOUND.hum(near)         Mishka hums: five notes, hummed (near: 0..1, how close Harold is)
 //   WK_SOUND.on = false        mute (Voyager's sound setting on the couch: lib/host.js)

@@ -134,7 +134,7 @@
   // is the top of his own hood, the very same lines at the very same height, set on a floppy brim; the cat is drawn
   // under it, so both forms stand as tall. His eyes stay the hood's green; the ginger is the bible's one orange
   // (book/00-the-bible.md); nothing filled in but the ink behind
-  const GINGER = '#F28C28', GINGER_DIM = '#A85A1E';
+  const GINGER = '#F28C28';
   const HOOD_TOP = MALIFEX_LINES.strokes.slice(0, 2).map((st) => ({ ...st }));   // the hood's point and its opening
   const MALICAT_LINES = (() => {
     const body = arc(0, -1.35, 4.0, 1.45, -0.35 * Math.PI, 1.35 * Math.PI, 26), head = arc(0, -3.4, 2.7, 1.05, -0.1 * Math.PI, 1.1 * Math.PI, 18);

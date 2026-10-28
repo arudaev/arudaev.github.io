@@ -56,7 +56,6 @@
       <h4>errors</h4><pre class="wkd-err dim">none yet</pre></div>`;
     document.body.appendChild(box);
     const $ = (s) => box.querySelector(s);
-    // ?debug=fold starts folded (the headless check takes its pictures that way)
     // ?debug=fold starts folded (the headless check takes its pictures that way), and so does a phone: open, the panel
     // covers its whole screen
     if (new URLSearchParams(location.search).get('debug') === 'fold' || Math.min(innerWidth, innerHeight) < 600) { box.dataset.fold = true; $('[data-k=fold]').textContent = '[ + ]'; }

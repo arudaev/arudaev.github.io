@@ -111,7 +111,7 @@
   const onGrid = (a) => ({ ...a, x: Math.round(a.x / 8) * 8, y: Math.round(a.y / 16) * 16 });
   function actor(W, who, a0, t) {
     const a = onGrid(a0);
-    // Mishka is the sketch's bear (lib/bear.js), not a grid sprite
+    // Mishka is the key art's knitted bear (lib/bear.js → lib/cast/mishka.js), not a grid sprite
     if (who === 'mishka' && window.WK_BEAR) { WK_BEAR.draw(W, a.x, a.y, t); return; }
     // a poof (Malifex into the cat and back): a burst of stars round him for half a second
     if (a0.poofT != null && t - a0.poofT >= 0 && t - a0.poofT < 0.5) { const k = (t - a0.poofT) / 0.5; for (let j = 0; j < 10; j++) { const an = (j / 10) * Math.PI * 2 + j; W.loose(Math.round(a.x + Math.cos(an) * (10 + 34 * k)), Math.round(a.y - 30 + Math.sin(an) * (8 + 22 * k)), k < 0.5 ? '*' : '.', P.beige, 0, 14); } }
@@ -333,11 +333,11 @@
   // ── layer 5: the reveal mask – the front thins out round whoever it covers
   function revealCells(S) {
     const out = [], who = [S.harold, ...(S.cast || [])].filter((a) => a && !a.gone);
-    // the front layer is cut away round each figure, by the figure's own size (Mishka, the sketch's bear, is twice
+    // the front layer is cut away round each figure, by the figure's own size (Mishka, the knitted bear, is over twice
     // Harold's height: the front grass used to cross his middle) – just round the figure, so it reads as standing in
     // the grass, its blades leaning off him (his feet touch them, brushes.js C.touch), not as a hole carried about
     // (it was twice Harold's size, a clear oval round him wherever he walked)
-    const SZ = { mishka: [56, 62, 52], malifex: [44, 64, 56] };
+    const SZ = { mishka: [64, 78, 66], malifex: [44, 64, 56] };
     for (const h of who) {
       const [rx, ry, up] = SZ[h.who] || [28, 26, 20], cx = h.x, cy = h.y - up;
       for (let r = Math.floor((cy - ry - 4) / 16); r <= Math.ceil((cy + ry + 4) / 16); r++) for (let c = Math.floor((cx - rx - 4) / 8); c <= Math.ceil((cx + rx + 4) / 8); c++) {

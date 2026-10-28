@@ -81,8 +81,8 @@
     }
   }
   // draw Mishka: feet centred on (x, y) px; o.scale px per bear unit; o.style: 'field' (the
-  // sketch's soft fur), 'plush', 'felt' or 'nap' (close-up variants); o.yaw; o.hum (seconds since
-  // the hum began, or -1)
+  // sketch's soft fur), 'plush', 'felt' (the key art's, and the game's) or 'nap' (close-up variants);
+  // o.yaw; o.hum (seconds since the hum began, or -1); o.meow: the hum's last note is a small cat face
   const HUM = 5, NOTE = 0.35;
   function mishka(W, x, y, t, o = {}) {
     const scale = o.scale || W.ch * 1.8, style = o.style || 'field', yaw = o.yaw ?? -1.45, pitch = 0.12;
@@ -93,11 +93,13 @@
     // the fur's cell in px: half the grid's in the field; in a close-up a fixed size, so a big
     // Mishka gets more glyphs, not bigger ones – he stays soft instead of turning blocky
     const fcw = style === 'field' ? W.cw / 2 : { plush: 5, felt: 7, nap: 5 }[style] * (o.cellK || 1), fch = fcw * 2;
-    const f = render(cx, cy, Math.ceil(3.2 * scale / fcw), Math.ceil(4.6 * scale / fch), scale, yaw, pitch, fcw, fch, style === 'field' ? 0.4 : 0.32);
+    // rendered round (0, 0) and moved to (cx, cy), so the kept render serves him wherever the camera puts him (in the
+    // game he's drawn at a new screen position every frame), and his stitches don't shimmer as the view moves
+    const f = render(0, 0, Math.ceil(3.2 * scale / fcw), Math.ceil(4.6 * scale / fch), scale, yaw, pitch, fcw, fch, style === 'field' ? 0.4 : 0.32);
     const { out, nc, nr, c0, r0 } = f, at = (c, r) => (c < 0 || r < 0 || c >= nc || r >= nr ? 0 : out[(r * nc + c) * 4]);
     // an ink undercoat, so nothing shows through him
     W.reset(); W.g.fillStyle = P.ink;
-    for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) if (at(c, r)) W.g.fillRect((c0 + c) * fcw - 1, (r0 + r) * fch - 1, fcw + 2, fch + 2);
+    for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) if (at(c, r)) W.g.fillRect(Math.round(cx + (c0 + c) * fcw) - 1, Math.round(cy + (r0 + r) * fch) - 1, fcw + 2, fch + 2);
     const gs = fch * ({ field: 1.3, plush: 1.25, felt: 1.15, nap: 1.2 }[style]);
     for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) {
       const k = (r * nc + c) * 4, m = out[k];
@@ -105,7 +107,7 @@
       const b = out[k + 1], nx = out[k + 2], ny = out[k + 3];
       const edge = !at(c - 1, r) || !at(c + 1, r) || !at(c, r - 1) || !at(c, r + 1);
       const h = hash(c0 + c, r0 + r, 77);
-      let px = (c0 + c + 0.5 + (h - 0.5) * 0.4) * fcw, py = (r0 + r + 0.5 + (hash(r0 + r, c0 + c, 78) - 0.5) * 0.3) * fch;
+      let px = cx + (c0 + c + 0.5 + (h - 0.5) * 0.4) * fcw, py = cy + (r0 + r + 0.5 + (hash(r0 + r, c0 + c, 78) - 0.5) * 0.3) * fch;
       const fur = m === 4, lit = b > 0.45;
       let col = fur ? (lit ? P.brown : P.brownDim) : (lit ? P.beige : P.beigeDim), chr;
       if (style === 'field') {
@@ -136,8 +138,11 @@
     if (hum >= 0) for (let i = 0; i < HUM; i++) {
       const age = hum - i * NOTE;
       if (age < 0 || age > 1.8) continue;
-      const k = scale / (W.ch * 1.8);
-      W.loose(cx + scale * 0.8 + (Math.sin(age * 3 + i) * 1.2 + age * 2) * W.cw * Math.sqrt(k), cy - scale * 1.9 - age * W.ch * 2.4 * Math.sqrt(k), i % 2 ? '♫' : '♪', age < 0.6 ? P.beige : age < 1.2 ? P.beigeDim : P.tealUp, 0, W.ch * 1.4 * Math.sqrt(k));
+      const k = scale / (W.ch * 1.8), nx = cx + scale * 0.8 + (Math.sin(age * 3 + i) * 1.2 + age * 2) * W.cw * Math.sqrt(k), ny = cy - scale * 1.9 - age * W.ch * 2.4 * Math.sqrt(k);
+      const col = age < 0.6 ? P.beige : age < 1.2 ? P.beigeDim : P.tealUp;
+      // now and then, alone, his last note is a small cat face (book/00-the-bible.md: his meow)
+      if (o.meow && i === HUM - 1) { const m = '=^.^='; for (let j = 0; j < m.length; j++) W.loose(nx + (j - 2) * W.cw * 0.9, ny, m[j], col, 0, W.ch * 1.1); }
+      else W.loose(nx, ny, i % 2 ? '♫' : '♪', col, 0, W.ch * 1.4 * Math.sqrt(k));
     }
     W.reset();
   }

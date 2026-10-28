@@ -28,7 +28,7 @@ run, measured and fixed on real devices. The project's handback it came from is 
 | `lib/brushes.js` | every brush: grass, flowers, water, stone, soil, light; the wind field |
 | `lib/tree.js`, `lib/cast/*.js` | the trees, and the cast's sprites (Harold, Bug, Mishka, Malifex, the UNIClones, friends) |
 | `lib/actors.js` | the cast baked into sprites |
-| `lib/bear.js` | Mishka, as the sketch drew him: a small 3D bear in characters, humming |
+| `lib/bear.js` | Mishka in the world: the key art's knitted bear (`lib/cast/mishka.js`, its felt style) and his hum |
 | `lib/layers.js` | the nine layers, their baking and caching |
 | `lib/place.js` | place files → layers (build in slices) |
 | `lib/room.js` | one area's simulation: walking, the ring, words becoming things |

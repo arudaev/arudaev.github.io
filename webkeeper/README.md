@@ -1,15 +1,17 @@
 # Webkeeper – the couch game, in the repo
 
 The game on the couch's TV (design: [`design/couch-games/`](../../design/couch-games/README.md)). It started in
-Claude Design (the Webkeeper Design System project); since 27 October 2026 it's built here, where it can be
+Claude Design (the Webkeeper Design System project, synced from here by `design/build-wk-bundle.sh` –
+[DESIGN-SYSTEM.md](../../design/couch-games/DESIGN-SYSTEM.md)); since 27 October 2026 it's built here, where it can be
 run, measured and fixed on real devices. The project's handback it came from is kept unchanged in
 [`design/exports/2026-10-26-webkeeper-r2/`](../../design/exports/2026-10-26-webkeeper-r2/).
 
 ## Run it
 
 - **On its own:** `npm run dev`, then <http://localhost:5173/webkeeper/index.html>.
-- **On the couch:** <http://localhost:5173/#/couch> – Harold climbs aboard, the TV shows the title, START leans
-  him in and the game takes the glass.
+- **On the couch:** <http://localhost:5173/#/couch> – Harold climbs aboard, the TV shows the title, and the
+  first time he leans in by himself; `[ start ]` plays, full screen (after `sit back`, START on the TV leans
+  him in again).
 - **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab> – two areas of test stations, the second
   one Bug the thief's
   ([PUZZLES.md](../../design/couch-games/PUZZLES.md)).
@@ -37,7 +39,7 @@ run, measured and fixed on real devices. The project's handback it came from is 
 | (scenes) | a place's `scenes`: the book's scripts (`design/couch-games/book`), run by `lib/world.js` – lines, bubbles, waits, room events, thoughts in the sky, title cards |
 | `lib/sound.js` | the sound, synthesized but for one sample: letters are notes (a pentatonic scale, so any order sounds right and a word is a tune), a word chimes when it becomes, the quack, Mishka's hum, Harold's theme on NES-style voices (two pulse waves, a triangle, noise); on the couch it follows Voyager's sound setting |
 | `sounds/mew-1.wav`, `mew-2.wav` | Mishka's mews: the two mews in a real cat's recording, "Cat purr & meow" by Kerzoven on OpenGameArt (CC0), each cut out and crushed to 8 bits at 8 kHz (2 KB each) |
-| `places/*.json` | the place files, one per area of chapter 0 (0.2–0.7, and 0.6i, the room inside the yard's homepage: its door leads in, Bug's tunnel leads on to 0.7, the hermit's clearing), and `lab.json` + `lab-2.json`, the puzzle lab |
+| `places/*.json` | the place files: `0.1-couch.json`, the prologue on the couch; one per area of chapter 0 (0.2–0.7, and 0.6i, the room inside the yard's homepage: its door leads in, Bug's tunnel leads on to 0.7, the hermit's clearing), `lab.json` + `lab-2.json`, the puzzle lab; and `cast.json`, the cast at size in the world – a test place for the Webkeeper Design System's card (`cards/cast/world.html`), not loaded by the game |
 | `fonts/vt323.woff2` | VT323 (SIL Open Font License), served from here so the game never waits on another site |
 
 Plain scripts, each setting one global (`WK_WORLD`, `WK_BRUSH`, …) – how Claude Design wrote them. They're

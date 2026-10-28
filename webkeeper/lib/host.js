@@ -11,6 +11,7 @@
 //                 { voyager: 'hold', on }      hold the clock (Voyager's menu is open)
 //                 { voyager: 'debug', on }     show or hide the debug panel (loaded the first time)
 //                 { voyager: 'sound', on }     Voyager's sound setting: the game's sound on or off (lib/sound.js)
+//                 { voyager: 'zoom', z }       Voyager's zoom setting: 1, 0.75 or 0.5 (lib/world.js)
 //                 { voyager: 'save-code' }     → { webkeeper: 'save-code', code }
 //                 { voyager: 'load-code', code } → { webkeeper: 'loaded', ok }
 //                 { voyager: 'new-night' }     start again from the couch (the prologue)
@@ -59,6 +60,7 @@
     else if (m.voyager === 'load-code') H.send('loaded', { ok: W.loadCode(m.code) });
     else if (m.voyager === 'new-night') W.newNight();
     else if (m.voyager === 'sound') { if (window.WK_SOUND) WK_SOUND.on = !!m.on; }
+    else if (m.voyager === 'zoom') W.zoom = m.z;
     else if (m.voyager === 'debug') {
       if (window.WK_DEBUG) WK_DEBUG.show(!!m.on);
       else if (m.on) { const sc = document.createElement('script'); sc.src = 'lib/debug.js'; sc.onload = () => WK_DEBUG.attach(W); document.body.appendChild(sc); }

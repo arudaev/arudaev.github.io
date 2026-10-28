@@ -38,6 +38,12 @@
     let lastStep = -1, lastActs = -1, lastRings = -1, forceU = true, ready = false;
 
     // ── the view: css size, the whole-number zoom, device pixels per world px, the size in world px
+    // the player's own zoom (the menu's `zoom`, or Voyager's settings on the couch): the usual view or a step or two
+    // further out, kept on the device under the key Voyager's settings write too (the page is on Voyager's origin)
+    const ZOOMS = [1, 0.75, 0.5];
+    let zoomK = (() => { try { const z = +localStorage.getItem('v56k.wk.zoom'); return ZOOMS.includes(z) ? z : 1; } catch (e) { return 1; } })();
+    function setZoom(z) { if (!ZOOMS.includes(z)) return; zoomK = z; try { localStorage.setItem('v56k.wk.zoom', String(z)); } catch (e) { /* storage blocked: this visit only */ } }
+    const zoomName = () => 'zoom: ' + zoomK + 'x';
     function fitBox() { return mode !== 'title' && cur && cur.place && cur.place.fit; }
     function fitKey() { const f = fitBox(); return f ? f.join() : ''; }
     function size() {
@@ -45,12 +51,15 @@
       if (!w || !h) return false;   // a window not laid out yet (an iframe loading): no zero-size buffers; frame() tries again
       let best = 1, bd = 1e9;
       for (let s = 1; s <= 4; s++) { const rows = h / (16 * s); if (s > 1 && w / (8 * s) < 44) break; const d = rows < 36 ? 36 - rows : rows > 60 ? rows - 60 : 0; if (d < bd - 1e-9) { bd = d; best = s; } }
-      // a room that's one picture (the party) fits on any screen: its `fit` box in cells sets the zoom while it's played,
-      // below 1 if it must (a phone sees the whole room, smaller, instead of a slice of it)
-      const fit = fitBox();
-      if (fit) best = Math.min(best, w / ((fit[2] - fit[0]) * 8), h / ((fit[3] - fit[1]) * 16));
+      best *= zoomK;
+      // a room that's one picture (the party) is shown whole where that costs at most a fifth of the zoom (a desktop, or
+      // a phone zoomed out to 0.5x): its `fit` box in cells sets the zoom while it's played. A phone at its usual zoom
+      // would see it at half size, too small to read, so it plays the room like chapter 0 instead – the camera with
+      // Harold and whoever's speaking
+      const fit = fitBox(), fz = fit ? Math.min(best, w / ((fit[2] - fit[0]) * 8), h / ((fit[3] - fit[1]) * 16)) : 0, whole = !!fit && fz >= best * 0.8;
+      if (whole) best = fz;
       if (cfg.zoom) best = cfg.zoom;
-      Object.assign(V, { cssW: w, cssH: h, s: best, dpr: dev, k: dev * best, w: w / best, h: h / best, fit: fitKey() });
+      Object.assign(V, { cssW: w, cssH: h, s: best, dpr: dev, k: dev * best, w: w / best, h: h / best, fit: fitKey(), zk: zoomK, whole });
       V.bdpr = Math.min(V.k, Math.max(1, best) * (w * h < 450000 ? 1.5 : 1));
       canvas.style.cssText = `display:block;width:${w}px;height:${h}px;aspect-ratio:auto;touch-action:none`;
       if (!Wm) Wm = Webkeeper.screen(canvas, { cell: 16, w: V.w, h: V.h, dpr: V.k, fixed: true }); else Wm.resize(V.w, V.h, V.k);
@@ -62,7 +71,7 @@
       return true;
     }
     // the window's size is checked every frame too – an iframe can load at 0 × 0 and grow without a resize event
-    const sized = () => { const w = cfg.css ? cfg.css[0] : innerWidth, h = cfg.css ? cfg.css[1] : innerHeight; return w && h && w === V.cssW && h === V.cssH && V.fit === fitKey() && Wm; };
+    const sized = () => { const w = cfg.css ? cfg.css[0] : innerWidth, h = cfg.css ? cfg.css[1] : innerHeight; return w && h && w === V.cssW && h === V.cssH && V.fit === fitKey() && V.zk === zoomK && Wm; };
     if (!cfg.css) addEventListener('resize', size);
     size();
 
@@ -119,7 +128,7 @@
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
     const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
-    const items = () => (mode === 'menu' ? ['continue', 'controls', 'save code', 'load code', 'restart: prologue', 'sit back'] : ['play']);
+    const items = () => (mode === 'menu' ? ['continue', 'controls', zoomName(), 'save code', 'load code', 'restart: prologue', 'sit back'] : ['play']);
     function choose(i) {
       const it = items()[i];
       // (the A that chose is still held as the game starts – PLAY, continue, a new night, a loaded code: holdA keeps it
@@ -129,6 +138,7 @@
       else if (it === 'save code') { const code = SAVE.code(), shown = () => hint('save code: ' + code, 8); try { navigator.clipboard.writeText(code).then(() => hint('save code copied – paste it into "load code" on any device', 4), shown); } catch (e) { shown(); } }
       else if (it === 'load code') { const code = prompt('paste a webkeeper save code'); if (code && SAVE.load(code)) { mode = 'play'; talk = null; scene = null; card = null; hint('loaded – welcome back', 2.6); } else if (code) hint('that code doesn\'t look like a save', 2.6); }
       else if (it === 'controls') showControls = !showControls;
+      else if (it === zoomName()) setZoom(ZOOMS[(ZOOMS.indexOf(zoomK) + 1) % ZOOMS.length]);   // 1x → 0.75x → 0.5x → 1x
       else if (it === 'restart: prologue') { G.newNight(); mode = 'play'; }
       // sitting back is Voyager's (lib/host.js tells the couch); played on its own there's no couch to sit back on
       else if (it === 'sit back') { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('sit-back'); else { G.title(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } }   // on its own (the lab, ?debug): back to the title
@@ -346,20 +356,21 @@
         if (hp.y > top + V.h * 0.74) top = hp.y - V.h * 0.74;
         return clampCam(hp.x + V.w * 0.14, top + V.h / 2);
       }
-      // in a talk, the camera goes halfway to whoever is speaking, so they're on screen with Harold; in a scene, to
-      // whoever just appeared or started dancing, for a few seconds. On a narrow screen halfway may not be enough:
-      // then it goes as far as it takes to have them in view
-      const sp = speakerAt() || lookPos(), fr = cur.place.frame;
-      // a room that's one picture (the party: the TV, the table and everyone round it) is framed as one: the camera
-      // holds on its middle (the place's `frame`, [c, r]) and only moves when Harold would walk out of view – in a
-      // talk too, since whoever's talking is already in view (unless they aren't)
-      const frameAt = () => { const fx = cur.ox + (fr[0] + 0.5) * 8, fy = cur.oy + (fr[1] + 0.5) * 16, mx = Math.max(0, V.w / 2 - 72), my = Math.max(0, V.h / 2 - 72); return clampCam(clamp(fx, hp.x - mx, hp.x + mx), clamp(fy, hp.y - my, hp.y + my)); };
-      if (fr) { const c = frameAt(); if (!sp || (Math.abs(sp.x - c.x) < V.w / 2 - 48 && Math.abs(sp.y - c.y) < V.h / 2 - 56)) return c; }
+      // in a talk, the camera leans two thirds of the way to whoever is speaking, so they're nearer the middle with
+      // Harold still on screen; in a scene, to whoever just appeared or started dancing, for a few seconds. On a narrow
+      // screen that may not be enough: then it goes as far as it takes to have them in view, and above the talk box
+      const sp = speakerAt() || lookPos(), fr = V.whole && cur.place.frame;
+      const box = talk ? (window.WK_HOST && WK_HOST.hosted() ? 10 : 8) * 16 : 0, mx = V.w / 2 - 48, top = V.h / 2 - 56, bot = Math.max(0, V.h / 2 - 40 - box);
+      const inView = (p, c) => Math.abs(p.x - c.x) < mx && p.y - c.y > -top && p.y - c.y < bot;
+      // a room that's one picture (the party: the TV, the table and everyone round it), shown whole, is framed as one:
+      // the camera holds on its middle (the place's `frame`, [c, r]) and only moves when Harold would walk out of view –
+      // in a talk too, since whoever's talking is already in view; when they aren't (behind the talk box), it slides
+      // only as far as it takes to show them
+      const frameAt = () => { const fx = cur.ox + (fr[0] + 0.5) * 8, fy = cur.oy + (fr[1] + 0.5) * 16, fmx = Math.max(0, V.w / 2 - 72), fmy = Math.max(0, V.h / 2 - 72); return clampCam(clamp(fx, hp.x - fmx, hp.x + fmx), clamp(fy, hp.y - fmy, hp.y + fmy)); };
+      if (fr) { const c = frameAt(); return sp && !inView(sp, c) ? clampCam(clamp(c.x, sp.x - mx, sp.x + mx), clamp(c.y, sp.y - bot, sp.y + top)) : c; }
       if (sp) {
-        const mx = V.w / 2 - 48, my = V.h / 2 - 56;
-        let x = (hp.x + sp.x) / 2, y = (hp.y + sp.y) / 2;
-        if (Math.abs(sp.x - x) > mx) x = sp.x - Math.sign(sp.x - x) * mx;
-        if (Math.abs(sp.y - y) > my) y = sp.y - Math.sign(sp.y - y) * my;
+        const lean = talk ? 2 / 3 : 1 / 2;
+        const x = clamp(hp.x + (sp.x - hp.x) * lean, sp.x - mx, sp.x + mx), y = clamp(hp.y + (sp.y - hp.y) * lean, sp.y - bot, sp.y + top);
         return clampCam(x, y);
       }
       return clampCam(hp.x + clamp(hp.vx * 0.32, -V.w * 0.12, V.w * 0.12), hp.y + clamp(hp.vy * 0.2, -V.h * 0.1, V.h * 0.1));
@@ -940,7 +951,7 @@
         if (!lift) menuList(Math.max(r1 + 3, rows - 6), items());
       }
       if (mode === 'menu') {
-        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(1, Math.round(rows / 2 - 9)), h = 16 + (showControls ? 5 : 0);
+        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(1, Math.round(rows / 2 - 9)), h = items().length * 2 + 4 + (showControls ? 5 : 0);
         Wm.ink(c0, r0, w + 1, h + 1); Wm.box(c0, r0, c0 + w, r0 + h, P.beigeDim);
         centre(r0 + 1, 'webkeeper · harold\'s copy', P.phosphor); centre(r0 + 2, 'temporary internet files', P.beigeDim);
         menuList(r0 + 4, items());
@@ -1092,6 +1103,8 @@
       paused: false, steps: 0, speed: 1, onFrame: () => {}, off: new Set(),
       /** the clock held (Voyager's menu is open, lib/host.js); let go, the A that closed the menu isn't a quack */
       get held() { return held; }, set held(v) { if (held && !v) holdA = true; held = !!v; },
+      /** the player's zoom: 1, 0.75 or 0.5 (Voyager's settings on the couch, lib/host.js) */
+      get zoom() { return zoomK; }, set zoom(z) { setZoom(+z); },
       menu() { if (mode === 'play') { mode = 'menu'; sel = 0; } },
       start() { if (!ready) return; if (mode === 'title') choose(0); else if (mode === 'menu') { mode = 'play'; holdA = true; } },
       title() { mode = 'title'; sel = 0; idle = 0; attract = null; showControls = false; },

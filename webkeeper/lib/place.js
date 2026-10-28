@@ -24,7 +24,9 @@
 //                        { stamp: 'paws', line, gap }
 //   things  [{ id, thing, foot: [c, r], … }]   built things in layer 4, sorted by their feet:
 //            sign { board } · lamp { rad } · page { box, lines, door: [c0, c1], holes: [[c0, r0, c1, r1]], opens } ·
-//            tv { box, screen } · couch { box, seats }
+//            tv { box, screen } · couch { box, seats } · sofa { box, seats, over, feet } · beanbag { foot, size, col, over }
+//            · snacks { box } · console { foot }   (over: the row a near half is drawn at, after its sitters; feet: a
+//            footprint of its own, [[c0, r0, c1, r1], ..], instead of the box)
 //   words   [{ id, text, at: [c, r], dir: 'row' | 'col', on, cells, lying, wall, voice, hidden }]   big letters:
 //            on a thing (on), settled on the grid, lying loose in the grass (lying), a wall (wall), a voice (voice:
 //            italic, nobody's to place) or written in the background's colour (hidden: malifex reads it).
@@ -241,6 +243,7 @@
         const [c0, r0, c1, r1] = th.box, dr = th.door;
         shade.push({ x: (c0 + c1) / 2 * 8 + 24, y: (r1 + 1.4) * 16, rx: (c1 - c0) * 4 + 8, ry: 18 });
         if (dr) { feet.push([c0, r0, dr[0], r1 + 1], [dr[1] + 1, r0, c1 + 1, r1 + 1], [dr[0], r0, dr[1] + 1, r1 - 2]); doors.push({ id: th.id, cells: [dr[0], r1 - 2, dr[1] + 1, r1 + 1], opens: th.opens }); }
+        else if (th.feet) for (const f of th.feet) feet.push(f);   // its own footprint (the couch: its arms and back, not the seat)
         else feet.push([c0, r0, c1 + 1, r1 + 1]);
       } else { shade.push({ x: x + 9, y: y + 2, rx: 13, ry: 5 }); feet.push([c, r, c + 1, r + 1]); }
     }

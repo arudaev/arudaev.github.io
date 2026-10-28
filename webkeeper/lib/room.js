@@ -40,7 +40,7 @@
       });
       for (const a of p.actors || []) if (a.who !== 'harold') st.cast.push({ who: a.who, id: a.id || a.who, c: a.at[0], r: a.at[1], flip: a.face !== 'west', pose: a.pose || (a.who === 'bug' ? 'calm' : 'idle'),
         route: a.route, speed: a.speed || 0, u: 0, loop: a.loop !== false, gone: !!a.hidden, skid: -9, moving: false, vx: 0, vy: 0,
-        steals: !!a.steals, den: a.den || a.at, job: 'home', rest: 0, carry: null, target: null });
+        steals: !!a.steals, den: a.den || a.at, job: 'home', rest: 0, carry: null, target: null, hold: a.hold || null, eats: a.eats || null, solid: a.solid || null });
       // a letter already settled in its place holds that place (0.6: E and N lie on the doorstep from the start)
       for (const s of slots) s.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s.c && l.cell[1] === s.r && l.ch === s.ch) || null;
       walkG = null; occ = null; script = { i: 0, t0: 0, best: 1e9, since: 0 };
@@ -100,6 +100,8 @@
     const blocksFeet = (l) => l.state === 'settled' || l.state === 'settling';
     function walkable(c, r) {
       if (c < 0 || r < 0 || c >= COLS || r >= ROWS || !grid()[r * COLS + c]) return false;
+      // someone sitting (an actor's `solid`: [columns wide, rows tall] up from the feet) is walked round, not through
+      for (const a of st.cast) if (a.solid && !a.gone && !a.pull && Math.abs(c - a.c) <= a.solid[0] / 2 && r <= Math.round(a.r) && r > a.r - a.solid[1]) return false;
       const l = occupancy().get(r * COLS + c); return !(l && blocksFeet(l));
     }
     const mal = () => st.cast.find((a) => a.who === 'malifex' && !a.gone);
@@ -324,6 +326,8 @@
       if (a.route && a.speed) {
         if (st.t - a.skid < 1.5) { a.pose = 'scared'; a.moving = false; return; }
         const c0 = a.c; a.u += a.speed * dt; const q = along(a.route, a.u, a.loop); a.c = q.c; a.r = q.r;
+        // passing what he grabs on his way (Bug and the pizza: { at, hold, set }), he takes it and runs on with it
+        if (a.grab && Math.hypot(a.c - a.grab.at[0], (a.r - a.grab.at[1]) * 2) < 2.5) { a.hold = a.grab.hold || null; if (a.grab.set) st.flags[a.grab.set] = true; a.grab = null; }
         a.moving = true; a.pose = a.who === 'bug' ? 'run' : a.pose; if (Math.abs(a.c - c0) > 1e-4) a.flip = a.c > c0;
         a.vx = (a.c - c0) * 8 / dt; a.dir = [a.c - c0, 0];
         if (q.end && a.vanish) a.gone = true;
@@ -426,7 +430,7 @@
         case 'perceive': for (const a of st.cast) if (a.id === ev.who) perceive(a); break;
         case 'dance': for (const a of st.cast) if (a.id === ev.who) { a.gone = false; if (ev.at) { a.c = ev.at[0]; a.r = ev.at[1]; } a.dance = st.t + (ev.for || 4); if (ev.then) { a.thenRoute = ev.then; } } break;
         case 'walk': for (const a of st.cast) if (a.id === ev.who) { a.route = [[a.c, a.r], ...ev.to]; a.speed = ev.speed || 22; a.u = 0; a.loop = false; a.vanish = !!ev.vanish; a.stopAtEnd = !ev.vanish; } break;
-        case 'appear': { const a = st.cast.find((x) => x.id === ev.who); if (a) { a.gone = false; if (ev.route) { a.route = ev.route; a.speed = ev.speed || 30; a.u = 0; a.loop = !!ev.loop; a.vanish = !ev.loop; } } break; }
+        case 'appear': { const a = st.cast.find((x) => x.id === ev.who); if (a) { a.gone = false; a.grab = ev.grab || null; if (ev.route) { a.route = ev.route; a.speed = ev.speed || 30; a.u = 0; a.loop = !!ev.loop; a.vanish = !ev.loop; } } break; }
         case 'pull':
           for (const l of st.letters) if ((ev.words || []).includes(l.word)) { l.state = 'pulled'; l.to = ev.to; l.touched = st.t + (hash(l.j, 3, 9) - 0.5) * 0.6; l.z = 4; }
           for (const a of st.cast) if ((ev.who || []).includes(a.id)) { a.pull = ev.to; a.pt = st.t; }
@@ -512,7 +516,7 @@
       const sayings = st.sayings.map((s) => { const a = s.who === 'harold' ? h : st.cast.find((x) => x.id === s.who || x.who === s.who); const P2 = a ? pos(a) : { x: 640, y: 360 }; return { text: s.text, x: P2.x, y: P2.y - (a && a.who === 'malifex' ? 128 : 72) }; });
       return {
         t, harold: { ...pos(h), c: h.c, r: h.r, flip: h.flip, moving: h.moving, vx: h.vx, vy: h.vy, gone: h.gone, pose: h.moving ? 'walk' : 'idle' },
-        cast: st.cast.map((a) => ({ who: a.cat ? 'malicat' : a.who, id: a.id, ...pos(a), flip: a.flip, pose: a.cat ? 'idle' : a.blush > t ? 'blush' : a.pose, moving: a.moving, vx: a.vx, vy: a.vy, gone: a.gone, poofT: a.poofT })),
+        cast: st.cast.map((a) => ({ who: a.cat ? 'malicat' : a.who, id: a.id, ...pos(a), flip: a.flip, pose: a.cat ? 'idle' : a.blush > t ? 'blush' : a.pose, moving: a.moving, vx: a.vx, vy: a.vy, gone: a.gone, poofT: a.poofT, hold: a.hold, eats: a.eats })),
         letters: st.letters.map((l) => ({ ch: l.ch, x: l.x, y: l.y, z: l.z, state: l.state, voice: l.voice, hidden: l.hidden, wall: l.wall, reveal: l.reveal, on: l.on, rail: l.rail, ri: l.ri,
           ang: l.state === 'loose' || l.state === 'pulled' ? Math.sin(ft * 6 + l.j * 1.7) * 0.32 * Math.min(1, Math.hypot(l.vx || 0, l.vy || 0) / 30 + (l.z > 0 ? 1 : 0.15)) : 0 })),
         rings: st.rings, becomes: st.becomes.map((b) => ({ ...b, age: t - b.t })), say: sayings, open: st.open, solved: !!st.flags.solved, as: st.as,

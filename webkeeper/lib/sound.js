@@ -6,7 +6,7 @@
 //   WK_SOUND.yip()             Bug, quacked head on: a puppy's yip, up and down
 //   WK_SOUND.meow(pitch)       a real cat's shy mew, one of two 8-bit samples (sounds/mew-1.wav, mew-2.wav): Mishka at the end of a hum (quacked at, or now and then on his own)
 //   WK_SOUND.poof()            Malifex turning back from the cat
-//   WK_SOUND.wizard()          the cat's spell: a robot voice's ba-la-la-la-la, gliding up and down
+//   WK_SOUND.wizard()          the cat's spell: a robot voice's ba-la-la-la-la (up, then down), quiet, echoed, with bells
 //   WK_SOUND.solved()          a puzzle solved (a scene's sound): the theme's first bar
 //   WK_SOUND.theme()           Harold's theme: an 8-bar adventure march of our own, on NES-style voices (Patch dances to it)
 //   WK_SOUND.hum(near)         Mishka hums: five notes, hummed (near: 0..1, how close Harold is)
@@ -80,28 +80,26 @@
     osc.connect(g); g.connect(S.master); osc.start(t); osc.stop(t + dur + 0.02);
   }
 
-  // the cat's spell, made once: a robot's ba-la-la-la-la – 0.95 s at 8 kHz, 8 bits. A buzz through two resonances held on
-  // an "a", its pitch climbing from low to high and back in hard semitone steps (a robot's glide), and seven syllables:
-  // each "l" a quick dip of the voice and of the first resonance. Built here, after the gesture, not from any recording
+  // the cat's spell, made once: a robot's ba-la-la-la-la – 1.02 s at 8 kHz, 8 bits. Its pitch and its loudness are the
+  // ones measured off the original (every 20 ms): the voice glides up from 115 Hz to 306 Hz over the first two thirds
+  // and falls back to 100 Hz in the last; the loudness dips once per "l". A buzz through two resonances held on an
+  // "a"; at each dip the first resonance closes too, which is what makes it an "l". Built here, after the gesture,
+  // not from any recording
+  const SPELL_F0 = [115, 115, 115, 115, 117, 119, 123, 128, 139, 150, 164, 173, 183, 190, 196, 206, 215, 222, 226, 231, 235, 239, 242, 246, 250, 254, 261, 272, 283, 293, 300, 306, 306, 297, 283, 256, 229, 200, 181, 163, 150, 139, 133, 126, 119, 112, 105, 100, 100, 101, 106, 108];
+  const SPELL_ENV = [0.05, 0.12, 0.42, 0.8, 0.88, 0.76, 0.69, 0.54, 0.4, 0.41, 0.48, 0.44, 0.42, 0.56, 0.63, 0.66, 0.8, 0.94, 0.92, 0.88, 0.76, 0.49, 0.42, 0.51, 0.62, 0.65, 0.55, 0.56, 0.9, 1.0, 0.72, 0.48, 0.49, 0.53, 0.67, 0.67, 0.72, 0.81, 0.62, 0.49, 0.56, 0.58, 0.5, 0.4, 0.31, 0.25, 0.22, 0.13, 0.09, 0.07, 0.06, 0.05];
   let SPELL = null;
   function spellSample() {
     if (SPELL) return SPELL;
-    const fs = 8000, n = Math.floor(fs * 0.95), buf = S.ctx.createBuffer(1, n, fs), d = buf.getChannelData(0);
+    const fs = 8000, dur = (SPELL_F0.length - 1) * 0.02, n = Math.floor(fs * dur), buf = S.ctx.createBuffer(1, n, fs), d = buf.getChannelData(0);
     const res = () => ({ y1: 0, y2: 0 }), r1 = res(), r2 = res(), r3 = res();
     const step = (r, x, f, bw) => { const q = Math.exp(-Math.PI * bw / fs), b1 = 2 * q * Math.cos(2 * Math.PI * f / fs), b2 = -q * q, y = (1 - q) * x + b1 * r.y1 + b2 * r.y2; r.y2 = r.y1; r.y1 = y; return y; };
+    const at = (T, t) => { const u = Math.min(T.length - 1.001, t / 0.02), i = Math.floor(u); return T[i] + (T[i + 1] - T[i]) * (u - i); };
     let ph = 0, peak = 0;
     for (let i = 0; i < n; i++) {
-      const t = i / fs;
-      // low on the ba, up from 120 Hz to 300 Hz by 0.68 s, back down to 120 Hz by 0.92 s; held in semitone steps
-      const glide = t < 0.12 ? 120 : t < 0.68 ? 120 * Math.pow(2.5, (t - 0.12) / 0.56) : 300 * Math.pow(0.4, Math.min(1, (t - 0.68) / 0.24));
-      const f0 = 120 * Math.pow(2, Math.round(12 * Math.log2(glide / 120)) / 12);
+      const t = i / fs, f0 = at(SPELL_F0, t), env = at(SPELL_ENV, t), l = Math.max(0, Math.min(1, (env - 0.35) / 0.5));
       ph = (ph + f0 / fs) % 1;
       const x = 1 - 2 * ph;   // the buzz
-      // seven syllables, the first (ba) a little longer; the l: a dip at each start
-      const syl = t < 0.16 ? t / 0.16 : ((t - 0.16) % 0.115) / 0.115, l = Math.min(1, syl / 0.28);
-      const env = Math.min(1, t / 0.03) * Math.min(1, (0.95 - t) / 0.1) * (0.25 + 0.75 * l);
-      const f1 = 350 + 450 * l;   // "l" to "a"
-      d[i] = env * (0.12 * x + step(r1, x, f1, 110) * 1.0 + step(r2, x, 1300, 150) * 1.0 + step(r3, x, 2600, 240) * 0.55);
+      d[i] = env * (0.12 * x + step(r1, x, 350 + 450 * l, 110) * 1.0 + step(r2, x, 1300, 150) * 1.0 + step(r3, x, 2600, 240) * 0.55);
       peak = Math.max(peak, Math.abs(d[i]));
     }
     for (let i = 0; i < n; i++) d[i] = Math.round((d[i] / peak) * 127) / 127;
@@ -181,11 +179,24 @@
       knock(180, 0.18); knock(320, 0.12, 0.04); knock(520, 0.08, 0.09);
       voice('triangle', 900, 300, 0.25, 0.06, 0, { lp: 1800 });
     },
-    // the cat's spell, after a certain robot's fist bump: a robot voice's ba-la-la-la-la (spellSample above)
+    // the cat's spell: the robot's ba-la-la-la-la (spellSample above), quiet, in a short echo; bells twinkle up a
+    // pentatonic scale over it (each with a bell's high partial) and a soft shimmer rises behind – all inside the
+    // spell's own second, as long as the original – a spell, not a shout
     wizard() {
       if (!fx()) return;
-      const src = S.ctx.createBufferSource(), g = S.ctx.createGain();
-      src.buffer = spellSample(); g.gain.value = 0.3; src.connect(g); g.connect(S.master); src.start();
+      const c = S.ctx, t = c.currentTime;
+      const src = c.createBufferSource(), g = c.createGain(), lp = c.createBiquadFilter(), dl = c.createDelay(0.5), fb = c.createGain(), wet = c.createGain();
+      src.buffer = spellSample(); lp.type = 'lowpass'; lp.frequency.value = 3000; g.gain.value = 0.12;
+      dl.delayTime.value = 0.09; fb.gain.value = 0.15; wet.gain.value = 0.35;
+      src.connect(lp); lp.connect(g); g.connect(S.master); g.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(S.master);
+      src.start(t); setTimeout(() => { try { fb.disconnect(); } catch (e) { /* gone */ } }, 2500);
+      const BELLS = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3, 2637];
+      BELLS.forEach((f, i) => { voice('sine', f, f, 0.22, 0.03, 0.08 + i * 0.08); voice('sine', f * 2.76, f * 2.76, 0.12, 0.008, 0.08 + i * 0.08); });
+      const n = Math.floor(c.sampleRate * 0.9), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / n);
+      const sh = c.createBufferSource(), bp = c.createBiquadFilter(), sg = c.createGain();
+      sh.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 6; bp.frequency.setValueAtTime(2000, t); bp.frequency.exponentialRampToValueAtTime(7000, t + 0.9); sg.gain.value = 0.025;
+      sh.connect(bp); bp.connect(sg); sg.connect(S.master); sh.start(t + 0.05);
     },
     // Harold's theme, our own, as an NES would play it: eight bars at 150 bpm. Pulse 1 (25 %) has the tune – a fanfare
     // up the C chord, a hook that climbs and lands on G, an answer that dips into A minor and back, a last climb home –

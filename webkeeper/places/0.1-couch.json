@@ -2,7 +2,7 @@
  "place": "0.1",
  "name": "the couch",
  "chapter": 0,
- "idea": "the prologue (book/01-prologue.md): the party on the double-decker couch – walk round and talk to everyone, then A at the remote on the table by the TV starts the countdown; the counter jams, Bug tumbles out and drags the guests in; A at the TV jumps in after them",
+ "idea": "the prologue (book/01-prologue.md): the party round the TV – the couch facing it and four beanbags in a half circle round a big round table of snacks; walk round and talk to everyone, then A at the remote on the little table by the TV starts the countdown; the counter jams, Bug tumbles out, runs the half circle, takes a slice of pizza and drags the guests in; A at the TV jumps in after them",
  "learn": "it's a party, then it isn't",
  "version": 1,
  "seed": 101,
@@ -20,148 +20,164 @@
    "brush": "bark",
    "line": [
     [
-     -4,
-     42
+     26,
+     44
     ],
     [
-     164,
-     42.1
+     134,
+     44.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 42
+   "seed": 44
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     39
+     26,
+     41
     ],
     [
-     164,
-     39.1
+     134,
+     41.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 39
+   "seed": 41
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     36
+     26,
+     38
     ],
     [
-     164,
-     36.1
+     134,
+     38.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 36
+   "seed": 38
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     33
+     26,
+     35
     ],
     [
-     164,
-     33.1
+     134,
+     35.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 33
+   "seed": 35
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     30
+     26,
+     32
     ],
     [
-     164,
-     30.1
+     134,
+     32.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 30
+   "seed": 32
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     27
+     26,
+     29
     ],
     [
-     164,
-     27.1
+     134,
+     29.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 27
+   "seed": 29
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     24
+     26,
+     26
     ],
     [
-     164,
-     24.1
+     134,
+     26.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 24
+   "seed": 26
   },
   {
    "brush": "bark",
    "line": [
     [
-     -4,
-     21
+     26,
+     23
     ],
     [
-     164,
-     21.1
+     134,
+     23.1
     ]
    ],
    "width": 0.8,
    "amt": 0.8,
-   "seed": 21
+   "seed": 23
+  },
+  {
+   "brush": "bark",
+   "line": [
+    [
+     26,
+     20
+    ],
+    [
+     134,
+     20.1
+    ]
+   ],
+   "width": 0.8,
+   "amt": 0.8,
+   "seed": 20
   },
   {
    "brush": "fur",
    "disc": [
     80,
-    27,
     30,
-    4.4
+    34,
+    5.2
    ],
-   "amt": 0.9,
+   "amt": 0.6,
    "edge": 1.5
   },
   {
    "brush": "fur",
    "disc": [
     80,
-    27,
-    26,
-    3.6
+    30,
+    30,
+    4.4
    ],
    "amt": 0.4
   }
@@ -169,8 +185,8 @@
  "mid": [
   {
    "stamp": "ruin",
-   "c0": -3,
-   "c1": 163,
+   "c0": 24,
+   "c1": 136,
    "foot": 16,
    "h": 8,
    "seed": 11,
@@ -187,9 +203,9 @@
     19
    ],
    "box": [
-    63,
+    64,
     7,
-    97,
+    96,
     19
    ],
    "screen": "23:56:00",
@@ -201,21 +217,6 @@
     "rad": 460,
     "k": 1
    }
-  },
-  {
-   "id": "couch",
-   "thing": "couch",
-   "foot": [
-    80,
-    37
-   ],
-   "box": [
-    32,
-    31,
-    128,
-    37
-   ],
-   "seats": 7
   },
   {
    "id": "table",
@@ -238,6 +239,116 @@
     80,
     21
    ]
+  },
+  {
+   "id": "console",
+   "thing": "console",
+   "foot": [
+    102,
+    20
+   ]
+  },
+  {
+   "id": "snacks",
+   "thing": "snacks",
+   "foot": [
+    80,
+    31
+   ],
+   "box": [
+    66,
+    27,
+    94,
+    31
+   ]
+  },
+  {
+   "id": "couch",
+   "thing": "sofa",
+   "foot": [
+    80,
+    35
+   ],
+   "box": [
+    54,
+    35,
+    106,
+    42
+   ],
+   "over": 41,
+   "seats": 4,
+   "feet": [
+    [
+     54,
+     41,
+     107,
+     43
+    ]
+   ]
+  },
+  {
+   "id": "crisps",
+   "thing": "crisps",
+   "foot": [
+    75,
+    39
+   ]
+  },
+  {
+   "id": "bag-swift",
+   "thing": "beanbag",
+   "foot": [
+    44,
+    28
+   ],
+   "over": 30,
+   "col": "teal",
+   "size": [
+    7,
+    1.7
+   ]
+  },
+  {
+   "id": "bag-lex",
+   "thing": "beanbag",
+   "foot": [
+    47,
+    34
+   ],
+   "over": 36,
+   "col": "green",
+   "size": [
+    7,
+    1.7
+   ]
+  },
+  {
+   "id": "bag-curry",
+   "thing": "beanbag",
+   "foot": [
+    116,
+    28
+   ],
+   "over": 30,
+   "col": "red",
+   "size": [
+    7,
+    1.7
+   ]
+  },
+  {
+   "id": "bag-ptero",
+   "thing": "beanbag",
+   "foot": [
+    113,
+    34
+   ],
+   "over": 36,
+   "col": "beige",
+   "size": [
+    7,
+    1.7
+   ]
   }
  ],
  "words": [
@@ -245,8 +356,8 @@
    "id": "v1",
    "text": "is it time?",
    "at": [
-    36,
-    28
+    56,
+    34
    ],
    "voice": true
   },
@@ -254,8 +365,8 @@
    "id": "v2",
    "text": "four hours long",
    "at": [
-    50,
-    29
+    38,
+    22.5
    ],
    "voice": true
   },
@@ -263,8 +374,8 @@
    "id": "v3",
    "text": "that sounds plaid",
    "at": [
-    62,
-    28
+    34,
+    31
    ],
    "voice": true
   },
@@ -272,8 +383,8 @@
    "id": "v4",
    "text": "zzz",
    "at": [
-    78,
-    29
+    121,
+    23
    ],
    "voice": true
   },
@@ -281,8 +392,8 @@
    "id": "v5",
    "text": "load-bearing",
    "at": [
-    86,
-    28
+    100,
+    31
    ],
    "voice": true
   },
@@ -290,8 +401,8 @@
    "id": "v6",
    "text": "do planes fall?",
    "at": [
-    98,
-    29
+    92,
+    33
    ],
    "voice": true
   }
@@ -300,57 +411,22 @@
   {
    "who": "harold",
    "at": [
-    22,
-    40
+    75,
+    34.2
    ],
    "face": "east"
-  },
-  {
-   "who": "friend:sid",
-   "id": "sid",
-   "at": [
-    40,
-    37.6
-   ],
-   "talk": {
-    "first": [
-     {
-      "who": "sid",
-      "text": "is it time?"
-     },
-     {
-      "who": "harold",
-      "text": "four minutes."
-     },
-     {
-      "who": "sid",
-      "text": "is it time now?"
-     },
-     {
-      "who": "harold",
-      "text": "three fifty-eight."
-     },
-     {
-      "who": "sid",
-      "text": "...is it time now?"
-     }
-    ],
-    "again": [
-     [
-      {
-       "who": "sid",
-       "text": "once in a thousand years? i'll miss the next one!"
-      }
-     ]
-    ]
-   }
   },
   {
    "who": "friend:swift",
    "id": "swift",
    "at": [
-    52,
-    37.6
+    44,
+    29.2
+   ],
+   "pose": "sit",
+   "solid": [
+    9,
+    3
    ],
    "talk": {
     "first": [
@@ -389,8 +465,17 @@
    "who": "friend:lex",
    "id": "lex",
    "at": [
-    64,
-    37.6
+    47,
+    35.2
+   ],
+   "pose": "sit",
+   "solid": [
+    9,
+    3
+   ],
+   "eats": [
+    70,
+    29
    ],
    "talk": {
     "first": [
@@ -418,36 +503,123 @@
    }
   },
   {
-   "who": "friend:currywurst",
-   "id": "currywurst",
+   "who": "friend:sid",
+   "id": "sid",
    "at": [
-    78,
-    37.6
+    63,
+    39.4
+   ],
+   "pose": "sit",
+   "solid": [
+    9,
+    3
    ],
    "talk": {
     "first": [
      {
-      "who": "currywurst",
-      "text": "zzz."
+      "who": "sid",
+      "text": "is it time?"
      },
      {
       "who": "harold",
-      "text": "it's nearly midnight."
+      "text": "four minutes."
      },
      {
-      "who": "currywurst",
-      "text": "wake me for the bang."
+      "who": "sid",
+      "text": "is it time now?"
      },
      {
-      "who": "currywurst",
-      "text": "*psssht* (he opens a can, asleep)"
+      "who": "harold",
+      "text": "three fifty-eight."
+     },
+     {
+      "who": "sid",
+      "text": "...is it time now?"
      }
     ],
     "again": [
      [
       {
-       "who": "currywurst",
-       "text": "zzz."
+       "who": "sid",
+       "text": "once in a thousand years? i'll miss the next one!"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "who": "mishka",
+   "id": "mishka",
+   "at": [
+    86,
+    39.6
+   ],
+   "face": "west",
+   "eats": [
+    75,
+    39
+   ],
+   "solid": [
+    8,
+    4
+   ],
+   "talk": {
+    "first": [
+     {
+      "who": "mishka",
+      "text": "hm-hm. ...these are my crisps."
+     },
+     {
+      "who": "harold",
+      "text": "they're the party's crisps."
+     },
+     {
+      "who": "mishka",
+      "text": "hm. the party is very welcome to look at them."
+     }
+    ],
+    "again": [
+     [
+      {
+       "who": "mishka",
+       "text": "hm-hm-hmm."
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "who": "friend:pilot",
+   "id": "pilot",
+   "at": [
+    98,
+    39.4
+   ],
+   "pose": "sit",
+   "solid": [
+    9,
+    3
+   ],
+   "talk": {
+    "first": [
+     {
+      "who": "pilot",
+      "text": "if all the computers crash at midnight, do planes fall out of the sky?"
+     },
+     {
+      "who": "harold",
+      "text": "you're a paper plane."
+     },
+     {
+      "who": "pilot",
+      "text": "...exactly."
+     }
+    ],
+    "again": [
+     [
+      {
+       "who": "pilot",
+       "text": "i'm not scared. i'm aerodynamic."
       }
      ]
     ]
@@ -457,8 +629,14 @@
    "who": "friend:pterodactyl",
    "id": "pterodactyl",
    "at": [
-    90,
-    37.6
+    113,
+    35.2
+   ],
+   "pose": "sit",
+   "face": "west",
+   "solid": [
+    9,
+    3
    ],
    "talk": {
     "first": [
@@ -490,65 +668,42 @@
    }
   },
   {
-   "who": "friend:pilot",
-   "id": "pilot",
-   "at": [
-    102,
-    37.6
-   ],
-   "talk": {
-    "first": [
-     {
-      "who": "pilot",
-      "text": "if all the computers crash at midnight, do planes fall out of the sky?"
-     },
-     {
-      "who": "harold",
-      "text": "you're a paper plane."
-     },
-     {
-      "who": "pilot",
-      "text": "...exactly."
-     }
-    ],
-    "again": [
-     [
-      {
-       "who": "pilot",
-       "text": "i'm not scared. i'm aerodynamic."
-      }
-     ]
-    ]
-   }
-  },
-  {
-   "who": "mishka",
-   "id": "mishka",
+   "who": "friend:currywurst",
+   "id": "currywurst",
    "at": [
     116,
-    37.6
+    29.2
    ],
+   "pose": "sit",
    "face": "west",
+   "solid": [
+    9,
+    3
+   ],
    "talk": {
     "first": [
      {
-      "who": "mishka",
-      "text": "hm-hm. ...these are my crisps."
+      "who": "currywurst",
+      "text": "zzz."
      },
      {
       "who": "harold",
-      "text": "they're the party's crisps."
+      "text": "it's nearly midnight."
      },
      {
-      "who": "mishka",
-      "text": "hm. the party is very welcome to look at them."
+      "who": "currywurst",
+      "text": "wake me for the bang."
+     },
+     {
+      "who": "currywurst",
+      "text": "*psssht* (he opens a can, asleep)"
      }
     ],
     "again": [
      [
       {
-       "who": "mishka",
-       "text": "hm-hm-hmm."
+       "who": "currywurst",
+       "text": "zzz."
       }
      ]
     ]
@@ -567,7 +722,7 @@
  "events": [],
  "bug": {
   "here": true,
-  "note": "he tumbles out of the jammed counter, runs a loop round the couch and drags the friends back into the TV with him"
+  "note": "he tumbles out of the jammed counter, runs round the inside of the half circle, takes a slice of pizza off the table and drags the friends back into the TV with him"
  },
  "exits": [
   {
@@ -593,9 +748,9 @@
  "walk": {
   "area": [
    [
-    4,
+    28,
     20,
-    156,
+    132,
     43
    ]
   ]
@@ -838,31 +993,51 @@
         20
        ],
        [
+        60,
+        25
+       ],
+       [
+        55,
+        31
+       ],
+       [
         62,
-        26
-       ],
-       [
-        44,
-        33
-       ],
-       [
-        80,
-        41
-       ],
-       [
-        118,
         34
        ],
        [
+        80,
+        34.2
+       ],
+       [
+        98,
+        34
+       ],
+       [
+        105,
+        31
+       ],
+       [
         100,
-        24
+        25
+       ],
+       [
+        87,
+        26.6
        ],
        [
         80,
         19
        ]
       ],
-      "speed": 44
+      "speed": 40,
+      "grab": {
+       "at": [
+        87,
+        26.6
+       ],
+       "hold": "slice",
+       "set": "slice"
+      }
      }
     },
     {
@@ -952,411 +1127,40 @@
     }
    ],
    "goal": true
+  },
+  {
+   "id": "console",
+   "on": {
+    "press": "console"
+   },
+   "unless": "pulled",
+   "label": "the console",
+   "steps": [
+    {
+     "say": "harold",
+     "text": "one more level."
+    },
+    {
+     "think": [
+      "save point",
+      "after midnight"
+     ]
+    },
+    {
+     "say": "harold",
+     "text": "...after midnight."
+    }
+   ]
   }
  ],
- "tall": {
-  "note": "on an upright screen the couch is what it's called: two decks and a ladder, the guests split between them",
-  "things": [
-   {
-    "id": "tv",
-    "thing": "tv",
-    "foot": [
-     80,
-     19
-    ],
-    "box": [
-     63,
-     7,
-     97,
-     19
-    ],
-    "screen": "23:56:00",
-    "glow": {
-     "at": [
-      80,
-      23
-     ],
-     "rad": 460,
-     "k": 1
-    }
-   },
-   {
-    "id": "couch",
-    "thing": "couch",
-    "foot": [
-     78,
-     27
-    ],
-    "box": [
-     52,
-     22,
-     104,
-     27
-    ],
-    "seats": 4,
-    "ladder": 9
-   },
-   {
-    "id": "couch2",
-    "thing": "couch",
-    "foot": [
-     78,
-     36
-    ],
-    "box": [
-     52,
-     30,
-     104,
-     36
-    ],
-    "seats": 4
-   },
-   {
-    "id": "table",
-    "thing": "table",
-    "foot": [
-     43,
-     22
-    ],
-    "box": [
-     38,
-     21,
-     48,
-     22
-    ]
-   },
-   {
-    "id": "remote",
-    "thing": "remote",
-    "foot": [
-     43,
-     20
-    ]
-   }
-  ],
-  "actors": [
-   {
-    "who": "harold",
-    "at": [
-     22,
-     40
-    ],
-    "face": "east"
-   },
-   {
-    "who": "friend:sid",
-    "id": "sid",
-    "at": [
-     60,
-     27.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "sid",
-       "text": "is it time?"
-      },
-      {
-       "who": "harold",
-       "text": "four minutes."
-      },
-      {
-       "who": "sid",
-       "text": "is it time now?"
-      },
-      {
-       "who": "harold",
-       "text": "three fifty-eight."
-      },
-      {
-       "who": "sid",
-       "text": "...is it time now?"
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "sid",
-        "text": "once in a thousand years? i'll miss the next one!"
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "friend:swift",
-    "id": "swift",
-    "at": [
-     74,
-     27.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "swift",
-       "text": "i made a playlist for midnight."
-      },
-      {
-       "who": "harold",
-       "text": "how long?"
-      },
-      {
-       "who": "swift",
-       "text": "four hours."
-      },
-      {
-       "who": "harold",
-       "text": "midnight is one second."
-      },
-      {
-       "who": "swift",
-       "text": "it's a very good second."
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "swift",
-        "text": "♪ (he sings. every word.)"
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "friend:lex",
-    "id": "lex",
-    "at": [
-     88,
-     27.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "lex",
-       "text": "your voice is yellow."
-      },
-      {
-       "who": "harold",
-       "text": "i'm yellow."
-      },
-      {
-       "who": "lex",
-       "text": "...that explains a lot. wait – crisps?"
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "lex",
-        "text": "that sounds plaid."
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "friend:currywurst",
-    "id": "currywurst",
-    "at": [
-     60,
-     36.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "currywurst",
-       "text": "zzz."
-      },
-      {
-       "who": "harold",
-       "text": "it's nearly midnight."
-      },
-      {
-       "who": "currywurst",
-       "text": "wake me for the bang."
-      },
-      {
-       "who": "currywurst",
-       "text": "*psssht* (he opens a can, asleep)"
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "currywurst",
-        "text": "zzz."
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "friend:pterodactyl",
-    "id": "pterodactyl",
-    "at": [
-     72,
-     36.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "pterodactyl",
-       "text": "don't breathe on it. it's load-bearing."
-      },
-      {
-       "who": "harold",
-       "text": "it's crisps."
-      },
-      {
-       "who": "pterodactyl",
-       "text": "it's architecture."
-      },
-      {
-       "who": "pterodactyl",
-       "text": "KAH-KAH-KAH"
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "pterodactyl",
-        "text": "KAH-KAH."
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "friend:pilot",
-    "id": "pilot",
-    "at": [
-     84,
-     36.6
-    ],
-    "talk": {
-     "first": [
-      {
-       "who": "pilot",
-       "text": "if all the computers crash at midnight, do planes fall out of the sky?"
-      },
-      {
-       "who": "harold",
-       "text": "you're a paper plane."
-      },
-      {
-       "who": "pilot",
-       "text": "...exactly."
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "pilot",
-        "text": "i'm not scared. i'm aerodynamic."
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "mishka",
-    "id": "mishka",
-    "at": [
-     98,
-     36.6
-    ],
-    "face": "west",
-    "talk": {
-     "first": [
-      {
-       "who": "mishka",
-       "text": "hm-hm. ...these are my crisps."
-      },
-      {
-       "who": "harold",
-       "text": "they're the party's crisps."
-      },
-      {
-       "who": "mishka",
-       "text": "hm. the party is very welcome to look at them."
-      }
-     ],
-     "again": [
-      [
-       {
-        "who": "mishka",
-        "text": "hm-hm-hmm."
-       }
-      ]
-     ]
-    }
-   },
-   {
-    "who": "bug",
-    "id": "bug",
-    "at": [
-     80,
-     20
-    ],
-    "hidden": true
-   }
-  ],
-  "words": [
-   {
-    "id": "v1",
-    "text": "is it time?",
-    "at": [
-     54,
-     20
-    ],
-    "voice": true
-   },
-   {
-    "id": "v2",
-    "text": "four hours long",
-    "at": [
-     68,
-     21
-    ],
-    "voice": true
-   },
-   {
-    "id": "v3",
-    "text": "that sounds plaid",
-    "at": [
-     84,
-     20
-    ],
-    "voice": true
-   },
-   {
-    "id": "v4",
-    "text": "zzz",
-    "at": [
-     57,
-     29
-    ],
-    "voice": true
-   },
-   {
-    "id": "v5",
-    "text": "load-bearing",
-    "at": [
-     68,
-     29
-    ],
-    "voice": true
-   },
-   {
-    "id": "v6",
-    "text": "do planes fall?",
-    "at": [
-     82,
-     29
-    ],
-    "voice": true
-   }
-  ]
- }
+ "frame": [
+  80,
+  26
+ ],
+ "fit": [
+  32,
+  4,
+  128,
+  44
+ ]
 }

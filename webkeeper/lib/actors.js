@@ -63,7 +63,9 @@
     }
     if (who === 'malicat') { WK_CAST.malicat(V, ox, oy, t, { s: 0.72, flip: !flip }); return; }
     if (who === 'uniclone') { WK_UNICLONES.uniclone(V, ox, oy, t, { left: !flip, talk: pose === 'talk' }); return; }
-    if (who.startsWith('friend:')) { const fr = WK_FRIENDS.FRIENDS[who.slice(7)]; if (fr) fr.sprite(V, ox, oy, t, {}); }
+    // a guest faces east as drawn; flip (east, the cast's default) keeps it, west mirrors the line figures; sitting,
+    // the typed ones leave their branch or link behind
+    if (who.startsWith('friend:')) { const fr = WK_FRIENDS.FRIENDS[who.slice(7)]; if (fr) fr.sprite(V, ox, oy, t, { flip: !flip, sit: pose === 'sit' }); }
   }
   // an offscreen screen with the same drawing calls as a card's (cast.js and friends.js draw through it)
   // sprites bake at the scale they're drawn at (the screen's px × the game's zoom, up to 4), so a zoomed-in game
@@ -111,7 +113,8 @@
   // every pose of a cast, baked ahead (a room bakes its cast with its layers, so nothing bakes while it plays)
   const POSES = { harold: ['idle', 'walk'], bug: ['calm', 'run', 'scared', 'dig'], patch: ['calm', 'dance', 'run'], mishka: ['idle'], malifex: ['idle', 'talk', 'blush'], malicat: ['idle'], uniclone: ['idle', 'talk'] };
   // what is still to bake for a cast, one sprite per entry (a room bakes them one a slice)
-  function pending(list, W) { const d = scaleOf(W), out = []; for (const who of list) for (const pose of POSES[who] || ['idle']) for (const fl of [false, true]) for (let f = 0; f < FR; f++) if (!cache.has(who + '|' + pose + '|' + (fl ? 1 : 0) + '|' + f + '|' + d)) out.push([who, pose, fl, f]); return out; }
+  const posesOf = (who) => POSES[who] || (who.startsWith('friend:') ? ['idle', 'sit'] : ['idle']);
+  function pending(list, W) { const d = scaleOf(W), out = []; for (const who of list) for (const pose of posesOf(who)) for (const fl of [false, true]) for (let f = 0; f < FR; f++) if (!cache.has(who + '|' + pose + '|' + (fl ? 1 : 0) + '|' + f + '|' + d)) out.push([who, pose, fl, f]); return out; }
   function prebake(W, list) {
     const POSES = { harold: ['idle', 'walk'], bug: ['calm', 'run', 'scared', 'dig'], mishka: ['idle'], malifex: ['idle', 'talk'], uniclone: ['idle', 'talk'] };
     let n = 0;

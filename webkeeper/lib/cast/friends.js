@@ -72,6 +72,27 @@
     dots: [{ x: 0, y: -3.95, chr: 'o', col: P.beigeDim, size: 0.55 }, { x: -0.28, y: -3.0, chr: '.', col: P.beige, size: 0.8 },
       { x: 0.28, y: -3.0, chr: '.', col: P.beige, size: 0.8 }, { x: 0, y: -2.7, chr: 'v', col: P.beige, size: 0.6 }],
   };
+  // sitting (the party), side on and facing the way he's set, so he reads as a bird and not a bat: a round body, the
+  // long scythe wing folded back past a forked tail, a short beak, little legs, the paper hat on his head; he sings,
+  // and his beak opens on the beat
+  const SWIFT_SIT_WING = [[0.9, -1.75], [-0.6, -1.6], [-2.2, -1.2], [-3.5, -0.8], [-2.0, -0.95], [-0.4, -1.05], [0.6, -1.25]];
+  const SWIFT_SIT = {
+    fill: [[-3.5, -0.8], [-1.6, -0.55], [0.8, -0.4], [1.6, -1.3], [2.8, -2.0], [2.1, -2.5], [1.55, -3.6], [1.0, -2.5], [-0.4, -1.95], [-1.9, -1.4]],
+    strokes: [
+      line(P.tealHi, ...arc(0, -1.2, 1.45, 0.68, 0, 2 * PI, 16)),
+      line(P.tealHi, ...arc(1.55, -2.05, 0.55, 0.42, 0, 2 * PI, 10)),
+      line(P.tealUp, ...SWIFT_SIT_WING),
+      line(P.tealUp, [-1.3, -0.85], [-2.6, -0.3]), line(P.tealUp, [-1.3, -0.85], [-2.2, -0.05]),
+      line(P.beigeDim, [0.25, -0.55], [0.2, 0]), line(P.beigeDim, [0.7, -0.55], [0.75, 0]),
+      line(P.beige, [1.05, -2.4], [1.55, -3.55], [2.05, -2.4], [1.05, -2.4]), line(P.beigeDim, [1.2, -2.65], [1.9, -2.65]),
+    ],
+    dots: [{ x: 1.78, y: -2.12, chr: '.', col: P.beige, size: 0.8 }, { x: 1.55, y: -2.95, chr: 'o', col: P.beigeDim, size: 0.45 }],
+  };
+  function swiftSit(W, x, y, t, o) {
+    const open = Math.floor(loop4(t) * 2) % 2 === 1;
+    const beak = open ? [line(P.beige, [2.05, -2.15], [2.75, -2.15], [2.1, -2.0]), line(P.beige, [2.1, -1.95], [2.65, -1.75], [2.05, -1.85])] : [line(P.beige, [2.05, -2.15], [2.8, -2.0], [2.05, -1.85])];
+    figure(W, { ...SWIFT_SIT, strokes: [...SWIFT_SIT.strokes, ...beak] }, x, y, o);
+  }
   function swiftFig(W, x, y, t, o) {
     // the wingtips flick on the beat
     const up = Math.floor(loop4(t) * 2) % 2 ? -0.35 : 0;
@@ -144,6 +165,9 @@
   // a red tuft on top. Gag: protects the last of anything; blinks once a minute.
   const SID = ['___________', ' J  ,,,  L ', '  \\(=-.-=)/', '   (    )  ', '    "  "   '];
   const SID_MAP = ['ttttttttttt', ' d  rrr  d ', '  ddRbdbRdd', '   dddddd  ', '    d  d   '];
+  // sitting (the party): no link to hang from, so his claws rest either side of him
+  const SID_SIT = ['   ,,,    ', ' J(=-.-=)L', '  (    )  ', '   "  "   '];
+  const SID_SIT_MAP = ['   rrr    ', ' ddRbdbRdd', '  dddddd  ', '   d  d   '];
   const SID_CLOSE = [
     '     the last page      ',
     '________________________',
@@ -160,6 +184,7 @@
     rows: SID, line: 'this is the last page. so we keep it.',
     sprite(W, x, y, t, o = {}) {
       const l = loop4(t), shut = l >= 1.2 && l < 2.4;   // one very slow blink
+      if (o.sit) { const rows = SID_SIT.slice(); if (shut) rows[1] = ' J(=_._=)L'; sprite(W, x, y, rows, SID_SIT_MAP, o); return; }
       const swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8];   // a slow swing, a pixel a step
       const rows = SID.slice(); if (shut) rows[2] = '  \\(=_._=)/';
       sprite(W, x, y, rows, SID_MAP, { ...o, dx: [0, 0, swing * 0.5, swing, swing * 1.5] });
@@ -198,7 +223,7 @@
     name: 'swift', pron: 'he', key: 'teal hi', prop: 'a paper hat folded from song lyrics', gag: 'sings every word',
     rows: SWIFT, line: 'wait – i know this one. every word.',
     sprite(W, x, y, t, o = {}) {
-      swiftFig(W, x, y, t, o);
+      (o.sit ? swiftSit : swiftFig)(W, x, y, t, o);
       if (!o.quiet) swiftNotes(W, x, y, t, o.s || 1);
     },
     close(W, x, y, t, o = {}) {
@@ -236,6 +261,7 @@
       const rows = LEX.slice(), map = LEX_MAP.slice();
       rows[1] = ` .-'  (${lexEye(t)}) \\`;
       if (lexTongue(t)) { rows[2] = '/        _>====o'; map[2] = 'LLLLLLLLLLLrrrrr'; }
+      if (o.sit) { rows.pop(); map.pop(); }   // sitting, he grips the beanbag instead of his branch
       sprite(W, x, y, rows, map, { ...o, tint: lexTint(t) });
       if (!o.quiet && Math.floor(loop4(t) * 1.5) % 3 === 0) say(W, x + 3 * W.cw * (o.s || 1), y - 6.5 * W.ch * (o.s || 1), '?');
     },

@@ -112,10 +112,16 @@
   function actor(W, who, a0, t) {
     const a = onGrid(a0);
     // Mishka is the sketch's bear (lib/bear.js), not a grid sprite
-    if (who === 'mishka' && window.WK_BEAR) { WK_BEAR.draw(W, a.x, a.y, t); return; }
+    if (who === 'mishka' && window.WK_BEAR) { WK_BEAR.draw(W, a.x, a.y, t, { eats: a0.eats && [(a0.eats[0] + 0.5) * 8 - a0.x, (a0.eats[1] + 1) * 16 - a0.y] }); return; }
     // a poof (Malifex into the cat and back): a burst of stars round him for half a second
     if (a0.poofT != null && t - a0.poofT >= 0 && t - a0.poofT < 0.5) { const k = (t - a0.poofT) / 0.5; for (let j = 0; j < 10; j++) { const an = (j / 10) * Math.PI * 2 + j; W.loose(Math.round(a.x + Math.cos(an) * (10 + 34 * k)), Math.round(a.y - 30 + Math.sin(an) * (8 + 22 * k)), k < 0.5 ? '*' : '.', P.beige, 0, 14); } }
-    if (window.WK_ACTORS) { WK_ACTORS.draw(W, who, a.x, a.y, { pose: a.pose || (a.moving ? 'walk' : 'idle'), flip: a.flip, t: a.moving ? t * 2 : t }); return; }
+    if (window.WK_ACTORS) {
+      WK_ACTORS.draw(W, who, a.x, a.y, { pose: a.pose || (a.moving ? 'walk' : 'idle'), flip: a.flip, t: a.moving ? t * 2 : t });
+      // what's in Bug's mouth: the slice of pizza he took off the table (a crust, cheese, a spot of tomato)
+      if (a0.hold === 'slice') { const x = a.x + (a.flip ? 22 : -22), y = a.y - 30; inkBox(W, x, y, 12, 16); W.loose(x, y, '▼', P.beige, 0, 15); W.loose(x, y - 3, '.', P.red, 0, 14); }
+      if (who === 'friend:lex' && a0.eats) lexEats(W, a, a0, t);
+      return;
+    }
     if (who !== 'harold') return;
     const lines = a.flip ? ['  _   ', '__(.)< ', '\\___)  '] : Webkeeper.HAROLD;
     W.reset(); shadowUnder(W, a.x, a.y, 52);
@@ -263,7 +269,195 @@
     for (let c = c0 + 2; c <= c1 - 2; c++) W.put(c, r0, '▄', P.burgundy);
     for (let r = r0 + 1; r <= r1; r++) { W.put(c0 + 1, r, '│', P.beigeDim); W.put(c1 - 1, r, '│', P.beigeDim); }
   }
-  const THINGS = { sign, lamp, page, tv, couch, lighthouse, remote, table };
+  // ── the party (0.1, 28 October): one couch facing the TV and four beanbags, in a half circle round a big round
+  // coffee table of snacks, the console by the remote. Seen from above at a slant like everything else, with the TV
+  // at the top: the couch's back is the side nearest us, so it's drawn over its sitters' feet, and a beanbag's front
+  // lip over whoever sank into it (a thing's `over`: the row its second half is sorted at, after the cast)
+  function sofa(W, th, S, t, part) {
+    const [c0, r0, c1, r1] = th.box, ro = th.over, seats = th.seats || 4, s0 = c0 + 3, s1 = c1 - 3;
+    const arm = (a, top, bot) => { for (let r = top; r <= bot; r++) { W.ink(a, r, 3, 1); W.put(a, r, r === r0 ? '▄' : '▐', P.burgundy); W.put(a + 1, r, r === r0 ? '▄' : '█', P.burgundy); W.put(a + 2, r, r === r0 ? '▄' : '▌', P.burgundy); } };
+    if (part !== 'over') {
+      W.ink(c0, r0, c1 - c0 + 1, ro - r0);
+      // the seat: cushions side by side, their far edge toward the table, a dark seam between each
+      const w = (s1 - s0 + 1) / seats;
+      for (let c = s0; c <= s1; c++) {
+        const seam = c > s0 && Math.floor((c - s0) / w) !== Math.floor((c - 1 - s0) / w);
+        // (the fabric is sparse stitches on the dark, so the ink round whoever sits on it doesn't cut holes in it)
+        W.put(c, r0, seam ? '▄' : '▄', seam ? P.burgundy : P.redDim);
+        for (let r = r0 + 1; r < ro; r++) W.put(c, r, seam ? '│' : hash(c, r, 21) < 0.5 ? ':' : '.', seam ? P.burgundy : P.redDim);
+      }
+      arm(c0, r0, ro - 1); arm(c1 - 2, r0, ro - 1);
+      return;
+    }
+    // the back: a rolled top, then the back itself, buttoned
+    W.ink(c0, ro, c1 - c0 + 1, r1 - ro + 1);
+    for (let c = c0; c <= c1; c++) for (let r = ro; r <= r1; r++) W.put(c, r, r === ro ? '▄' : r === r1 ? '▀' : '█', r === r1 ? P.redDim : P.burgundy);
+    for (let c = s0 + 2; c < s1; c += 5) if (r1 - ro >= 2) W.put(c, ro + 1, '•', P.redDim);
+    arm(c0, ro, r1 - 1); arm(c1 - 2, ro, r1 - 1);
+  }
+  // a beanbag: a squashed round sack in one of the room's tints, lit from the upper left like everything soft, a dent
+  // where someone sank in; `over`, only its front lip, drawn over their feet
+  const BAG = { teal: [P.tealHi, P.tealUp], red: [P.burgundy, P.redDim], beige: [P.beige, P.beigeDim], green: [P.phosphorDim, P.phosphorDeep] };
+  function beanbag(W, th, S, t, part) {
+    const [c, r] = th.foot, [rx, ry] = th.size || [6.5, 1.6], [lit, dim] = BAG[th.col] || BAG.teal;
+    const cx = (c + 0.5) * 8, cy = (r + 0.6) * 16, g = W.g, front = part === 'over';
+    for (let y = -ry; y <= ry + 0.01; y += 0.5) for (let x = -rx; x <= rx + 0.01; x += 0.5) {
+      const d = (x / rx) ** 2 + (y / ry) ** 2; if (d > 1) continue;
+      if (front && y < ry * 0.25) continue;
+      const px = cx + x * 8, py = cy + y * 16;
+      g.fillStyle = P.ink; g.fillRect(Math.round(px - 3), Math.round(py - 5), 6, 9);
+      const edge = d > 0.72, dent = !edge && Math.abs(x) < rx * 0.55 && y < ry * 0.3;
+      const light = 0.62 - 0.35 * x / rx - 0.3 * y / ry + (hash(Math.round(x * 2) + c * 7, Math.round(y * 2) + r * 5, 3) - 0.5) * 0.35;
+      const chr = edge ? (y > 0 ? (x < 0 ? '(' : x > 0 ? ')' : '_') : '.') : dent ? (light > 0.5 ? '.' : ' ') : light > 0.62 ? 'o' : light > 0.36 ? ':' : '.';
+      if (chr !== ' ') W.loose(px, py, chr, light > 0.45 ? lit : dim, 0, 13);
+    }
+  }
+  // the coffee table: round, wooden, crowded, and its snacks drawn the three ways a glyph sits (07-LOOK): what was
+  // made sits on the grid (V1: the pizza box, the cans, the bowls, the tub); what's piled is small loose marks, turned,
+  // lit from the upper left – dense where the light falls, sparse where it doesn't (V2: popcorn, nachos, the pizza's
+  // toppings, crisps); and all of it settles (V3): it jostles when someone passes close, a quack's ring reaches it or
+  // Bug runs by, and comes back to rest. Pterodactyl's tower of crisps wobbles if you so much as breathe on it. Bug
+  // takes a slice of the pizza on his way back into the TV (the flag `slice`)
+  const SN = { b: P.beige, d: P.beigeDim, r: P.red, R: P.redDim, g: P.phosphorDim, G: P.phosphorDeep, t: P.tealHi, T: P.tealUp };
+  // how stirred a spot on the table is (0 at rest, 1 shaken): Harold close by, Bug running past, a ring passing over
+  function stir(S, t, x, y) {
+    let k = 0;
+    const near = (ax, ay, rad) => { const d = Math.hypot(ax - x, (ay - y) * 1.8); if (d < rad) k = Math.max(k, 1 - d / rad); };
+    if (S.harold && !S.harold.gone) near(S.harold.x, S.harold.y - 12, S.harold.moving ? 64 : 40);
+    for (const a of S.cast || []) if (!a.gone && a.moving) near(a.x, a.y - 8, 80);
+    for (const R of S.rings || []) { const f = (t - R.t0) * R.speed, d = Math.hypot(R.x - x, (R.y - y) * 1.8); if (Math.abs(d - f) < 28 && f < R.reach + 30) k = Math.max(k, 1 - Math.abs(d - f) / 28); }
+    return k;
+  }
+  // a small loose mark that settles: at rest on its spot, shaken loose by k (a turn and a hop, stepped twelve a second)
+  function crumb(W, x, y, ch, col, size, k, t, seed, ang = 0) {
+    const st = Math.floor(t * 12), j = k > 0.02 ? k : 0;
+    const dx = j * (hash(seed, st, 31) - 0.5) * 6, dy = j * (hash(seed, st, 32) - 0.8) * 5, da = j * (hash(seed, st, 33) - 0.5) * 1.2;
+    W.loose(x + dx, y + dy, ch, col, ang + da, size);
+  }
+  // a pile of small marks in a dome (rx, ry px) over (x, y): the letter from how much light the spot gets
+  function pile(W, x, y, rx, ry, n, ramp, lit, dim, size, k, t, seed, turn = 0.6) {
+    for (let i = 0; i < n; i++) {
+      const u = hash(i, seed, 41) * 2 - 1, v = -Math.sqrt(hash(i, seed, 42));   // the upper half, thicker at the bottom
+      if (u * u + v * v > 1) continue;
+      const light = 0.62 - 0.32 * u + 0.28 * v + (hash(i, seed, 43) - 0.5) * 0.4, ch = ramp[Math.max(0, Math.min(ramp.length - 1, Math.floor(light * ramp.length)))];
+      crumb(W, x + u * rx, y + v * ry, ch, light > 0.5 ? lit : dim, size, k, t, seed * 97 + i, (hash(i, seed, 44) - 0.5) * turn);
+    }
+  }
+  const inkDisc = (W, x, y, rx, ry) => { W.g.fillStyle = P.ink; W.g.beginPath(); W.g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); W.g.fill(); };
+  // the rim of a round thing in small marks: brighter toward the light
+  function rim(W, x, y, rx, ry, n, size, lit, dim) {
+    for (let a = 0; a < n; a++) { const an = (a / n) * Math.PI * 2, c = Math.cos(an), s = Math.sin(an); W.loose(x + c * rx, y + s * ry, Math.abs(c) > 0.85 ? (c < 0 ? '(' : ')') : s > 0 ? '_' : '-', c < 0.2 && s < 0.4 ? lit : dim, 0, size); }
+  }
+  function snacks(W, th, S, t) {
+    const [c0, r0, c1, r1] = th.box, cx = (c0 + c1 + 1) / 2 * 8, cy = (r0 + r1 + 1) / 2 * 16, rx = (c1 - c0 + 1) / 2 * 8, ry = (r1 - r0 + 1) / 2 * 16, g = W.g;
+    // the table: its top, and its edge toward us (the table's thickness)
+    g.fillStyle = P.ink; g.beginPath(); g.ellipse(cx, cy + 6, rx + 6, ry + 8, 0, 0, Math.PI * 2); g.fill();
+    for (let a = 0; a < 64; a++) {
+      const an = (a / 64) * Math.PI * 2, x = cx + Math.cos(an) * rx, y = cy + Math.sin(an) * ry;
+      W.loose(x, y, Math.abs(Math.cos(an)) > 0.8 ? (Math.cos(an) < 0 ? '(' : ')') : Math.sin(an) > 0 ? '_' : '-', Math.sin(an) > 0 ? P.beige : P.beigeDim, 0, 14);
+      if (Math.sin(an) > 0.2 && a % 2 === 0) W.loose(x, y + 9, '▀', P.beigeDim, 0, 12);
+    }
+    for (let k = 0; k < 40; k++) { const u = hash(k, 1, 4) * 2 - 1, v = hash(k, 2, 4) * 2 - 1; if (u * u + v * v < 0.8) W.loose(cx + u * rx * 0.9, cy + v * ry * 0.8, '-', mix('ink', 'beigeDim', 0.45), 0, 12); }
+    const at = (dx, dy) => [cx + dx * rx / 116, cy + dy * ry / 40];   // offsets are laid out for the wide table (116 × 40 px half-sizes)
+
+    // popcorn: a striped paper tub on the grid, a heap of popped kernels spilling over it, a few on the table
+    { const [x, y] = at(-80, 8), k = stir(S, t, x, y);
+      inkDisc(W, x, y - 12, 26, 26);
+      for (let j = 0; j < 4; j++) for (let r = 0; r < 2; r++) W.loose(x + (j - 1.5) * 8, y + r * 12 - 2, '█', j % 2 ? (r ? P.beigeDim : P.beige) : (r ? P.redDim : P.red), 0, 14);
+      pile(W, x, y - 9, 22, 20, 70, '.ooOO', P.beige, P.beigeDim, 14, k, t, 3, 0.8);
+      for (let i = 0; i < 4; i++) crumb(W, x + 22 + i * 7, y + 14 + (i % 2) * 5, i % 2 ? 'o' : 'O', P.beigeDim, 11, k, t, 300 + i); }
+    // nachos: a big plate, chips fanned round a bowl of salsa in the middle, cheese dripped over, jalapeños
+    { const [x, y] = at(-24, -6), k = stir(S, t, x, y);
+      inkDisc(W, x, y, 38, 14); rim(W, x, y, 35, 11, 24, 11, P.beigeDim, mix('ink', 'beigeDim', 0.6));
+      for (let i = 0; i < 16; i++) {
+        const an = (i / 16) * Math.PI * 2 + hash(i, 5, 50) * 0.3, rr = 0.55 + hash(i, 5, 51) * 0.35, u = Math.cos(an) * rr, v = Math.sin(an) * rr, lt = 0.62 - 0.3 * u - 0.3 * v;
+        crumb(W, x + u * 30, y + v * 9 - 1, '▲', lt > 0.5 ? P.beige : P.beigeDim, 16, k, t, 500 + i, an + Math.PI / 2 + (hash(i, 5, 53) - 0.5));
+      }
+      inkDisc(W, x, y - 1, 10, 6); rim(W, x, y - 1, 8, 4, 10, 10, P.beigeDim, P.beigeDim);
+      for (let j = 0; j < 5; j++) crumb(W, x - 4 + (j % 3) * 4, y - 2 + Math.floor(j / 3) * 3, j % 2 ? ':' : 'o', j < 3 ? P.red : P.redDim, 12, k * 0.3, t, 510 + j);
+      for (let i = 0; i < 6; i++) crumb(W, x - 26 + i * 10, y - 6 + (i % 2) * 9, '.', P.beige, 13, k, t, 520 + i);
+      crumb(W, x + 18, y - 6, 'o', P.phosphorDim, 10, k, t, 530); crumb(W, x - 20, y + 5, 'o', P.phosphorDim, 10, k, t, 531); crumb(W, x + 24, y + 6, 'o', P.phosphorDim, 10, k, t, 532); }
+    // two more dips: guacamole and cheese, each a small bowl on the grid, its dip a dab of marks
+    [[-46, 24, P.phosphorDim, P.phosphorDeep], [-10, 26, P.beige, P.beigeDim]].forEach(([dx, dy, lit, dim], i) => {
+      const [x, y] = at(dx, dy), k = stir(S, t, x, y);
+      inkDisc(W, x, y, 13, 8); rim(W, x, y, 11, 5.5, 12, 11, P.beigeDim, mix('ink', 'beigeDim', 0.6));
+      for (let j = 0; j < 7; j++) crumb(W, x - 6 + (j % 4) * 4, y - 2 + Math.floor(j / 4) * 4, j % 3 ? ':' : 'o', j < 4 ? lit : dim, 12, k * 0.3, t, 600 + i * 10 + j);
+    });
+    // the pizza: an open box on the grid, the pie a disc of marks – crust round the edge, cheese, pepperoni – cut in six
+    { const [x, y] = at(44, 2), k = stir(S, t, x, y), took = S.flags && S.flags.slice, bw = 44, bh = 22;
+      g.fillStyle = P.ink; g.fillRect(x - bw - 4, y - bh - 4, bw * 2 + 8, bh * 2 + 8);
+      for (let j = -bw + 8; j <= bw - 8; j += 8) { W.loose(x + j, y - bh, '─', P.beigeDim, 0, 14); W.loose(x + j, y + bh, '─', P.beigeDim, 0, 14); }
+      for (const sx of [-1, 1]) { for (const dy of [-10, 0, 10]) W.loose(x + sx * bw, y + dy, '│', P.beigeDim, 0, 14); W.loose(x + sx * bw, y - bh, sx < 0 ? '┌' : '┐', P.beigeDim, 0, 14); W.loose(x + sx * bw, y + bh, sx < 0 ? '└' : '┘', P.beigeDim, 0, 14); }
+      const R = 36, Ry = 17, gone = (an) => took && an > -Math.PI / 3 && an < 0;
+      for (let i = 0; i < 40; i++) { const an = (i / 40) * Math.PI * 2 - Math.PI; if (gone(an + 0.05)) continue; crumb(W, x + Math.cos(an) * R, y + Math.sin(an) * Ry, 'o', Math.cos(an) < 0.3 && Math.sin(an) < 0.4 ? P.beige : P.beigeDim, 13, k * 0.4, t, 700 + i); }
+      for (let i = 0; i < 200; i++) {
+        const u = hash(i, 7, 71) * 2 - 1, v = hash(i, 7, 72) * 2 - 1; if (u * u + v * v > 0.72) continue;
+        const an = Math.atan2(v, u); if (gone(an)) continue;
+        if (Math.abs(Math.sin(an * 3)) < 0.1 && u * u + v * v > 0.04) continue;   // the cuts
+        const pep = hash(i, 7, 73) < 0.12, lt = 0.6 - 0.3 * u - 0.3 * v + (hash(i, 7, 75) - 0.5) * 0.3;
+        crumb(W, x + u * R, y + v * Ry, pep ? 'O' : lt > 0.62 ? '%' : lt > 0.4 ? ':' : '.', pep ? P.red : lt > 0.45 ? P.beige : P.beigeDim, pep ? 14 : 12, k * 0.4, t, 740 + i);
+      }
+      // where the slice was: the box's bottom, a smear of sauce
+      if (took) { W.loose(x + 18, y - 7, '.', P.redDim, 0, 12); W.loose(x + 24, y - 3, ',', P.redDim, 0, 12); W.loose(x + 12, y - 10, '.', P.beigeDim, 0, 12); } }
+    // Pterodactyl's tower of crisps ("don't breathe on it"): crisps stacked crosswise, swaying more the higher
+    { const [x, y] = at(100, -8), k = stir(S, t, x, y), sway = Math.sin(Math.floor(t * 12) / 12 * 9) * k * 4;
+      inkDisc(W, x, y - 14, 11, 20);
+      for (let j = 0; j < 6; j++) W.loose(x + (j % 2 ? 2 : -2) + sway * j / 3, y - j * 6, j % 2 ? '=' : '-', j % 3 === 0 ? P.beige : P.beigeDim, (j % 2 ? 0.25 : -0.25) + sway * 0.05 * j, 14);
+      W.loose(x + sway * 2, y - 36, '^', P.beige, 0, 13); }
+    // drinks on the grid: cans (a pull tab, a coloured body, a light edge) and a bottle of something green
+    for (const [dx, dy, col, lit] of [[88, 26, P.red, P.beige], [-108, 12, P.tealUp, P.tealHi]]) {
+      const [x, y] = at(dx, dy); inkDisc(W, x, y - 8, 9, 16);
+      W.loose(x, y - 15, '.', P.beigeDim, 0, 13); W.loose(x, y - 7, '█', col, 0, 14); W.loose(x, y + 2, '█', col, 0, 14); W.loose(x - 2, y - 7, '▌', lit, 0, 14);
+    }
+    { const [x, y] = at(106, 18); inkDisc(W, x, y - 12, 8, 20); W.loose(x, y - 27, '.', P.red, 0, 13); W.loose(x, y - 21, '|', P.phosphorDim, 0, 12); for (const dy of [-10, 0]) W.loose(x, y + dy, '█', P.phosphorDeep, 0, 14); W.loose(x - 2, y - 10, '▌', P.phosphorDim, 0, 14); }
+    { const [x, y] = at(-60, 30); inkDisc(W, x, y - 2, 7, 9); W.loose(x, y - 2, 'U', P.beige, 0, 16); }
+  }
+  // Lex helps himself from the popcorn tub on the table: every few seconds his tongue shoots across – red, in steps
+  // – and comes back with a kernel on the end (his `eats`: the tub, in cells)
+  function lexEats(W, a, a0, t) {
+    const e = (((t + 2.1) % 4.5) + 4.5) % 4.5; if (e > 0.6) return;
+    const mx = a.x + 40, my = a.y - 24, tx = (a0.eats[0] + 0.5) * 8, ty = (a0.eats[1] + 1) * 16 - 14;
+    const k = e < 0.25 ? e / 0.25 : 1 - (e - 0.25) / 0.35, n = Math.max(1, Math.round(Math.hypot(tx - mx, ty - my) * k / 6));
+    for (let i = 1; i <= n; i++) { const f = (i / n) * k; inkBox(W, mx + (tx - mx) * f, my + (ty - my) * f, 7, 9); W.loose(mx + (tx - mx) * f, my + (ty - my) * f, i === n ? 'o' : '=', i === n && e >= 0.25 ? P.beige : P.red, Math.atan2(ty - my, tx - mx), 12); }
+  }
+  // the crisps, in their bowl on the couch's cushion next to Mishka – keeping a seat. A made thing on the grid (a teal
+  // bowl, lit on its left) heaped with crisps as small loose marks, curled and turned every which way; Mishka reaches
+  // over for one every few seconds (lib/bear.js), and the heap settles again when anyone sits down by it
+  function crisps(W, th, S, t) {
+    const [c, r] = th.foot, x = (c + 0.5) * 8, y = (r + 1) * 16 - 6, k = stir(S, t, x, y);
+    inkDisc(W, x, y - 8, 28, 17);
+    for (let i = 0; i < 60; i++) {
+      const u = hash(i, 9, 61) * 2 - 1, v = -Math.sqrt(hash(i, 9, 62)); if (u * u + v * v > 1) continue;
+      const lt = 0.62 - 0.32 * u + 0.25 * v + (hash(i, 9, 63) - 0.5) * 0.35;
+      crumb(W, x + u * 20, y - 5 + v * 12, lt > 0.62 ? 'C' : lt > 0.38 ? 'c' : '.', lt > 0.5 ? P.beige : P.beigeDim, 14, k, t, 900 + i, (hash(i, 9, 64) - 0.5) * 1.6);
+    }
+    ['\\', '_', '_', '_', '_', '/'].forEach((ch, j) => W.loose(x + (j - 2.5) * 8, y + 4, ch, j < 2 ? P.tealHi : P.tealUp, 0, 16));
+    for (let i = 0; i < 3; i++) crumb(W, x - 30 + i * 5, y + 8 + (i % 2) * 3, '.', P.beigeDim, 11, k, t, 960 + i);
+  }
+  // the console, on the floor beside the TV, in pixels like the remote: a grey box with a round lid and a red light,
+  // a pad on its cord
+  const CONSOLE = [
+    '.dddddddddddddd.',
+    'dkkkkkkkkkkkkkkd',
+    'dkk..bbbb..kkkkd',
+    'dk..bkkkkb..kkkd',
+    'dk..bkkkkb..kRkd',
+    'dkk..bbbb..kkkkd',
+    'dkkkkkkkkkkkkkkd',
+    '.dddddddddddddd.',
+    '................',
+    '..c.............',
+    '...c..dddd.dddd.',
+    '....cdkdkddkrkdd',
+    '.....ddkddddkddd',
+    '......ddd...ddd.',
+  ];
+  function konsole(W, th) {
+    const [c, r] = th.foot, x0 = Math.round((c + 0.5) * 8 - 16), y0 = (r + 1) * 16 - 28, g = W.g, col = { d: P.beigeDim, k: P.inkUp, b: P.beige, R: P.red, r: P.redDim, c: P.tealUp };
+    g.fillStyle = P.ink; g.fillRect(x0 - 2, y0 - 2, 36, 32);
+    CONSOLE.forEach((row, y) => [...row].forEach((ch, x) => { if (col[ch]) { g.fillStyle = col[ch]; g.fillRect(x0 + x * 2, y0 + y * 2, 2, 2); } }));
+  }
+  const THINGS = { sign, lamp, page, tv, couch, lighthouse, remote, table, sofa, beanbag, snacks, crisps, console: konsole };
   // step 3 r2: what doesn't move is drawn once into an image (per state: a door open or shut) and stamped, so a page of
   // a thousand cells costs one drawImage a frame. The box is in stage px of the scene.
   const STILL = {
@@ -299,6 +493,8 @@
     for (const B of S.becomes) if (!B.thing || B.thing.lies) items.push({ feet: -1e9, f: () => become(W, B, t) });
     if (S.letters.some((l) => l.rail && l.state !== 'word')) items.push({ feet: -1e9 + 1, f: () => tracks(W, S) });
     for (const th of sc.things) items.push({ feet: (th.foot[1] + 1) * 16, f: () => (STILL[th.thing] ? stillThing(W, sc, th, S, t) : (THINGS[th.thing] || (() => 0))(W, th, S, t)) });
+    // a thing with a near half (the couch's back, a beanbag's lip) sorts that half again, after whoever sits in it
+    for (const th of sc.things) if (th.over != null && THINGS[th.thing]) items.push({ feet: (th.over + 1) * 16, f: () => THINGS[th.thing](W, th, S, t, 'over') });
     for (const B of S.becomes) if (B.thing && !B.thing.lies) items.push({ feet: B.thing.feet, f: () => become(W, B, t) });
     if (!S.harold.gone) items.push({ feet: S.harold.y, f: () => actor(W, 'harold', S.harold, t) });
     for (const a of S.cast || []) if (!a.gone) items.push({ feet: a.y, f: () => actor(W, a.who, a, t) });

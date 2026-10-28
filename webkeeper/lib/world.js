@@ -38,14 +38,20 @@
     let lastStep = -1, lastActs = -1, lastRings = -1, forceU = true, ready = false;
 
     // ── the view: css size, the whole-number zoom, device pixels per world px, the size in world px
+    function fitBox() { return mode !== 'title' && cur && cur.place && cur.place.fit; }
+    function fitKey() { const f = fitBox(); return f ? f.join() : ''; }
     function size() {
       const w = cfg.css ? cfg.css[0] : innerWidth, h = cfg.css ? cfg.css[1] : innerHeight, dev = cfg.dpr || Math.min(2, devicePixelRatio || 1);
       if (!w || !h) return false;   // a window not laid out yet (an iframe loading): no zero-size buffers; frame() tries again
       let best = 1, bd = 1e9;
       for (let s = 1; s <= 4; s++) { const rows = h / (16 * s); if (s > 1 && w / (8 * s) < 44) break; const d = rows < 36 ? 36 - rows : rows > 60 ? rows - 60 : 0; if (d < bd - 1e-9) { bd = d; best = s; } }
+      // a room that's one picture (the party) fits on any screen: its `fit` box in cells sets the zoom while it's played,
+      // below 1 if it must (a phone sees the whole room, smaller, instead of a slice of it)
+      const fit = fitBox();
+      if (fit) best = Math.min(best, w / ((fit[2] - fit[0]) * 8), h / ((fit[3] - fit[1]) * 16));
       if (cfg.zoom) best = cfg.zoom;
-      Object.assign(V, { cssW: w, cssH: h, s: best, dpr: dev, k: dev * best, w: w / best, h: h / best });
-      V.bdpr = Math.min(V.k, best * (w * h < 450000 ? 1.5 : 1));
+      Object.assign(V, { cssW: w, cssH: h, s: best, dpr: dev, k: dev * best, w: w / best, h: h / best, fit: fitKey() });
+      V.bdpr = Math.min(V.k, Math.max(1, best) * (w * h < 450000 ? 1.5 : 1));
       canvas.style.cssText = `display:block;width:${w}px;height:${h}px;aspect-ratio:auto;touch-action:none`;
       if (!Wm) Wm = Webkeeper.screen(canvas, { cell: 16, w: V.w, h: V.h, dpr: V.k, fixed: true }); else Wm.resize(V.w, V.h, V.k);
       const bw = V.w + 2 * PAD, bh = V.h + 2 * PAD, mk = (X) => { if (X) { X.resize(bw, bh, V.k); return X; } return Webkeeper.screen(document.createElement('canvas'), { cell: 16, w: bw, h: bh, dpr: V.k, fixed: true }); };
@@ -56,7 +62,7 @@
       return true;
     }
     // the window's size is checked every frame too – an iframe can load at 0 × 0 and grow without a resize event
-    const sized = () => { const w = cfg.css ? cfg.css[0] : innerWidth, h = cfg.css ? cfg.css[1] : innerHeight; return w && h && w === V.cssW && h === V.cssH && Wm; };
+    const sized = () => { const w = cfg.css ? cfg.css[0] : innerWidth, h = cfg.css ? cfg.css[1] : innerHeight; return w && h && w === V.cssW && h === V.cssH && V.fit === fitKey() && Wm; };
     if (!cfg.css) addEventListener('resize', size);
     size();
 
@@ -68,7 +74,7 @@
     const castOf = (p) => ['harold', ...new Set((p.actors || []).map((a) => a.who).filter((w) => w !== 'harold'))];
     (async () => {
       try {
-        // a place can lay itself out differently on an upright screen (`tall`: the couch becomes a real double-decker)
+        // a place can lay itself out differently on an upright screen (`tall`; none does at present)
         const upright = V.h > V.w, names = cfg.areas || AREAS, files = (await Promise.all(names.map((n) => PL.load(base + 'places/' + n + '.json')))).map((p) => (p.tall && upright ? { ...p, ...p.tall } : p));
         files.forEach((p, i) => areas.push({ i, slot: SLOT[names[i]] ?? i, name: names[i], place: p, ox: (SLOT[names[i]] ?? i) * AW, oy: 0, E: p.extent || [0, 0, AC, AR], sc: null, sim: null, job: null, ready: false, prints: [], last: new Map(), trees: treesOf(p), S: null, rec: null }));
         bound.x0 = Math.min(...areas.map((A) => A.ox + A.E[0] * 8)); bound.x1 = Math.max(...areas.map((A) => A.ox + A.E[2] * 8));
@@ -343,7 +349,12 @@
       // in a talk, the camera goes halfway to whoever is speaking, so they're on screen with Harold; in a scene, to
       // whoever just appeared or started dancing, for a few seconds. On a narrow screen halfway may not be enough:
       // then it goes as far as it takes to have them in view
-      const sp = speakerAt() || lookPos();
+      const sp = speakerAt() || lookPos(), fr = cur.place.frame;
+      // a room that's one picture (the party: the TV, the table and everyone round it) is framed as one: the camera
+      // holds on its middle (the place's `frame`, [c, r]) and only moves when Harold would walk out of view – in a
+      // talk too, since whoever's talking is already in view (unless they aren't)
+      const frameAt = () => { const fx = cur.ox + (fr[0] + 0.5) * 8, fy = cur.oy + (fr[1] + 0.5) * 16, mx = Math.max(0, V.w / 2 - 72), my = Math.max(0, V.h / 2 - 72); return clampCam(clamp(fx, hp.x - mx, hp.x + mx), clamp(fy, hp.y - my, hp.y + my)); };
+      if (fr) { const c = frameAt(); if (!sp || (Math.abs(sp.x - c.x) < V.w / 2 - 48 && Math.abs(sp.y - c.y) < V.h / 2 - 56)) return c; }
       if (sp) {
         const mx = V.w / 2 - 48, my = V.h / 2 - 56;
         let x = (hp.x + sp.x) / 2, y = (hp.y + sp.y) / 2;

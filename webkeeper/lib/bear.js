@@ -3,7 +3,8 @@
 // loose grass: a stroke per cell, leaning the way his surface faces, so his edge is soft instead of outlined. Button
 // eyes close to ^ ^ while he hums; five notes rise from him; he bobs a pixel or two on each note, moved as one piece.
 // Replaces the flat grid sprite (lib/actors.js) for him in the world: lib/layers.js asks here first.
-//   WK_BEAR.draw(W, x, y, t)   feet at (x, y) in the screen's px, t the area's clock
+//   WK_BEAR.draw(W, x, y, t, { eats })   feet at (x, y) in the screen's px, t the area's clock; eats: [dx, dy] px from
+//                                        his feet to a bowl of crisps beside him (the party), one to his mouth every few seconds
 //   WK_BEAR.hum(t, meow)       start a hum at time t (meow: its last note a small cat face)
 (() => {
   const P = Webkeeper.P, hash = Webkeeper.hash;
@@ -68,7 +69,7 @@
     { p: [0.7, 1.44, 0.27], of: [0.05, 1.22, 0], chr: () => (S.shut ? '^' : 'o'), size: 1 },
     { p: [0.7, 1.44, -0.27], of: [0.05, 1.22, 0], chr: () => (S.shut ? '^' : 'o'), size: 1 },
     { p: [0.98, 1.1, 0], of: [0.05, 1.22, 0], chr: () => 'v', size: 1.1 },
-    { p: [0.86, 0.76, 0], of: [0.05, 1.22, 0], chr: (h) => (h ? 'o' : ''), size: 0.8 },   // a little lower than the sketch's, so it doesn't run into the nose
+    { p: [0.86, 0.76, 0], of: [0.05, 1.22, 0], chr: (h) => (h || S.munch ? 'o' : ''), size: 0.8 },   // a little lower than the sketch's, so it doesn't run into the nose
     { p: [0.42, -0.36, 0.62], of: [0, 0, 0], chr: () => 'o', size: 0.9 },
     { p: [0.42, -0.36, -0.62], of: [0, 0, 0], chr: () => 'o', size: 0.9 },
     { p: [1.2, -0.7, 0.3], of: [0, 0, 0], chr: () => 'O', size: 1 },
@@ -85,6 +86,9 @@
     const since = a % NOTE, beat = a >= 0 && a <= HUM * NOTE && since < 0.18 ? 1 - since / 0.18 : 0;
     S.shut = humming || ((t % 4) + 4) % 4 < 0.12 ? 1 : 0;   // eyes shut while he hums, and a slow blink
     S.bob = 0;
+    // the crisps: every five seconds (not while he hums) a crisp goes up to his mouth, and he munches
+    const e = (((t + 1.3) % 5) + 5) % 5, eating = o.eats && !humming && e < 1.1;
+    S.munch = eating && e > 0.55 && Math.floor(e * 8) % 2 === 0 ? 1 : 0;
     const oy = -Math.round(beat * 2);
     // the figure in its own frame, centred on (0, 0); cached – it only changes when he's posed differently
     const key = 'b';
@@ -114,6 +118,22 @@
       const ramp = m === 4 ? ' .:oo' : ' ..';
       const chr = ramp[Math.max(1, Math.min(ramp.length - 1, Math.floor(b * ramp.length)))];
       W.loose(px, py, chr, col, 0, FCH * 1.3);
+    }
+    // the crisps beside him (the party: their bowl keeps a seat next to him on the couch, lib/layers.js): every few
+    // seconds a paw goes over to the bowl and comes back up with a crisp, and he munches; a few crumbs fall on his tummy
+    if (o.eats) {
+      const [dx, dy] = o.eats, side = Math.sign(dx) || 1, bx = x + dx, byw = y + dy - 12, mx = cx + 3, my = cy - 0.454 * SCALE + 6, g2 = W.g;
+      const sx = cx + side * 0.55 * SCALE, sy = y - 0.6 * SCALE;   // where the paw rests, at his side
+      // the paw stops beside his muzzle, not on it, so his face stays in view while he munches
+      const fx = mx + side * 11, fy = my + 7;
+      if (eating && e < 0.6) {
+        const out = e < 0.25, k = out ? e / 0.25 : (e - 0.25) / 0.35;
+        const px = out ? sx + (bx - sx) * k : bx + (fx - bx) * k, py = out ? sy + (byw - sy) * k : byw + (fy - byw) * k - Math.sin(k * Math.PI) * 10;
+        if (out || k < 0.6) { g2.fillStyle = P.ink; g2.fillRect(px - 5, py - 6, 10, 12); }
+        W.loose(px, py, 'o', P.brown, 0, 13);
+        if (!out) W.loose(px - side * 5, py - 4, 'c', P.beige, k * 4, 11);
+      }
+      if (!humming && e >= 0.6 && e < 2.2) for (let i = 0; i < 3; i++) { const f = Math.min(1, (e - 0.6 - i * 0.12) / 0.4); if (f > 0) W.loose(mx + side * 4 + (i - 1) * 5, my + 14 + f * 12, '.', P.beigeDim, 0, 10); }
     }
     // the face on top
     const cp = Math.cos(PITCH), sp = Math.sin(PITCH), ca = Math.cos(YAW), sa = Math.sin(YAW);

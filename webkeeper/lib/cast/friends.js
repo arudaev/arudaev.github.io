@@ -46,40 +46,16 @@
     [...row].map((ch) => ((rowGlyphKeys[i] || {})[ch] || glyphKeys[ch] || rowKeys[i] || rowKeys[rowKeys.length - 1])).join(''));
   const say = (W, x, y, str, col = P.beige) => C.sayAt(W, x, y, str, col);
 
-  // ── in the room: line figures (28 October) ─────────────────────────────────────────
-  // In the room the friends are drawn like Lord Malifex and his cat: outlines of their key shapes in loose lines,
-  // the ink behind them, nothing filled in – so each reads at a glance as what their name says. The typed sprites
-  // above stay for the dialogue close-ups. Units are cells (cast.js): x in columns, y in rows, up negative; feet at 0.
+  // ── in the room: line figures for four of them ─────────────────────────────────────
+  // Swift, Currywurst, Pterodactyl and Pilot read best in the room drawn like Lord Malifex and his cat: outlines of
+  // their key shapes in loose lines, the ink behind, nothing filled in. Sid and Lex read best as their typed sprites
+  // (the sloth's (=-.-=) and the chameleon's curl), so they keep them. The typed sprites stay for every close-up.
+  // Units are cells (cast.js): x in columns, y in rows, up negative; feet at 0.
   const { arc, lineFigure, shiftFig } = C;
   const PI = Math.PI;
   const line = (col, ...p) => ({ col, p });
   const mirror = (pts) => pts.map(([x, y]) => [-x, y]);
   const figure = (W, fig, x, y, o = {}) => lineFigure(W, fig, x, y, { s: o.s || 1, flip: o.flip });
-
-  // Sid: a sloth hanging from a link's underline by both hooked arms, round and sleepy, a dark mask round his
-  // eyes and a red tuft – beige dim, his own grey-brown
-  const SID_ARM = [[-0.95, -3.0], [-1.8, -3.8], [-2.25, -4.75], [-2.15, -5.2], [-1.75, -5.45], [-1.45, -5.2]];
-  const SID_FIG = {
-    fill: [[-2.6, -5.5], [2.6, -5.5], [2.15, -2.7], [2.0, -0.6], [0.9, 0.05], [-0.9, 0.05], [-2.0, -0.6], [-2.15, -2.7]],
-    strokes: [
-      line(P.tealHi, [-3.8, -5.25], [3.8, -5.25]),
-      line(P.beigeDim, ...SID_ARM), line(P.beigeDim, ...mirror(SID_ARM)),
-      line(P.beigeDim, ...arc(0, -2.75, 1.45, 0.78, 0, 2 * PI, 18)),
-      line(P.beigeDim, ...arc(0, -1.15, 1.8, 1.15, -0.2 * PI, 1.2 * PI, 16)),
-      line(P.beige, ...arc(-0.55, -2.8, 0.5, 0.24, 0, 2 * PI, 8)), line(P.beige, ...arc(0.55, -2.8, 0.5, 0.24, 0, 2 * PI, 8)),
-      line(P.beigeDim, ...arc(0, -2.4, 0.35, 0.12, 0.1 * PI, 0.9 * PI, 5)),
-      line(P.red, [-0.3, -3.5], [-0.15, -3.95]), line(P.red, [0.15, -3.5], [0.35, -3.9]),
-      line(P.beigeDim, [-0.8, -0.1], [-1.05, 0.15], [-0.75, 0.25]), line(P.beigeDim, [0.8, -0.1], [1.05, 0.15], [0.75, 0.25]),
-    ],
-    dots: [{ x: -0.55, y: -2.8, chr: '-', col: P.beige, size: 0.8 }, { x: 0.55, y: -2.8, chr: '-', col: P.beige, size: 0.8 }],
-  };
-  function sidFig(W, x, y, t, o) {
-    const l = loop4(t), shut = l >= 1.2 && l < 2.4, swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8] * 0.08;
-    // he swings from the bar: everything under it moves, more the lower it is
-    const fig = shiftFig(SID_FIG, ([px, py]) => (py > -5.2 ? [px + swing * (5.2 + py), py] : [px, py]));
-    if (!shut) fig.dots = fig.dots.map((d) => ({ ...d, chr: 'o', size: 0.6 }));
-    figure(W, fig, x, y, o);
-  }
 
   // Swift: a swift – long scythe wings swept back, a forked tail – in a folded paper hat with an eye on it
   const SWIFT_WING = [[-0.8, -2.3], [-2.4, -2.95], [-4.2, -2.75], [-5.6, -2.0], [-4.0, -2.05], [-2.4, -1.8], [-0.8, -1.45]];
@@ -100,27 +76,6 @@
     // the wingtips flick on the beat
     const up = Math.floor(loop4(t) * 2) % 2 ? -0.35 : 0;
     figure(W, shiftFig(SWIFT_FIG, ([px, py]) => (Math.abs(px) > 2.6 ? [px, py + up * (Math.abs(px) - 2.6) / 3] : [px, py])), x, y, o);
-  }
-
-  // Lex: a chameleon on a branch, side on – an arched back, a casque, a turret eye that rolls, a tail curled into a
-  // spiral, feet round the branch – in the colour of whatever he's hearing
-  const LEX_BODY = [
-    [[-2.6, -0.9], [-2.3, -1.9], [-1.0, -2.55], [0.6, -2.65], [1.8, -2.35]],
-    [[1.8, -2.35], [2.2, -2.95], [2.7, -2.4], [3.45, -1.85], [3.7, -1.4], [2.9, -1.0], [2.2, -1.15]], [[3.7, -1.4], [3.0, -1.3]],
-    [[-2.45, -0.8], [-0.6, -0.6], [1.2, -0.78], [2.2, -1.15]],
-    [[-2.6, -0.9], [-3.4, -0.7], [-4.1, -1.1], [-4.3, -1.9], [-3.9, -2.4], [-3.3, -2.3], [-3.1, -1.8], [-3.4, -1.5], [-3.7, -1.75]],
-    [[1.2, -0.78], [1.5, -0.3], [1.3, 0]], [[0.4, -0.65], [0.2, -0.3], [0.45, 0]],
-    [[-1.2, -0.66], [-1.4, -0.3], [-1.15, 0]], [[-2.0, -0.78], [-2.2, -0.3], [-1.95, 0]],
-  ];
-  const LEX_FILL = [[-4.0, -2.45], [-2.3, -2.0], [-1.0, -2.6], [0.6, -2.7], [2.2, -3.0], [3.75, -1.4], [2.9, -0.95], [1.5, 0], [-2.2, 0], [-4.35, -1.0]];
-  function lexFig(W, x, y, t, o) {
-    const tint = lexTint(t), roll = [[0, 0], [-0.12, 0], [0, -0.07], [0.12, 0], [0, 0.07], [0, 0]][Math.floor(loop4(t) * 1.5) % 6];
-    const strokes = [line(P.beigeDim, [-4.4, 0.02], [4.4, 0.02]), line(P.beigeDim, [2.9, 0.02], [3.5, -0.4]), ...LEX_BODY.map((p) => line(tint, ...p)),
-      line(tint, ...arc(2.6, -1.95, 0.4, 0.25, 0, 2 * PI, 10))];
-    if (lexTongue(t)) strokes.push(line(P.red, [3.6, -1.45], [5.3, -1.6]));
-    const dots = [{ x: 2.6 + roll[0], y: -1.95 + roll[1], chr: '.', col: P.beige, size: 0.9 }];
-    if (lexTongue(t)) dots.push({ x: 5.4, y: -1.6, chr: 'o', col: P.red, size: 0.7 });
-    figure(W, { fill: LEX_FILL, strokes, dots }, x, y, o);
   }
 
   // Currywurst: a sausage cut in slices, lying in a paper tray, sauce on top, a headset over the end slice – the one
@@ -188,6 +143,7 @@
   // up, the body hanging below, a sleepy face the right way up with the dark mask round his eyes,
   // a red tuft on top. Gag: protects the last of anything; blinks once a minute.
   const SID = ['___________', ' J  ,,,  L ', '  \\(=-.-=)/', '   (    )  ', '    "  "   '];
+  const SID_MAP = ['ttttttttttt', ' d  rrr  d ', '  ddRbdbRdd', '   dddddd  ', '    d  d   '];
   const SID_CLOSE = [
     '     the last page      ',
     '________________________',
@@ -203,7 +159,10 @@
     name: 'sid', pron: 'he', key: 'beige dim, a dark eye mask, a red tuft', prop: 'a hyperlink to hang from', gag: 'blinks once a minute',
     rows: SID, line: 'this is the last page. so we keep it.',
     sprite(W, x, y, t, o = {}) {
-      sidFig(W, x, y, t, o);
+      const l = loop4(t), shut = l >= 1.2 && l < 2.4;   // one very slow blink
+      const swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8];   // a slow swing, a pixel a step
+      const rows = SID.slice(); if (shut) rows[2] = '  \\(=_._=)/';
+      sprite(W, x, y, rows, SID_MAP, { ...o, dx: [0, 0, swing * 0.5, swing, swing * 1.5] });
     },
     close(W, x, y, t, o = {}) {
       const l = loop4(t), rows = SID_CLOSE.slice();
@@ -255,6 +214,7 @@
   // feet gripping the branch, a tail curled into a spiral; his colour follows every sound, in
   // steps. Gag: the most confused in the room. Idle: the eye rolls, the tongue flicks out, '?'.
   const LEX = ['    __/^\\  ', " .-'  (o) \\", '/        _>', '\\(@)\\_/\\_/ ', '==========='];
+  const LEX_MAP = ['    LLLLL  ', ' LLL  LbL L', 'LLLLLLLLLLL', 'LLLLLLLLLL ', 'ddddddddddd'];
   const EYE = ['o', '<', '^', '>', 'v', 'o'];
   const lexEye = (t) => EYE[Math.floor(loop4(t) * 1.5) % EYE.length];
   const lexTint = (t) => LEX_TINTS[Math.floor(loop4(t) * 2) % LEX_TINTS.length];
@@ -273,7 +233,10 @@
     name: 'lex', pron: 'he', key: 'whatever he hears', prop: 'a branch', gag: 'his eye rolls, his tongue flicks',
     rows: LEX, line: 'you sound… teal? is that bad?',
     sprite(W, x, y, t, o = {}) {
-      lexFig(W, x, y, t, o);
+      const rows = LEX.slice(), map = LEX_MAP.slice();
+      rows[1] = ` .-'  (${lexEye(t)}) \\`;
+      if (lexTongue(t)) { rows[2] = '/        _>====o'; map[2] = 'LLLLLLLLLLLrrrrr'; }
+      sprite(W, x, y, rows, map, { ...o, tint: lexTint(t) });
       if (!o.quiet && Math.floor(loop4(t) * 1.5) % 3 === 0) say(W, x + 3 * W.cw * (o.s || 1), y - 6.5 * W.ch * (o.s || 1), '?');
     },
     close(W, x, y, t, o = {}) {

@@ -47,6 +47,143 @@
   const say = (W, x, y, str, col = P.beige) => C.sayAt(W, x, y, str, col);
   const talking = (t) => Math.floor(loop4(t) * 8) % 2 === 1;
 
+  // ── in the room: line figures (28 October) ─────────────────────────────────────────
+  // In the room the friends are drawn like Lord Malifex and his cat: outlines of their key shapes in loose lines,
+  // the ink behind them, nothing filled in – so each reads at a glance as what their name says. The typed sprites
+  // above stay for the dialogue close-ups. Units are cells (cast.js): x in columns, y in rows, up negative; feet at 0.
+  const { arc, lineFigure, shiftFig } = C;
+  const PI = Math.PI;
+  const line = (col, ...p) => ({ col, p });
+  const mirror = (pts) => pts.map(([x, y]) => [-x, y]);
+  const figure = (W, fig, x, y, o = {}) => lineFigure(W, fig, x, y, { s: o.s || 1, flip: o.flip });
+
+  // Sid: a sloth hanging from a link's underline by both hooked arms, round and sleepy, a dark mask round his
+  // eyes and a red tuft – beige dim, his own grey-brown
+  const SID_ARM = [[-0.95, -3.0], [-1.8, -3.8], [-2.25, -4.75], [-2.15, -5.2], [-1.75, -5.45], [-1.45, -5.2]];
+  const SID_FIG = {
+    fill: [[-2.6, -5.5], [2.6, -5.5], [2.15, -2.7], [2.0, -0.6], [0.9, 0.05], [-0.9, 0.05], [-2.0, -0.6], [-2.15, -2.7]],
+    strokes: [
+      line(P.tealHi, [-3.8, -5.25], [3.8, -5.25]),
+      line(P.beigeDim, ...SID_ARM), line(P.beigeDim, ...mirror(SID_ARM)),
+      line(P.beigeDim, ...arc(0, -2.75, 1.45, 0.78, 0, 2 * PI, 18)),
+      line(P.beigeDim, ...arc(0, -1.15, 1.8, 1.15, -0.2 * PI, 1.2 * PI, 16)),
+      line(P.beige, ...arc(-0.55, -2.8, 0.5, 0.24, 0, 2 * PI, 8)), line(P.beige, ...arc(0.55, -2.8, 0.5, 0.24, 0, 2 * PI, 8)),
+      line(P.beigeDim, ...arc(0, -2.4, 0.35, 0.12, 0.1 * PI, 0.9 * PI, 5)),
+      line(P.red, [-0.3, -3.5], [-0.15, -3.95]), line(P.red, [0.15, -3.5], [0.35, -3.9]),
+      line(P.beigeDim, [-0.8, -0.1], [-1.05, 0.15], [-0.75, 0.25]), line(P.beigeDim, [0.8, -0.1], [1.05, 0.15], [0.75, 0.25]),
+    ],
+    dots: [{ x: -0.55, y: -2.8, chr: '-', col: P.beige, size: 0.8 }, { x: 0.55, y: -2.8, chr: '-', col: P.beige, size: 0.8 }],
+  };
+  function sidFig(W, x, y, t, o) {
+    const l = loop4(t), shut = l >= 1.2 && l < 2.4, swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8] * 0.08;
+    // he swings from the bar: everything under it moves, more the lower it is
+    const fig = shiftFig(SID_FIG, ([px, py]) => (py > -5.2 ? [px + swing * (5.2 + py), py] : [px, py]));
+    if (!shut) fig.dots = fig.dots.map((d) => ({ ...d, chr: 'o', size: 0.6 }));
+    figure(W, fig, x, y, o);
+  }
+
+  // Swift: a swift – long scythe wings swept back, a forked tail – in a folded paper hat with an eye on it
+  const SWIFT_WING = [[-0.8, -2.3], [-2.4, -2.95], [-4.2, -2.75], [-5.6, -2.0], [-4.0, -2.05], [-2.4, -1.8], [-0.8, -1.45]];
+  const SWIFT_FIG = {
+    fill: [[-5.6, -2.0], [-2.4, -3.0], [-1.1, -3.35], [0, -4.7], [1.1, -3.35], [2.4, -3.0], [5.6, -2.0], [0.8, -1.2], [0.75, 0.05], [-0.75, 0.05], [-0.8, -1.2]],
+    strokes: [
+      line(P.tealHi, ...SWIFT_WING), line(P.tealHi, ...mirror(SWIFT_WING)),
+      line(P.tealHi, ...arc(0, -1.85, 0.85, 0.9, -0.15 * PI, 1.15 * PI, 10)),
+      line(P.tealHi, ...arc(0, -2.95, 0.72, 0.42, 0, 2 * PI, 12)),
+      line(P.tealHi, [-0.35, -0.95], [-0.95, -0.2], [0, -0.6], [0.95, -0.2], [0.35, -0.95]),
+      line(P.beige, [-1.25, -3.3], [0, -4.65], [1.25, -3.3], [-1.25, -3.3]),
+      line(P.beigeDim, [-0.7, -3.55], [0.7, -3.55]),
+    ],
+    dots: [{ x: 0, y: -3.95, chr: 'o', col: P.beigeDim, size: 0.55 }, { x: -0.28, y: -3.0, chr: '.', col: P.beige, size: 0.8 },
+      { x: 0.28, y: -3.0, chr: '.', col: P.beige, size: 0.8 }, { x: 0, y: -2.7, chr: 'v', col: P.beige, size: 0.6 }],
+  };
+  function swiftFig(W, x, y, t, o) {
+    // the wingtips flick on the beat
+    const up = Math.floor(loop4(t) * 2) % 2 ? -0.35 : 0;
+    figure(W, shiftFig(SWIFT_FIG, ([px, py]) => (Math.abs(px) > 2.6 ? [px, py + up * (Math.abs(px) - 2.6) / 3] : [px, py])), x, y, o);
+  }
+
+  // Lex: a chameleon on a branch, side on – an arched back, a casque, a turret eye that rolls, a tail curled into a
+  // spiral, feet round the branch – in the colour of whatever he's hearing
+  const LEX_BODY = [
+    [[-2.6, -0.9], [-2.3, -1.9], [-1.0, -2.55], [0.6, -2.65], [1.8, -2.35]],
+    [[1.8, -2.35], [2.2, -2.95], [2.7, -2.4], [3.45, -1.85], [3.7, -1.4], [2.9, -1.0], [2.2, -1.15]], [[3.7, -1.4], [3.0, -1.3]],
+    [[-2.45, -0.8], [-0.6, -0.6], [1.2, -0.78], [2.2, -1.15]],
+    [[-2.6, -0.9], [-3.4, -0.7], [-4.1, -1.1], [-4.3, -1.9], [-3.9, -2.4], [-3.3, -2.3], [-3.1, -1.8], [-3.4, -1.5], [-3.7, -1.75]],
+    [[1.2, -0.78], [1.5, -0.3], [1.3, 0]], [[0.4, -0.65], [0.2, -0.3], [0.45, 0]],
+    [[-1.2, -0.66], [-1.4, -0.3], [-1.15, 0]], [[-2.0, -0.78], [-2.2, -0.3], [-1.95, 0]],
+  ];
+  const LEX_FILL = [[-4.0, -2.45], [-2.3, -2.0], [-1.0, -2.6], [0.6, -2.7], [2.2, -3.0], [3.75, -1.4], [2.9, -0.95], [1.5, 0], [-2.2, 0], [-4.35, -1.0]];
+  function lexFig(W, x, y, t, o) {
+    const tint = lexTint(t), roll = [[0, 0], [-0.12, 0], [0, -0.07], [0.12, 0], [0, 0.07], [0, 0]][Math.floor(loop4(t) * 1.5) % 6];
+    const strokes = [line(P.beigeDim, [-4.4, 0.02], [4.4, 0.02]), line(P.beigeDim, [2.9, 0.02], [3.5, -0.4]), ...LEX_BODY.map((p) => line(tint, ...p)),
+      line(tint, ...arc(2.6, -1.95, 0.4, 0.25, 0, 2 * PI, 10))];
+    if (lexTongue(t)) strokes.push(line(P.red, [3.6, -1.45], [5.3, -1.6]));
+    const dots = [{ x: 2.6 + roll[0], y: -1.95 + roll[1], chr: '.', col: P.beige, size: 0.9 }];
+    if (lexTongue(t)) dots.push({ x: 5.4, y: -1.6, chr: 'o', col: P.red, size: 0.7 });
+    figure(W, { fill: LEX_FILL, strokes, dots }, x, y, o);
+  }
+
+  // Currywurst: a sausage cut in slices, lying in a paper tray, sauce on top, a headset over the end slice – the one
+  // with the sleepy face – and the mic at his mouth; his can beside the tray
+  const CURRY_FIG = {
+    fill: [[-3.7, -1.0], [-3.3, -2.15], [1.4, -2.15], [1.6, -2.6], [3.1, -2.6], [3.3, -1.0], [3.3, 0], [-3.3, 0]],
+    strokes: [
+      line(P.beige, [-3.7, -1.0], [-3.25, 0], [3.25, 0], [3.7, -1.0]), line(P.beigeDim, [-3.7, -1.0], [3.7, -1.0]),
+      line(P.red, ...arc(-2.6, -1.5, 0.5, 0.5, 0.5 * PI, 1.5 * PI, 6)), line(P.red, [-2.6, -2.0], [1.9, -2.0]),
+      line(P.red, ...arc(2.05, -1.5, 0.65, 0.5, -0.5 * PI, 0.5 * PI, 7)),
+      line(P.redDim, [-1.6, -2.0], [-1.8, -1.1]), line(P.redDim, [-0.4, -2.0], [-0.6, -1.1]), line(P.redDim, [0.8, -2.0], [0.6, -1.1]),
+      line(P.tealHi, ...arc(2.05, -1.95, 0.8, 0.55, PI, 2 * PI, 8)), line(P.tealHi, [1.25, -1.95], [1.25, -1.45]), line(P.tealHi, [2.85, -1.95], [2.85, -1.45]),
+      line(P.tealHi, [2.85, -1.5], [3.3, -1.15], [2.75, -1.05]),
+    ],
+    dots: [{ x: -2.0, y: -2.2, chr: ':', col: P.burgundy, size: 0.7 }, { x: -0.95, y: -2.25, chr: '.', col: P.burgundy, size: 0.8 },
+      { x: 0.2, y: -2.2, chr: ':', col: P.burgundy, size: 0.7 }, { x: 1.85, y: -1.6, chr: '-', col: P.beige, size: 0.6 },
+      { x: 2.35, y: -1.6, chr: '-', col: P.beige, size: 0.6 }, { x: 2.7, y: -1.05, chr: 'o', col: P.tealHi, size: 0.5 }],
+  };
+  const CAN_FIG = { fill: [[4.1, 0], [4.1, -1.15], [4.95, -1.15], [4.95, 0]], strokes: [line(P.red, [4.1, 0], [4.1, -1.1], [4.95, -1.1], [4.95, 0], [4.1, 0]), line(P.beigeDim, [4.15, -0.75], [4.9, -0.75])], dots: [{ x: 4.5, y: -1.2, chr: '.', col: P.beige, size: 0.7 }] };
+  function curryFig(W, x, y, t, o) {
+    const ph = o.talk ? 'awake' : curryPhase(t), fig = shiftFig(CURRY_FIG, ([px, py]) => [px, py + (ph === 'pop' ? -0.2 : 0)]);
+    if (ph !== 'asleep') fig.dots = fig.dots.map((d) => (d.chr === '-' ? { ...d, chr: ph === 'pop' ? 'O' : 'o', size: 0.55 } : d));
+    figure(W, fig, x, y, o);
+    figure(W, CAN_FIG, x, y, o);
+  }
+
+  // Pterodactyl: wings spread – the membrane scalloped between her fingers – a long crest back, a longer beak, a
+  // pencil behind her ear and a rolled blueprint in her feet
+  const PTERO_WING = [[-0.5, -2.25], [-2.6, -3.05], [-4.6, -2.3], [-3.6, -1.95], [-3.1, -1.55], [-2.2, -1.85], [-1.6, -1.35], [-0.6, -1.45]];
+  const PTERO_FIG = {
+    fill: [[-4.6, -2.3], [-2.6, -3.1], [-2.5, -4.0], [0.7, -4.4], [3.3, -3.3], [0.5, -2.9], [4.6, -2.3], [0.7, -1.2], [1.1, 0.05], [-1.1, 0.05], [-0.7, -1.2]],
+    strokes: [
+      line(P.burgundy, ...PTERO_WING), line(P.burgundy, ...mirror(PTERO_WING)),
+      line(P.burgundy, ...arc(0, -1.8, 0.7, 0.68, 0, 2 * PI, 12)), line(P.burgundy, [0, -2.45], [0, -3.0]),
+      line(P.burgundy, ...arc(0, -3.35, 0.55, 0.36, 0, 2 * PI, 10)), line(P.burgundy, [-0.4, -3.55], [-2.4, -3.95], [-0.5, -3.25]),
+      line(P.beige, [0.5, -3.5], [3.3, -3.3], [0.5, -3.15]),
+      line(P.yellow, [-0.15, -3.8], [0.7, -4.35]),
+      line(P.burgundy, [-0.3, -1.15], [-0.4, -0.35]), line(P.burgundy, [0.3, -1.15], [0.4, -0.35]),
+      line(P.tealHi, [-1.1, -0.2], [1.1, -0.2]),
+    ],
+    dots: [{ x: 0.15, y: -3.4, chr: 'o', col: P.beige, size: 0.55 }, { x: 0.75, y: -4.4, chr: '.', col: P.beigeDim, size: 0.8 },
+      { x: -1.15, y: -0.2, chr: 'o', col: P.tealHi, size: 0.6 }, { x: 1.15, y: -0.2, chr: 'o', col: P.tealHi, size: 0.6 }],
+  };
+  function pteroFig(W, x, y, t, o) {
+    // laughing, she throws her head back: the beak tips up
+    const up = laughing(t, o) ? -0.25 : 0;
+    figure(W, shiftFig(PTERO_FIG, ([px, py]) => (py < -2.9 && px > 0.4 ? [px, py + up * (px - 0.4)] : [px, py])), x, y, o);
+  }
+
+  // Pilot: a paper dart side on – the wing's long triangle, the keel folded under – with goggles on its nose
+  const PILOT_FIG = {
+    fill: [[3.2, -1.4], [-3.0, -2.65], [-2.4, -1.5], [-3.0, -0.9], [-1.4, -0.55]],
+    strokes: [
+      line(P.beige, [3.2, -1.4], [-3.0, -2.6], [-2.4, -1.5], [3.2, -1.4]),
+      line(P.beige, [-2.4, -1.5], [-3.0, -0.9], [3.2, -1.4]), line(P.beigeDim, [-2.4, -1.5], [-1.4, -0.6], [3.2, -1.4]),
+      line(P.tealHi, ...arc(2.05, -1.62, 0.28, 0.17, 0, 2 * PI, 8)), line(P.tealHi, ...arc(1.45, -1.72, 0.28, 0.17, 0, 2 * PI, 8)),
+      line(P.tealUp, [0.9, -1.85], [1.17, -1.75]),
+    ],
+    dots: [],
+  };
+  function pilotFig(W, x, y, o) { figure(W, PILOT_FIG, x, y, o); }
+
   // ── Sid – a sloth, hanging from a hyperlink like a branch ─────────────────────────
   // the way sloths hang in every picture book: hooked claws over the link's underline, long arms
   // up, the body hanging below, a sleepy face the right way up with the dark mask round his eyes,
@@ -68,10 +205,7 @@
     name: 'sid', pron: 'he', key: 'beige dim, a dark eye mask, a red tuft', prop: 'a hyperlink to hang from', gag: 'blinks once a minute',
     rows: SID, line: 'this is the last page. so we keep it.',
     sprite(W, x, y, t, o = {}) {
-      const l = loop4(t), shut = l >= 1.2 && l < 2.4;   // one very slow blink
-      const swing = [0, 1, 2, 1, 0, -1, -2, -1][Math.floor(l * 2) % 8];   // a slow swing, a pixel a step
-      const rows = SID.slice(); if (shut) rows[2] = '  \\(=_._=)/';
-      sprite(W, x, y, rows, SID_MAP, { ...o, dx: [0, 0, swing * 0.5, swing, swing * 1.5] });
+      sidFig(W, x, y, t, o);
     },
     close(W, x, y, t, o = {}) {
       const l = loop4(t), rows = SID_CLOSE.slice();
@@ -108,9 +242,7 @@
     name: 'swift', pron: 'he', key: 'teal hi', prop: 'a paper hat folded from song lyrics', gag: 'sings every word',
     rows: SWIFT, line: 'wait – i know this one. every word.',
     sprite(W, x, y, t, o = {}) {
-      const rows = SWIFT.slice();
-      if (Math.floor(loop4(t) * 2) % 2) { rows[2] = "'-.(o>).-' "; rows[3] = '   `-V-\'   '; }   // the flick, on the beat
-      sprite(W, x, y, rows, SWIFT_MAP, o);
+      swiftFig(W, x, y, t, o);
       if (!o.quiet) swiftNotes(W, x, y, t, o.s || 1);
     },
     close(W, x, y, t, o = {}) {
@@ -145,10 +277,7 @@
     name: 'lex', pron: 'he', key: 'whatever he hears', prop: 'a branch', gag: 'his eye rolls, his tongue flicks',
     rows: LEX, line: 'you sound… teal? is that bad?',
     sprite(W, x, y, t, o = {}) {
-      const rows = LEX.slice(), map = LEX_MAP.slice();
-      rows[1] = ` .-'  (${lexEye(t)}) \\`;
-      if (lexTongue(t)) { rows[2] = '/        _>====o'; map[2] = 'LLLLLLLLLLLrrrrr'; }
-      sprite(W, x, y, rows, map, { ...o, tint: lexTint(t) });
+      lexFig(W, x, y, t, o);
       if (!o.quiet && Math.floor(loop4(t) * 1.5) % 3 === 0) say(W, x + 3 * W.cw * (o.s || 1), y - 6.5 * W.ch * (o.s || 1), '?');
     },
     close(W, x, y, t, o = {}) {
@@ -178,10 +307,8 @@
     name: 'currywurst', pron: 'he', key: 'red', prop: 'a headset, and an energy can', gag: 'asleep till the can pops',
     rows: CURRY, line: "five more minutes. then i'll save the world.",
     sprite(W, x, y, t, o = {}) {
-      const s = o.s || 1, ph = o.talk ? 'awake' : curryPhase(t), rows = CURRY.slice();
-      if (ph === 'pop') rows[1] = '(O:O[O.O]=o'; else if (ph === 'awake') rows[1] = '(O:O[o.o]=o';
-      sprite(W, x, y - (ph === 'pop' ? 3 : 0), rows, CURRY_MAP, o);
-      sprite(W, x + 7.5 * W.cw * s, y, ph === 'asleep' ? CAN : ['[*]'], CAN_MAP, { s });
+      const s = o.s || 1, ph = o.talk ? 'awake' : curryPhase(t);
+      curryFig(W, x, y, t, o);
       if (o.quiet) return;
       if (ph === 'asleep') { const a = loop4(t) % 1.3; say(W, x + (3 + a * 2) * W.cw * s, y - (3.5 + a * 2) * W.ch * s, a < 0.65 ? 'z' : 'Z', P.beigeDim); }
       else say(W, x + 6 * W.cw * s, y - 2.5 * W.ch * s, ph === 'pop' ? 'psst!' : '!', P.beige);
@@ -215,9 +342,8 @@
     name: 'pterodactyl', pron: 'she', key: 'red dim', prop: 'a pencil behind her ear, a rolled blueprint', gag: 'laughs like a seagull',
     rows: PTERO, line: 'the bridge is wrong. HA – i love it.',
     sprite(W, x, y, t, o = {}) {
-      const s = o.s || 1, l = loop4(t), rows = PTERO.slice(), laugh = laughing(t, o);
-      if (laugh) { rows[0] = '      ___/ '; rows[1] = '<=<==(^)/  '; }
-      sprite(W, x, y, rows, PTERO_MAP, o);
+      const s = o.s || 1, l = loop4(t), laugh = laughing(t, o);
+      pteroFig(W, x, y, t, o);
       if (laugh) for (let i = 0; i < 3; i++) {
         const age = l - 1.0 - i * 0.35;
         if (age < 0) continue;
@@ -251,12 +377,12 @@
     rows: PILOT, line: "hold still, harold. you're my best drawing.",
     sprite(W, x, y, t, o = {}) {
       const s = o.s || 1;
-      if (o.quiet) { sprite(W, x, y, PILOT, PILOT_MAP, o); return; }
+      if (o.quiet) { pilotFig(W, x, y, o); return; }
       const l = loop4(t), n = Math.floor(l / 3.4 * DUCK_PATH.length);
       // the trail: dots along the duck so far
       for (let i = 0; i < Math.min(n, DUCK_PATH.length); i++) W.loose(x + DUCK_PATH[i][0] * W.cw * s * 1.1, y + DUCK_PATH[i][1] * W.ch * s * 0.9, '.', P.beigeDim, 0, W.ch * s);
       const at = DUCK_PATH[Math.min(n, DUCK_PATH.length - 1)];
-      sprite(W, x + at[0] * W.cw * s * 1.1 + 3 * W.cw * s, y + at[1] * W.ch * s * 0.9 + 1.5 * W.ch * s, PILOT, PILOT_MAP, { s: s === 1 ? 1.0001 : s });
+      pilotFig(W, x + at[0] * W.cw * s * 1.1 + 3 * W.cw * s, y + at[1] * W.ch * s * 0.9 + 1.5 * W.ch * s, o);
     },
     close(W, x, y, t, o = {}) {
       const rows = [

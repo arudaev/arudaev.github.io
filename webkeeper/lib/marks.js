@@ -146,17 +146,23 @@ void main() { float a = (vSolid > 0.5 ? 1. : texture(uAtlas, vUV).a) * vC.a; if 
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl2', { premultipliedAlpha: true, alpha: true, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false });
     if (!gl) return { ok: false };
-    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-    const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-    const U = {}; for (const n of ['uOrg', 'uWorld', 'uOff', 'uView', 'uCell', 'uT', 'uNR', 'uR', 'uRS', 'uTouch', 'uAtlas', 'uXray', 'uL', 'uLN', 'uBeam']) U[n] = gl.getUniformLocation(prog, n);
-    const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5]), gl.STATIC_DRAW);
-    // the atlas: every glyph once, white, at twice its size (the colour is the mark's)
+    // the atlas: every glyph once, white, at twice its size (the colour is the mark's). Its 2D copy is kept, so a lost
+    // context gets the same atlas back and every mark's uv still points at its glyph
     const AS = 2048, RS = 2, acv = document.createElement('canvas'); acv.width = AS; acv.height = AS;
     const ag = acv.getContext('2d'); ag.fillStyle = '#fff'; ag.fillRect(0, 0, 8, 8);
-    const atlas = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, atlas);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, AS, AS, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    for (const [p, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, p, v);
+    let prog, U, quad, atlas;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    // the program, the quad and the atlas texture: once, and again when the browser gives a lost context back
+    function init() {
+      prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      U = {}; for (const n of ['uOrg', 'uWorld', 'uOff', 'uView', 'uCell', 'uT', 'uNR', 'uR', 'uRS', 'uTouch', 'uAtlas', 'uXray', 'uL', 'uLN', 'uBeam']) U[n] = gl.getUniformLocation(prog, n);
+      quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5]), gl.STATIC_DRAW);
+      atlas = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, atlas);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, AS, AS, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      for (const [p, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, p, v);
+    }
+    init();
     const cells = new Map(), WHITE = [3 / AS, 3 / AS, 5 / AS, 5 / AS];
     let sx = 10, sy = 0, shH = 10, d0 = 0, d1 = 10;
     function glyph(ch, size) {
@@ -178,19 +184,30 @@ void main() { float a = (vSolid > 0.5 ? 1. : texture(uAtlas, vUV).a) * vC.a; if 
       gl.bindTexture(gl.TEXTURE_2D, atlas); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, d0, AS, d1 - d0, gl.RGBA, gl.UNSIGNED_BYTE, im.data);
       d0 = AS; d1 = 0;
     }
-    function upload(data) {
-      const vao = gl.createVertexArray(), vb = gl.createBuffer();
+    // a canvas's marks: its instance buffer and its touch field, made again from the same data after a lost context
+    function bind(h) {
+      const data = h.data, vao = gl.createVertexArray(), vb = gl.createBuffer();
       gl.bindVertexArray(vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-      gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(data.buf, 0, data.n * STRIDE), gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, h.bytes, gl.STATIC_DRAW);
       for (let l = 1; l <= 7; l++) { gl.enableVertexAttribArray(l); gl.vertexAttribDivisor(l, 1); }
       gl.bindVertexArray(null);
       const tt = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tt);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, data.cols, data.rows, 0, gl.RG, gl.FLOAT, data.touch);
       for (const [p, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, p, v);
-      return { vao, vb, tt, data };
+      Object.assign(h, { vao, vb, tt });
     }
-    const free = (h) => { if (!h) return; gl.deleteBuffer(h.vb); gl.deleteVertexArray(h.vao); gl.deleteTexture(h.tt); };
+    const live = new Set();
+    // the bytes are kept (an exact copy, about 7 MB for an area's meadow): the canvas lets its own go once they're up
+    // (cv.dropMarks), and a lost context needs them again
+    function upload(data) { const h = { data, bytes: new Uint8Array(data.buf, 0, data.n * STRIDE).slice() }; bind(h); live.add(h); return h; }
+    const free = (h) => { if (!h) return; live.delete(h); h.bytes = null; gl.deleteBuffer(h.vb); gl.deleteVertexArray(h.vao); gl.deleteTexture(h.tt); };
+    // a lost context (the GPU reset, or the browser taking it back under memory pressure) blanked the meadow for good:
+    // only the 2D layers were left – the sky, the pools. Asking to keep it (preventDefault) lets the browser give it
+    // back, and then everything on it is made again from what's still here: the atlas's 2D copy, each canvas's marks
+    let lost = false;
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost = true; });
+    canvas.addEventListener('webglcontextrestored', () => { init(); for (const h of live) bind(h); d0 = 0; d1 = AS; lost = false; });
     let VW = 1, VH = 1, TT = 0, XRAY = new URLSearchParams(location.search).has('xray') ? 1 : 0;
     // the lights (lib/world.js): lamps and the lighthouse's lantern as [x, y, radius, strength] in world px, and the beam
     // [x, y, angle, strength]
@@ -230,7 +247,7 @@ void main() { float a = (vSolid > 0.5 ? 1. : texture(uAtlas, vUV).a) * vC.a; if 
       g.bindVertexArray(null);
       return n;
     }
-    return { ok: true, gl, canvas, glyph, upload, free, begin, draw, flushAtlas, STRIDE, xray(on) { XRAY = on ? 1 : 0; } };
+    return { ok: true, gl, canvas, glyph, upload, free, begin, draw, flushAtlas, STRIDE, xray(on) { XRAY = on ? 1 : 0; }, get lost() { return lost; } };
   }
   window.WK_GL = { create, STRIDE };
 })();

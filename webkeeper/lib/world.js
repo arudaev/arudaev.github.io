@@ -24,6 +24,15 @@
   function create(cfg = {}) {
     const base = cfg.base || '../../', canvas = cfg.canvas, q = new URLSearchParams(location.search);
     const SHOT = cfg.shot || null, budget = cfg.budget ?? 6, showMs = q.has('ms');
+    // the visitor number on the menu: Voyager's own (it sends it on the couch, and keeps the last one on this device);
+    // on its own page, before any visit to the sea, there's no number to show – none is made up
+    function seenVisitor() { try { return +localStorage.getItem('v56k.visitor') || 0; } catch (e) { return 0; } }
+    // a reload while playing goes straight back into the game: this tab remembers it was playing – on the couch too,
+    // where Voyager puts the game's own page in the address bar (src/ui/WorldHud.tsx), so the reload lands here
+    const PLAYING = 'webkeeper.playing', alone = !(window.WK_HOST && WK_HOST.hosted());
+    const playing = (on) => { try { if (on) sessionStorage.setItem(PLAYING, '1'); else sessionStorage.removeItem(PLAYING); } catch (e) { /* storage off */ } };
+    let wasPlaying = false, saidPlaying = false;
+    try { wasPlaying = alone && !cfg.bench && sessionStorage.getItem(PLAYING) === '1'; } catch (e) { /* storage off */ }
     // ?off=sky,ground,behind,play,water,front,air,light,ui – leave layers out of the picture, to see (and measure, with
     // scripts/motion) what each one does; the debug panel switches them too (G.off)
     const OFF = new Set((q.get('off') || '').split(',').filter(Boolean));
@@ -34,7 +43,7 @@
     const GL = () => !!(GLR && GLR.ok);
     let Wm = null, U = null, Um = null, Fb = null, Ab = null, phase = 0, loaded = false, err = null, cur = null, T = 0, DEADLINE = 0;
     let mode = SHOT && !SHOT.title ? 'play' : 'title', liftT = -9, startT = -9, sel = 0, showControls = false, hintW = null, nameW = null;
-    let idle = 0, attract = null, visitors = 256, lastHum = -7, mewNext = false, mewBy = 0, stats = { bake: 0, draw: 0, miss: 0 };
+    let idle = 0, attract = null, visitors = seenVisitor(), lastHum = -7, mewNext = false, mewBy = 0, stats = { bake: 0, draw: 0, miss: 0 };
     let lastStep = -1, lastActs = -1, lastRings = -1, forceU = true, ready = false;
 
     // ── the view: css size, the whole-number zoom, device pixels per world px, the size in world px
@@ -128,7 +137,7 @@
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
     const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
-    const items = () => (mode === 'menu' ? ['continue', 'controls', zoomName(), 'save code', 'load code', 'restart: prologue', 'sit back'] : ['play']);
+    const items = () => (mode === 'menu' ? ['continue', 'controls', zoomName(), 'save code', 'load code', 'restart: prologue', window.WK_HOST && WK_HOST.hosted() ? 'sit back' : 'back to voyager'] : ['play']);
     function choose(i) {
       const it = items()[i];
       // (the A that chose is still held as the game starts – PLAY, continue, a new night, a loaded code: holdA keeps it
@@ -141,6 +150,8 @@
       else if (it === zoomName()) setZoom(ZOOMS[(ZOOMS.indexOf(zoomK) + 1) % ZOOMS.length]);   // 1x → 0.75x → 0.5x → 1x
       else if (it === 'restart: prologue') { G.newNight(); mode = 'play'; }
       // sitting back is Voyager's (lib/host.js tells the couch); played on its own there's no couch to sit back on
+      // on its own page: back to Voyager, the portfolio round it (the save stays; this tab forgets it was playing)
+      else if (it === 'back to voyager') { saidPlaying = false; playing(false); location.href = '/'; }
       else if (it === 'sit back') { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('sit-back'); else { G.title(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } }   // on its own (the lab, ?debug): back to the title
     }
     const inMenu = () => mode === 'title' || mode === 'menu';
@@ -399,7 +410,7 @@
             const b = A0.sim.st().cast.find((x) => x.id === 'bug'); if (b) { b.skid = A0.sim.t - 0.7; b.c = s0.c; b.r = s0.r; }
             A0.sim.say('yip!', 'bug', 1.2);
           }
-          if (a > 7.5) { attract = null; idle = 0; visitors++; }
+          if (a > 7.5) { attract = null; idle = 0; if (visitors) visitors++; }
         }
       }
       // Mishka hums every 9 s (wherever Harold is with him); about one hum in five ends in a tiny mew on its own, and
@@ -955,7 +966,7 @@
         Wm.ink(c0, r0, w + 1, h + 1); Wm.box(c0, r0, c0 + w, r0 + h, P.beigeDim);
         centre(r0 + 1, 'webkeeper · harold\'s copy', P.phosphor); centre(r0 + 2, 'temporary internet files', P.beigeDim);
         menuList(r0 + 4, items());
-        centre(r0 + h - 1, 'you are visitor ' + String(visitors).padStart(6, '0'), P.tealUp);
+        if (visitors) centre(r0 + h - 1, 'you are visitor ' + String(visitors).padStart(6, '0'), P.tealUp);
       }
       if (mode === 'play') {
         const hs = (cur && cur.S && cur.S.hint) || (hintW && hintW.till > T ? hintW.text : null);
@@ -1012,8 +1023,11 @@
         runJob(areas[0], performance.now() + 30);
         if (!areas[0].ready) { loading(); return; }
         moveCam(0, true); render(true); ready = true; window.__wkReady = true;
+        // reloaded while playing on its own page: straight back in, as PLAY would (no title to press through)
+        if (wasPlaying && !SHOT && mode === 'title') choose(0);
       }
       if (mode === 'play') {
+        if (!SHOT && !cfg.bench && !saidPlaying) { saidPlaying = true; playing(true); }
         // PLAY on the title carries on from this device's save, once its area is built
         // a new night (no save) starts on the couch, the prologue, once it's built (it's built while the title shows)
         if (resume) {
@@ -1107,7 +1121,7 @@
       get zoom() { return zoomK; }, set zoom(z) { setZoom(+z); },
       menu() { if (mode === 'play') { mode = 'menu'; sel = 0; } },
       start() { if (!ready) return; if (mode === 'title') choose(0); else if (mode === 'menu') { mode = 'play'; holdA = true; } },
-      title() { mode = 'title'; sel = 0; idle = 0; attract = null; showControls = false; },
+      title() { mode = 'title'; sel = 0; idle = 0; attract = null; showControls = false; if (saidPlaying) { saidPlaying = false; playing(false); } },
       saveCode() { return SAVE.code(); },
       /** start again from the couch: the save gone, every area as it was (words unspelled, scenes unplayed) */
       newNight() {

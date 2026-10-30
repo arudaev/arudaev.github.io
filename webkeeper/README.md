@@ -78,6 +78,10 @@ seconds, the debug panel's numbers, every console error, and a picture of each s
 `design/couch-games/checks/latest/` (`report.md`, `report.json`, `sheet.png`). It needs Playwright with its
 Chromium (`npm i --no-save playwright`, or `PW=/path/to/node_modules/playwright`).
 
+A shape fails – and the run exits with 1 – when a step times out, the page throws, or PLAY on a fresh night doesn't
+start on the couch (0.1). CI (`.github/workflows/check.yml`, the `webkeeper` job) runs it on the phone shape for every
+PR; software WebGL builds the desk-sized rooms too slowly there to wait for.
+
 Headless Chromium draws WebGL in software, so its frame rate is a slow machine's, not a phone's: it catches
 errors, broken flows and layout, and compares one change with the next. Speed is judged with the debug panel on
 real devices.

@@ -118,7 +118,8 @@
       L.farImage(Wm, sc); yield 'bake';
       for (const [who, pose, fl, f] of WK_ACTORS.pending(castOf(A.place), Wm)) { WK_ACTORS.sprite(Wm, who, pose, fl, f); yield 'cast'; }
       A.sc = sc; A.sim = makeSim(A); A.S = A.sim.state(); A.ready = true;
-      if (A.mem) { A.sim.restore(A.mem); A.met = true; A.sim.leave(); }   // built again: as it was left
+      // built again: as it was left (a memory that won't go back leaves the area as a new night has it)
+      if (A.mem) { try { A.sim.restore(A.mem); A.met = true; } catch (e) { console.warn('webkeeper: area memory not restored', e); A.mem = null; A.done = null; A.sim.reset(); } A.sim.leave(); }
       A.rec.wall = performance.now() - A.rec.t0;
     }
     function runJob(A, deadline) {
@@ -136,6 +137,7 @@
 
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
     const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
+    let hand = window.matchMedia && matchMedia('(pointer: coarse)').matches ? 'touch' : 'keys';   // the last hand used: keys, touch or pad
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
     // the puzzle lab is the page's other list of areas (?lab): on its own page the menu goes between the two – the
     // couch's TV plays the night only
@@ -169,7 +171,7 @@
     }
     const inMenu = () => mode === 'title' || mode === 'menu';
     addEventListener('keydown', (e) => {
-      const k = e.key.toLowerCase(); idle = 0;
+      const k = e.key.toLowerCase(); idle = 0; hand = 'keys';
       if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault();
       if (inMenu()) {
         const N = items().length;
@@ -190,7 +192,7 @@
     addEventListener('blur', () => { keys.clear(); stick = null; });
     const local = (e) => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / V.s, y: (e.clientY - r.top) / V.s }; };
     canvas.addEventListener('pointerdown', (e) => {
-      const p = local(e); idle = 0; if (e.pointerType !== 'mouse') touchUI = true;
+      const p = local(e); idle = 0; if (e.pointerType !== 'mouse') { touchUI = true; hand = 'touch'; }
       if (inMenu()) { const h = hits.find((b) => p.y >= b.y0 && p.y < b.y1); if (h) { sel = h.i; choose(h.i); } else if (mode === 'title') choose(0); return; }
       if (p.x > V.w - 48 && p.y < 40) { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('menu'); else { mode = 'menu'; sel = 0; } return; }
       if (p.x < V.w / 2) stick = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y };
@@ -213,7 +215,7 @@
       let y = (keys.has('arrowdown') || keys.has('s') ? 1 : 0) - (keys.has('arrowup') || keys.has('w') ? 1 : 0);
       let a = keys.has(' ') || keys.has('j') || tapA, b = keys.has('shift') || keys.has('k') || tapB, u = keys.has('z') || keys.has('backspace');
       const ext = window.WK_HOST && WK_HOST.pad;
-      if (ext) { if (Math.abs(ext.x) + Math.abs(ext.y) > 0.1) { x = ext.x; y = ext.y; } a = a || ext.a; b = b || ext.b; }
+      if (ext) { if (Math.abs(ext.x) + Math.abs(ext.y) > 0.1) { x = ext.x; y = ext.y; hand = 'pad'; } if (ext.a || ext.b) hand = 'pad'; a = a || ext.a; b = b || ext.b; }
       if (stick) { const dx = stick.x - stick.x0, dy = (stick.y - stick.y0) * 1.8, d = Math.hypot(dx, dy); if (d > 6) { x = dx / Math.max(d, 36); y = dy / Math.max(d, 36); } }
       const gp = navigator.getGamepads ? [...navigator.getGamepads()].find(Boolean) : null;
       if (gp) {
@@ -225,7 +227,7 @@
         if (inMenu()) { const N = items().length; if (bt(12) && !padWas.u) sel = (sel + N - 1) % N; if (bt(13) && !padWas.d) sel = (sel + 1) % N; if ((bt(0) || st) && !padWas.a) choose(sel); }
         else if (st && !padWas.s) { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('menu'); else { mode = 'menu'; sel = 0; } }
         padWas = { u: bt(12), d: bt(13), a: bt(0) || st, s: st };
-        if (Math.abs(x) + Math.abs(y) > 0 || a || b) idle = 0;
+        if (Math.abs(ax) + Math.abs(ay) > 0.22 || gp.buttons.some((x) => x && x.pressed)) { idle = 0; hand = 'pad'; }
       }
       if (holdA) { if (a) a = false; else holdA = false; }
       return { x, y, a, b, u };
@@ -258,7 +260,22 @@
       areaOf(d) { const i = d && d.place ? areas.findIndex((A) => A.place.place === d.place) : d ? d.area : -1; return i >= 0 && areas[i] ? i : -1; },
       // a save these areas can't carry on from (the lab's, written here before it had its own key) is no save: PLAY
       // starts a new night instead of doing nothing
-      read() { let d = SAVE.kept; if (!d) try { d = JSON.parse(localStorage.getItem(SAVE.key) || 'null'); } catch (e) { /* private window */ } return d && (d.v === 1 || d.v === 2) && SAVE.areaOf(d) >= 0 ? d : null; },
+      read() { let d = SAVE.kept; if (!d) try { d = JSON.parse(localStorage.getItem(SAVE.key) || 'null'); } catch (e) { /* private window */ } return SAVE.valid(d) ? d : null; },
+      // a save's shape, checked before anything is put back: a code that parses but isn't a save (hand-edited, cut off,
+      // from an older build) would otherwise throw every frame – and, kept, again after every reload
+      valid(d) {
+        const num = (x) => typeof x === 'number' && isFinite(x), arr = Array.isArray, obj = (x) => x && typeof x === 'object' && !arr(x);
+        if (!obj(d) || (d.v !== 1 && d.v !== 2) || SAVE.areaOf(d) < 0 || !num(d.c) || !num(d.r)) return false;
+        if (d.mem === undefined) return true;
+        if (!obj(d.mem)) return false;
+        return Object.values(d.mem).every((m) => obj(m)
+          && (m.flags === undefined || obj(m.flags)) && (m.open === undefined || arr(m.open))
+          && (m.letters === undefined || (arr(m.letters) && m.letters.every((x) => arr(x) && num(x[0]) && num(x[1]) && num(x[2]) && typeof x[3] === 'string')))
+          && (m.becomes === undefined || (arr(m.becomes) && m.becomes.every((b) => obj(b) && typeof b.text === 'string' && arr(b.at) && num(b.at[0]) && num(b.at[1]))))
+          && (m.digit === undefined || m.digit === null || (arr(m.digit) && typeof m.digit[0] === 'string' && num(m.digit[1]) && num(m.digit[2])))
+          && (m.cast === undefined || (arr(m.cast) && m.cast.every((a) => obj(a) && typeof a.id === 'string' && num(a.c) && num(a.r))))
+          && (m.done === undefined || arr(m.done)));
+      },
       // every area's memory back (built ones at once, the rest when they're built), then Harold where he was
       apply(d) {
         const i = SAVE.areaOf(d); if (!d || (d.v !== 1 && d.v !== 2) || i < 0) return false;
@@ -277,11 +294,16 @@
       load(code) {
         try {
           const d = JSON.parse(decodeURIComponent(escape(atob(String(code).trim().replace(/^WK[12]-/, '')))));
-          if (!d || (d.v !== 1 && d.v !== 2) || SAVE.areaOf(d) < 0) return false;
+          if (!SAVE.valid(d)) return false;
           SAVE.store(d); resume = true; return true;
         } catch (e) { return false; }
       },
     };
+    // a save put back, or – if putting it back throws all the same – a new night, so a bad save can never stop the game
+    function applySafe(d) {
+      try { if (SAVE.apply(d) !== false) return true; } catch (e) { console.warn('webkeeper: save not applied', e); }
+      G.newNight(); return false;
+    }
     // an area's memory: live from its sim, or kept from when it was unloaded; with the scenes it has played
     function memOf(A) {
       const m = A.sim ? A.sim.snapshot() : A.mem; if (!m) return null;
@@ -765,7 +787,9 @@
 
     // ── the ui: the title (the key art's), the menu (Webkeeper's own homepage), hints, the touch controls
     const inkText = (c, r, s, col, italic) => { Wm.ink(c - 1, r, s.length + 2, 1); if (italic) Wm.textI(c, r, s, col); else Wm.text(c, r, s, col); };
-    const centre = (r, s, col, italic) => inkText(Math.round(V.w / 16 - s.length / 2), r, s, col, italic);
+    // a prompt names the button for the hand last used: the keys' own names, or the A and B of a pad or the touch rings
+    const keyed = (s) => s.replace(/\{A\}/g, hand === 'keys' ? 'space' : 'A').replace(/\{B\}/g, hand === 'keys' ? 'shift' : 'B').replace(/\{undo\}/g, hand === 'keys' ? 'z' : 'B');
+    const centre = (r, s, col, italic) => { s = keyed(s); inkText(Math.round(V.w / 16 - s.length / 2), r, s, col, italic); };
     // ── where to go, as Voyager's course line ("course: the ribcage ↖"): the area's next thing – a word to spell where it
     // belongs, then the way on (a door, an edge; Bug, while he has what the way on needs). Shown top left with an arrow
     // in eight steps from Harold, and at the view's edge when it's off screen.
@@ -906,7 +930,8 @@
       if (talkHold) { if (!inp.a) talkHold = false; return { ...inp, a: false }; }
       // a press starts its scene even over a free one (Harold's remarks as he walks in)
       if (press && (!scene || scene.def.free)) { const d = sceneFor(true); if (d) { playScene(d); return still; } }
-      if (press) { const t = talker(); if (t) { openTalk(t); return still; } }
+      // (while Bug runs, A is the quack ahead of him – never a talk with whoever stands by the path)
+      if (press && !chasing()) { const t = talker(); if (t) { openTalk(t); return still; } }
       return inp;
     }
     function talkBox(rows, cols) {
@@ -923,6 +948,7 @@
       vis.forEach((x, j) => { (x.dim ? Wm.textI : Wm.text).call(Wm, c0 + 2, r0 + 1 + j, x.t.slice(0, Math.max(0, k)), x.dim ? P.beigeDim : P.beige); k -= x.t.length; });
       if (k >= 0 && Math.floor(T * 2) % 2) Wm.text(c0 + w - 4, r1, page + 1 < talk.pages ? ' ▼ ' : ' A ', P.beige);
     }
+    const chasing = () => { const g = goal(); return !!g && g.what === 'quack ahead of bug'; };
     function goal() {
       if (!cur || !cur.S) return null;
       const p = cur.place, fl = cur.S.flags || {}, at = (c, r, what) => ({ x: cur.ox + (c + 0.5) * 8, y: cur.oy + (r + 0.5) * 16, what });
@@ -966,6 +992,9 @@
       const g = Wm.g; Wm.ox = 0; Wm.oy = 0; Wm.reset();
       const rows = Math.floor(V.h / 16), cols = Math.floor(V.w / 8);
       if (mode === 'title' || mode === 'lift') {
+        // the title holds until the area PLAY goes to is built (on a slow device that's a while): lifting early showed
+        // the landing behind it, playable, and then pulled Harold away to the couch or his save
+        if (mode === 'lift' && resume) liftT = T;
         const lift = mode === 'lift' ? Math.min(6, Math.floor((T - liftT) * 10)) / 6 : 0;
         if (lift >= 1) mode = startT >= 0 ? 'play' : mode;
         const fs = Math.max(40, Math.min(128, Math.floor((V.w * 0.92) / 4.7))), y0 = Math.round(V.h * 0.05 - lift * V.h * 0.6);
@@ -992,7 +1021,7 @@
         const hr = rows - (window.WK_HOST && WK_HOST.hosted() ? 4 : 2);
         if (talk) talkBox(rows, cols);
         else if (hs) centre(hr, hs, P.beigeDim, true);
-        else { const t = talker(), ps = pressSpot(); if (ps) centre(hr, 'A: ' + (ps.label || 'look'), P.beige); else if (t) centre(hr, 'A: talk to ' + (t.def.id || t.def.who), P.beige); }
+        else { const t = chasing() ? null : talker(), ps = pressSpot(); if (ps) centre(hr, '{A}: ' + (ps.label || 'look'), P.beige); else if (t) centre(hr, '{A}: talk to ' + (t.def.id || t.def.who), P.beige); }
         if (nameW && nameW.till > T) inkText(1, 0, nameW.text, P.beigeDim);
         if (cur && cur.S && cur.S.as === 'malifex') inkText(1, 1, 'as malifex', P.phosphor);
         course(cur && cur.S && cur.S.as === 'malifex' ? 2 : nameW && nameW.till > T ? 1 : 0);
@@ -1043,21 +1072,20 @@
         // reloaded while playing on its own page: straight back in, as PLAY would (no title to press through)
         if (wasPlaying && !SHOT && mode === 'title') choose(0);
       }
-      if (mode === 'play') {
-        if (!SHOT && !cfg.bench && !saidPlaying) { saidPlaying = true; playing(true); }
+      if (mode === 'play' || mode === 'lift') {
+        if (mode === 'play' && !SHOT && !cfg.bench && !saidPlaying) { saidPlaying = true; playing(true); }
         // PLAY on the title carries on from this device's save, once its area is built
         // a new night (no save) starts on the couch, the prologue, once it's built (it's built while the title shows)
         if (resume) {
           const d = SAVE.read(), couch = areas.find((A) => A.place.place === '0.1');
           if (!d && couch && !SHOT) { if (couch.ready) { G.put(couch.i, ...couch.place.actors.find((a) => a.who === 'harold').at); arrived = couch; resume = false; wantArea = -1; } else wantArea = couch.i; }
-          else { const di = SAVE.areaOf(d); if (di < 0) { resume = false; wantArea = -1; } else if (areas[di].ready) { SAVE.apply(d); resume = false; wantArea = -1; } else wantArea = di; }
+          else { const di = SAVE.areaOf(d); if (di < 0) { resume = false; wantArea = -1; } else if (areas[di].ready) { resume = false; wantArea = -1; if (!applySafe(d)) hint('that save couldn\'t be read – a new night', 4); } else wantArea = di; }
         }
         // (scenes wait while PLAY carries on: the area Harold stands in now isn't the one he's going to)
-        if (!resume) sceneStep();
-        if (T - savedAt > 5) { savedAt = T; SAVE.write(); }
+        if (mode === 'play') { if (!resume) sceneStep(); if (T - savedAt > 5) { savedAt = T; SAVE.write(); } }
       }
       if (mode !== 'menu') {
-        const inp = mode === 'play' ? talkInput(input()) : mode === 'lift' ? input() : (input(), null);
+        const inp = mode === 'play' ? talkInput(input()) : (input(), null);
         if (window.WK_SOUND) WK_SOUND.play = mode === 'play';
         stepAll(dt, inp);
         titleTick(dt);

@@ -108,15 +108,19 @@
       if (STREAMS.length && row.some((x) => { const c2 = x.cell[0] + dx, r2 = x.cell[1] + dy; return !inWater(c2, r2) && !live(c2, r2); })) { hint('not there – you couldn\'t get behind it again', 2.2); return false; }
       mark();
       for (let k = row.length - 1; k >= 0; k--) { const x = row[k]; settleAt(x, x.cell[0] + dx, x.cell[1] + dy, null); x.s0 = st.t - 0.22; x.touched = st.t; }
-      if (!st.flags.pushedCell) { st.flags.pushedCell = true; hint('undo: B or Z', 3); }
+      if (!st.flags.pushedCell) { st.flags.pushedCell = true; hint('undo: {undo}', 3); }
       return true;
     }
     // undo (cells only): every letter, every word and Harold back to before the last push or quack
-    function mark() { if (!CELLS) return; undos.push({ L: st.letters.map((l) => [l.cell[0], l.cell[1], l.state]), B: st.becomes.slice(), h: [st.h.c, st.h.r] }); if (undos.length > 64) undos.shift(); }
+    // (a word's flags and the doors it opened go back too, or an undone word would leave its way on open)
+    function mark() { if (!CELLS) return; undos.push({ L: st.letters.map((l) => [l.cell[0], l.cell[1], l.state]), B: st.becomes.slice(), h: [st.h.c, st.h.r], F: { ...st.flags }, O: [...st.open] }); if (undos.length > 64) undos.shift(); }
     function undo() {
       const u = undos.pop(); if (!u) { hint('nothing to undo', 1.6); return; }
       st.letters.forEach((l, k) => { const v = u.L[k]; if (!v) return; l.cell = [v[0], v[1]]; l.x = (v[0] + 0.5) * 8; l.y = (v[1] + 0.5) * 16; l.z = 0; l.vx = l.vy = l.vz = 0; l.state = v[2] === 'settling' ? 'settled' : v[2]; l.s0 = -9; });
+      const words = new Set(['solved', ...[...st.becomes, ...u.B].map((b) => b.text.toLowerCase())]);
       st.becomes = u.B; st.h.c = u.h[0]; st.h.r = u.h[1]; occ = null; walkG = null;
+      for (const k of words) { if (u.F[k]) st.flags[k] = true; else delete st.flags[k]; }
+      st.open = new Set(u.O);
       if (window.WK_SOUND && !o.demo) WK_SOUND.letter('z');
     }
     // a built word quacked (cells): back into its letters where they stand; the ones left in a hole or a wall hop to the

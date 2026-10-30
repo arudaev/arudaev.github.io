@@ -1122,7 +1122,7 @@
      "set": "pulled"
     },
     {
-     "hint": "A at the tv: jump in",
+     "hint": "{A} at the tv: jump in",
      "for": 8
     }
    ],

@@ -3,8 +3,8 @@
 //   to Voyager:   { webkeeper: 'ready' }      the title is drawn – the TV can show it
 //                 { webkeeper: 'mode', mode }  title · lift · play · menu, as they change
 //                 { webkeeper: 'sit-back' }    "sit back" was chosen in the menu
-//   from Voyager: { voyager: 'pad', pad }      the deck's stick and buttons ({ x, y, a, b }), or null
-//                 { voyager: 'menu' }          open the menu (Voyager's own menu button)
+//   from Voyager: { voyager: 'pad', pad }      the deck's stick and buttons ({ x, y, a, b }), or null – not sent today
+//                 { voyager: 'menu' }          open the menu (Voyager's own menu button) – not sent today
 //                 { voyager: 'start' }         start from the title, or close the menu
 //                 { voyager: 'title' }         back to the title (Harold sat back)
 //                 { voyager: 'visitor', n }    Voyager's visitor number, for the title's counter

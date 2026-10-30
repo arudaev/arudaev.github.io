@@ -1,4 +1,4 @@
-// world.js – one meadow (STEP3-ROUND2.md, SCREENS.md). Rooms 0.2–0.7 are areas of one continuous meadow: their place
+// world.js – one meadow (design/couch-games/09-SCREENS.md, 05-WORLD.md). Rooms 0.2–0.7 are areas of one continuous meadow: their place
 // files are joined at their edges, each with its rims of trees and hedges, and past the page's edge the night below
 // with the far pages. The picture takes its window's shape; a big cell is 8 × 16 css px, scaled by whole numbers so the
 // view keeps 36–60 rows; the camera follows Harold. The areas next to Harold's are built, prepared and baked in slices
@@ -752,7 +752,7 @@
     // ── where to go, as Voyager's course line ("course: the ribcage ↖"): the area's next thing – a word to spell where it
     // belongs, then the way on (a door, an edge; Bug, while he has what the way on needs). Shown top left with an arrow
     // in eight steps from Harold, and at the view's edge when it's off screen.
-    // ── talking (GAME.md, 24-MISHKA.md): A near someone with lines (an actor's `talk` in the place file) opens a box at
+    // ── talking (06-CAST.md, the book): A near someone with lines (an actor's `talk` in the place file) opens a box at
     // the bottom instead of quacking; A shows the whole line, then the next. Harold speaks; Mishka answers in hums, with
     // a dim line for what he means. The first talk is `first`; after it, each talk is the next of `again`, where
     // {dir} and {goal} are the course line's: he nods the way to go.

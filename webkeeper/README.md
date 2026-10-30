@@ -14,7 +14,7 @@ run, measured and fixed on real devices. The project's handback it came from is 
   him in again).
 - **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab> – two areas of test stations, the second
   one Bug the thief's
-  ([PUZZLES.md](../../design/couch-games/PUZZLES.md)).
+  ([04 – Puzzles](../../design/couch-games/04-PUZZLES.md)).
 - **Debug panel:** add `?debug` (on its own) or `?wkdebug` (on the couch, since `?debug` is Voyager's own debug
   mode). On a phone too: that's the point.
 

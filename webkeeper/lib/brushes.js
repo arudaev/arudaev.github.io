@@ -7,7 +7,7 @@
 //   6 small marks for texture; big letters only for what you read or play with (the cards' job)
 //   7 shadows, reflections and the sky in the water are faked as shapes
 //   8 bake each wind step once, stamp it after; only what a ring or a touch disturbs is live
-// Round 3 (PLAN.md §3): trees are grown by cards/world/tree.js and painted here (each cell keeps
+// Round 3 (archive/PLAN.md §3): trees are grown by cards/world/tree.js and painted here (each cell keeps
 // its sway, so a crown bends from the foot up); built stone is a ruin of uneven blocks in shape
 // marks; mist lightens what lies under it; water is calm and mirrors its bank; soil catches the
 // moon (pebbles with shadows, ruts, paw prints, tufts at its edge); the grass follows a meadow

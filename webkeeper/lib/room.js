@@ -1,4 +1,4 @@
-// room.js – a room you can play (SCOPE.md §2, §3, §7.5, step 3). A place file (lib/place.js) is built into the layers
+// room.js – a room you can play (03-GAMEPLAY.md; archive/SCOPE.md §2, §3, §7.5, step 3). A place file (lib/place.js) is built into the layers
 // (lib/layers.js) and played: harold walks (smoothly – the world's marks step), the quack loosens every big letter its
 // ring reaches, loose letters drift on the wind, fall into holes, get pushed and settle onto the grid about three
 // seconds after they were last touched, and settled letters that spell a word in the word book become the thing.
@@ -34,7 +34,7 @@
         st.letters.push({ ch, word: w.id, j, x: (c + 0.5) * 8, y: (r + 0.5) * 16, z: 0, vx: 0, vy: 0, vz: 0, home: [c, r], cell: [c, r],
           state: w.voice ? 'voice' : w.lying ? 'loose' : 'settled', still: !!w.lying, lying: !!w.lying, touched: -99, voice: !!w.voice, hidden: !!w.hidden, wall: !!w.wall, on: w.on, reveal: 0 });
         // a letter on a track (w.rails, one per letter): it sits on the ground, pushed it hops along its track and
-        // nowhere else, and the quack doesn't scatter it (PUZZLES.md: the player decides where, not the physics)
+        // nowhere else, and the quack doesn't scatter it (04-PUZZLES.md: the player decides where, not the physics)
         const rl = w.rails && w.rails[j];
         if (rl) { const L = st.letters[st.letters.length - 1]; L.rail = railCells([[c, r], ...rl]); L.ri = 0; L.state = 'settled'; L.still = L.lying = false; }
       });
@@ -348,7 +348,7 @@
         else a.flip = m.flip;
       }
     }
-    // ── Bug the thief (Kingdom's night, PUZZLES.md): a bug with a den (actor `steals`, `den`) waits there, and every few
+    // ── Bug the thief (Kingdom's night, 04-PUZZLES.md): a bug with a den (actor `steals`, `den`) waits there, and every few
     // seconds runs out for a letter left in the dark – out of every lamp's light (a lamp, a word that glows: the second
     // of the light's three steps, as lib/marks.js draws it) and with Harold not standing by it. He carries it home;
     // quacked head on he skids and drops it, and it hops back. A quack at the den sends home what he hoarded. Once his

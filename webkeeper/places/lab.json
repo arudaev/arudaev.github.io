@@ -2,7 +2,7 @@
  "place": "lab",
  "name": "the puzzle lab",
  "chapter": 0,
- "idea": "a test bench, not a level: every puzzle the engine can run today, side by side, so each can be played and timed on its own (design/couch-games/PUZZLES.md)",
+ "idea": "a test bench, not a level: every puzzle the engine can run today, side by side, so each can be played and timed on its own (design/couch-games/04-PUZZLES.md)",
  "learn": "testing",
  "version": 1,
  "seed": 909,

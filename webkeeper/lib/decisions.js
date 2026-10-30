@@ -1,10 +1,10 @@
-// decisions.js – what every card and the game follow (SCOPE.md, 26 October). The tokens and decisions card
+// decisions.js – what every card and the game follow (design/couch-games/07-LOOK.md, 09-SCREENS.md; first set 26 October). The tokens and decisions card
 // (tokens/decisions.html) prints this; lib/place.js and lib/layers.js read the camera, the sizes and the motion
-// from it. Where an older card disagrees, this file and SCOPE.md win.
+// from it. Where an older card disagrees, this file and 07-LOOK.md win.
 (function () {
   const D = {
     date: '26 October',
-    // ── the camera: one, from above at a slant; a room is one screen
+    // ── the camera: one, from above at a slant, following Harold through joined areas
     camera: {
       view: 'from above, at a slant',
       room: { cols: 160, rows: 45, cw: 8, ch: 16 },         // the big grid: what you play with sits here
@@ -13,7 +13,7 @@
       moon: [-0.55, -0.62],   // up and to the left; shadows fall down and to the right
       sort: 'feet',     // everything standing is drawn in order of where its feet are
       rules: [
-        'a room is one screen with one idea – no scrolling; the next room slides in',
+        'the camera follows harold through joined areas; a puzzle area fits the smallest view',
         'the ground is seen at a slant: a ring on it is 1.8 times as wide as tall',
         'what stands rises up the screen; everything is sorted by its feet',
         'tall things stand behind the walk area – nobody walks behind a tree',
@@ -21,7 +21,7 @@
         'holes go through the page: the night below shows through them',
       ],
     },
-    // ── the two sizes (STUDY.md rule 6, LOOK.md rule 7)
+    // ── the two sizes (07-LOOK.md: two sizes)
     sizes: {
       big: { px: 16, for: 'the cast, signs, loose letters, words, the status line – a gap of ink round each' },
       small: { px: 12, for: 'texture: grass, stone, soil, leaves, water, mist – it comes loose and settles, nobody picks it up' },
@@ -42,7 +42,7 @@
       rules: ['harold is the only duck-yellow thing on screen', 'mishka\'s brown is for mishka; the rainbow\'s six for the rainbow',
         'tints are mixes of the six – never a new hue', 'ink is the darkest tone: shade is fewer, dimmer marks', 'flat colours: no blur, no glow, no smooth gradients'],
     },
-    // ── controls (SCOPE.md §3): one stick, two buttons, everywhere
+    // ── controls (09-SCREENS.md: controls): one stick, two buttons, everywhere
     controls: {
       head: ['', 'move', 'A – quack', 'B – malifex', 'menu'],
       rows: [
@@ -51,9 +51,9 @@
         ['phone, tablet', 'drag, left half', 'big, right', 'small, right', 'corner'],
         ['in voyager', 'voyager\'s own keys, pad and touch stick, handed to the tv'],
       ],
-      rules: ['hold A: the ring wheel – the stick picks which friends\' rings join', 'as malifex, A gives the nearest uniclone an order; B is harold again',
+      rules: ['the rings (planned): a ring wheel on a held A, or every ring always on – open', 'as malifex, A gives the nearest uniclone an order; B is harold again',
         'one target at a time: whatever A or a talk acts on is outlined first', 'the mouse and trackpad are for menus only',
-        'nothing needs speed or precision; the game saves after every room'],
+        'nothing needs speed or precision; the game saves every 5 s and when the page is put away'],
     },
     // ── motion and the budget
     motion: {

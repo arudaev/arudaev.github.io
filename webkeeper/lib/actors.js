@@ -1,4 +1,4 @@
-// actors.js – the cast in the world (SCOPE.md §7.4, step 3): Harold, Mishka, Bug and Malifex – and the UNIClones and the
+// actors.js – the cast in the world (06-CAST.md): Harold, Mishka, Bug and Malifex – and the UNIClones and the
 // friends – seen from above at a slant, at their size on the room's big grid (8 × 16 px), drawn in big marks (16 px and
 // up) while the world round them is small marks (12 px and finer). Each is baked once per pose and frame into an image
 // with a gap of ink round it (the silhouette grown by 4 px) and its shadow on the ground, down and to the right.

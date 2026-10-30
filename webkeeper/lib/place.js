@@ -1,4 +1,4 @@
-// place.js – a room written as data (PLAN.md step 2, SCOPE.md §7.2). A place file is plain JSON in places/;
+// place.js – a room written as data (10-TECH.md; archive/PLAN.md step 2). A place file is plain JSON in places/;
 // Claude Design and the game load the same file. WK_PLACE.load(url) → place; WK_PLACE.build(place, { tier })
 // paints it into the layers' canvases (lib/brushes.js) and returns a scene that lib/layers.js draws and lib/room.js
 // plays; WK_PLACE.check(scene) says whether the room is sound.
@@ -79,7 +79,7 @@
       ops: [{ brush: 'bark', line: [[-1, 0.2], [n, 0.2]], width: 1.1 }, { brush: 'bark', line: [[-2, -0.6], [-1, 0.2]], width: 0.5 }, { brush: 'bark', line: [[n, 0.2], [n + 1, -0.6]], width: 0.5 }, { brush: 'twig', line: [[n / 2, 0], [n / 2, -3.2]], width: 0.5 }] }) },
     QUACK: { does: 'quacks back – the first toy', settled: (n) => ({ box: [-3, -2, n + 3, 2.4], lies: true,
       ops: [0, 1, 2, 3, 4, 5].map((k) => { const a = (k / 6) * Math.PI * 2; return { rock: [n / 2 + Math.cos(a) * (n / 2 + 1.2), 0.2 + Math.sin(a) * 1.4, 1.3, 0.6], seed: 30 + k }; }) }) },
-    // STOP and POST are the same four letters (PUZZLES.md, puzzle 5): a STOP wall shuts a way until it's loosened, and
+    // STOP and POST are the same four letters (04-PUZZLES.md, puzzle 5): a STOP wall shuts a way until it's loosened, and
     // its letters pushed into POST stand up as a lamp post. STOP settled anywhere but home is a low brick barrier.
     STOP: { does: 'shuts a way until it is loosened', wall: true, settled: (n) => ({ box: [-2, -2, n + 2, 1.6], lies: false, block: [0, 0, n, 1],
       ops: [{ brush: 'brick', rect: [-0.5, -0.7, n + 0.5, 1] }, { brush: 'moss', rect: [-0.5, 0.4, n + 0.5, 1.1], amt: 0.4 }] }) },

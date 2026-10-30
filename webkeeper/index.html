@@ -59,7 +59,7 @@ html, body { margin: 0; background: #0A1416; overflow: hidden; touch-action: non
   // ?shot=<area> (or ?shot=title): no clock of its own – scripts/motion/capture.mjs asks for each moment with __frame(t)
   // &still: Harold stands where the area starts him, so the camera holds and only the world moves (the motion probe)
   const shot = q.has('shot') ? (q.get('shot') === 'title' ? { title: true, area: 0 } : { area: +q.get('shot') || 0, still: q.has('still') }) : null;
-  // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/PUZZLES.md) instead of chapter 0's meadow
+  // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/04-PUZZLES.md) instead of chapter 0's meadow
   const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? ['lab', 'lab-2'] : undefined });
   WK_HOST.attach(world);
   if (q.has('debug')) {

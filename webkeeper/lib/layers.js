@@ -1,4 +1,4 @@
-// layers.js – the stack a room is drawn in (PLAN.md step 2), under the one camera SCOPE.md decided: from above at a
+// layers.js – the stack a room is drawn in (07-LOOK.md, the layers), under the one camera 07-LOOK.md sets: from above at a
 // slant, a room of one screen. Back to front:
 //   0 sky    the night below the page – stars, drifting old-web words – seen through holes and past its edges
 //   1 far    other pages far below, dim, on the small grid

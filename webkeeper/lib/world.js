@@ -136,6 +136,7 @@
     }
 
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
+    let menuBox = { x0: 0, y0: 0, x1: 0, y1: 0 };
     const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     let hand = window.matchMedia && matchMedia('(pointer: coarse)').matches ? 'touch' : 'keys';   // the last hand used: keys, touch or pad
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
@@ -145,9 +146,12 @@
     // the debug panel (lib/debug.js) on the game's own page: a menu row switches it, and the page remembers it, so it
     // stays on across a reload or the lab (on the couch, Voyager's own menu has the switch – lib/host.js)
     const debugRow = () => (window.WK_HOST && WK_HOST.hosted() ? [] : ['debug: ' + (window.WK_DEBUG && WK_DEBUG.on ? 'on' : 'off')]);
+    // the game's own page has its own sound switch, kept on the device (on the couch, Voyager's sound setting decides)
+    const soundRow = () => (window.WK_HOST && WK_HOST.hosted() || !window.WK_SOUND ? [] : ['sound: ' + (WK_SOUND.on ? 'on' : 'off')]);
+    const soundPref = (on) => { if (!window.WK_SOUND) return; if (on !== undefined) { WK_SOUND.on = on; try { if (on) localStorage.removeItem('wk-sound'); else localStorage.setItem('wk-sound', 'off'); } catch (e) { /* private window */ } } else try { if (localStorage.getItem('wk-sound') === 'off') WK_SOUND.on = false; } catch (e) { /* private window */ } };
     // a new night wipes the save, so it asks first (the menu turns into the question until it's answered)
     let sure = false;
-    const items = () => (mode === 'menu' ? (sure ? ['keep this night', 'a new night: yes'] : ['continue', 'controls', zoomName(), 'restart the room', 'save code', 'load code', 'restart: prologue', ...debugRow(), ...labRow(), window.WK_HOST && WK_HOST.hosted() ? 'sit back' : 'back to voyager']) : ['play']);
+    const items = () => (mode === 'menu' ? (sure ? ['keep this night', 'a new night: yes'] : ['continue', 'controls', zoomName(), 'restart the room', 'save code', 'load code', 'restart: prologue', ...soundRow(), ...debugRow(), ...labRow(), window.WK_HOST && WK_HOST.hosted() ? 'sit back' : 'back to voyager']) : ['play']);
     function choose(i) {
       const it = items()[i];
       // (the A that chose is still held as the game starts – PLAY, continue, a new night, a loaded code: holdA keeps it
@@ -163,6 +167,7 @@
       else if (it === 'a new night: yes') { sure = false; G.newNight(); mode = 'play'; }
       else if (it === 'restart the room') { G.restartRoom(); mode = 'play'; }
       else if (it.startsWith('debug: ')) G.debug(!(window.WK_DEBUG && WK_DEBUG.on));
+      else if (it.startsWith('sound: ')) soundPref(!WK_SOUND.on);
       else if (it === 'puzzle lab' || it === 'back to the night') { SAVE.write(); const q = new URLSearchParams(location.search); if (cfg.areas) q.delete('lab'); else q.set('lab', ''); location.search = q.toString().replace(/=(&|$)/g, '$1'); }
       // sitting back is Voyager's (lib/host.js tells the couch); played on its own there's no couch to sit back on
       // on its own page: back to Voyager, the portfolio round it (the save stays; this tab forgets it was playing)
@@ -193,7 +198,13 @@
     const local = (e) => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / V.s, y: (e.clientY - r.top) / V.s }; };
     canvas.addEventListener('pointerdown', (e) => {
       const p = local(e); idle = 0; if (e.pointerType !== 'mouse') { touchUI = true; hand = 'touch'; }
-      if (inMenu()) { const h = hits.find((b) => p.y >= b.y0 && p.y < b.y1); if (h) { sel = h.i; choose(h.i); } else if (mode === 'title') choose(0); return; }
+      // (in the menu a row is chosen only inside its box; a tap outside the box closes it)
+      if (inMenu()) {
+        const inBox = mode !== 'menu' || (p.x >= menuBox.x0 && p.x < menuBox.x1 && p.y >= menuBox.y0 && p.y < menuBox.y1);
+        const h = inBox && hits.find((b) => p.y >= b.y0 && p.y < b.y1);
+        if (h) { sel = h.i; choose(h.i); } else if (mode === 'title') choose(0); else if (!inBox) { sure = false; mode = 'play'; holdA = true; }
+        return;
+      }
       if (p.x > V.w - 48 && p.y < 40) { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('menu'); else { mode = 'menu'; sel = 0; } return; }
       if (p.x < V.w / 2) stick = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y };
       else { const P2 = pads(); if (Math.hypot(p.x - P2.B[0], p.y - P2.B[1]) < P2.r * 1.3) tapB = true; else tapA = true; }
@@ -854,7 +865,7 @@
     }
     // Harold's mind: the area's own words (its `think`), or what a scene last thought, float in the dark past the
     // page's edge – below it, above it, beside it – wherever the view shows the void, swaying slowly, never over the play
-    function thoughts() {
+    function thoughts(floor = V.h) {
       const ws = thinkW && thinkW.A === cur ? thinkW.words : (cur && cur.place.think) || [];
       if (!ws.length || !cur) return;
       const sx = (x) => x - cam.x + V.w / 2, sy = (y) => y - cam.y + V.h / 2;
@@ -867,7 +878,7 @@
       for (const [edge, dir] of [[bot, 1], [top, -1]]) {
         if (shown || (dir > 0 ? edge > V.h - 40 : edge < 40)) continue;
         shown = true;
-        ws.forEach((w, k) => { const y = edge + dir * (22 + (k % 3) * 26) + Math.sin(T * 0.5 + k) * 2; if (y > 10 && y < V.h - 10) word(w, sway(w, k), y, k); });
+        ws.forEach((w, k) => { const y = edge + dir * (22 + (k % 3) * 26) + Math.sin(T * 0.5 + k) * 2; if (y > 10 && y < Math.min(V.h - 10, floor - 16)) word(w, sway(w, k), y, k); });
       }
       // beside it (when there's no void above or below in view): the words stacked in the gap, rising slowly
       if (!shown) for (const [edge, dir] of [[left, -1], [right, 1]]) {
@@ -934,8 +945,8 @@
       if (press && !chasing()) { const t = talker(); if (t) { openTalk(t); return still; } }
       return inp;
     }
-    function talkBox(rows, cols) {
-      const w = Math.min(cols - 4, 64), c0 = Math.round(cols / 2 - w / 2), lift = window.WK_HOST && WK_HOST.hosted() ? 2 : 0, r1 = rows - 2 - lift, r0 = r1 - 5;
+    function talkBox(rows, cols, last = rows) {
+      const w = Math.min(cols - 4, 64), c0 = Math.round(cols / 2 - w / 2), lift = window.WK_HOST && WK_HOST.hosted() ? 2 : 0, r1 = Math.min(rows - 2 - lift, last), r0 = r1 - 5;
       const l = talk.lines[talk.i], n = shown(), wrap = (txt) => { const out = []; let ln = ''; for (const wd of txt.split(' ')) { if ((ln + ' ' + wd).trim().length > w - 4) { out.push(ln); ln = wd; } else ln = (ln + ' ' + wd).trim(); } if (ln) out.push(ln); return out; };
       Wm.ink(c0, r0, w + 1, r1 - r0 + 1); Wm.box(c0, r0, c0 + w, r1, P.beigeDim);
       const name = l.name || l.who;
@@ -979,14 +990,14 @@
       const ox = sx - V.w / 2, oy = sy - V.h / 2, k = Math.min((V.w / 2 - m) / Math.abs(ox || 1e-6), (V.h / 2 - m) / Math.abs(oy || 1e-6));
       if (Math.floor(T * 2) % 2) Wm.loose(Math.round(V.w / 2 + ox * k), Math.round(V.h / 2 + oy * k), ARROWS[((Math.round(Math.atan2(oy, ox) / (Math.PI / 4)) % 8) + 8) % 8], P.tealHi, 0, 16);
     }
-    function menuList(r0, list) {
+    function menuList(r0, list, step = 2) {
       hits = [];
       list.forEach((it, i) => {
         const on = i === sel, s = on ? (it === 'start' ? (Math.floor(T * 2) % 2 ? '> START <' : '  START  ') : '> ' + it + ' <') : it;
-        centre(r0 + i * 2, s, on ? (it === 'start' ? P.phosphor : P.beige) : P.beigeDim);
-        hits.push({ i, y0: (r0 + i * 2 - 0.6) * 16, y1: (r0 + i * 2 + 1.6) * 16 });
+        centre(r0 + i * step, s, on ? (it === 'start' ? P.phosphor : P.beige) : P.beigeDim);
+        hits.push({ i, y0: (r0 + i * step - (step - 1) * 0.6) * 16, y1: (r0 + i * step + 1 + (step - 1) * 0.6) * 16 });
       });
-      if (showControls) CONTROLS.forEach((s, j) => centre(r0 + list.length * 2 + 1 + j, s, P.tealHi));
+      if (showControls) CONTROLS.forEach((s, j) => centre(r0 + list.length * step + 1 + j, s, P.tealHi));
     }
     function ui() {
       const g = Wm.g; Wm.ox = 0; Wm.oy = 0; Wm.reset();
@@ -1008,18 +1019,23 @@
         if (!lift) menuList(Math.max(r1 + 3, rows - 6), items());
       }
       if (mode === 'menu') {
-        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(1, Math.round(rows / 2 - 9)), h = items().length * 2 + 5 + (showControls ? 5 : 0);
+        // rows two apart, or one apart where that wouldn't fit (a phone on its side): the last row never off the screen
+        const n = items().length, extra = 5 + (showControls ? 5 : 0), step = n * 2 + extra + 2 <= rows ? 2 : 1, h = n * step + extra;
+        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(0, Math.round(rows / 2 - h / 2));
         Wm.ink(c0, r0, w + 1, h + 1); Wm.box(c0, r0, c0 + w, r0 + h, P.beigeDim);
+        menuBox = { x0: c0 * 8, y0: r0 * 16, x1: (c0 + w + 1) * 8, y1: (r0 + h + 1) * 16 };
         centre(r0 + 1, 'webkeeper · harold\'s copy', P.phosphor); centre(r0 + 2, 'temporary internet files', P.beigeDim);
-        menuList(r0 + 4, items());
+        menuList(r0 + 4, items(), step);
         if (visitors) centre(r0 + h - 1, 'you are visitor ' + String(visitors).padStart(6, '0'), P.tealUp);
       }
       if (mode === 'play') {
         const hs = (cur && cur.S && cur.S.hint) || (hintW && hintW.till > T ? hintW.text : null);
-        // on the couch Voyager's controls bar runs along the bottom: hints stand above it
-        thoughts();
-        const hr = rows - (window.WK_HOST && WK_HOST.hosted() ? 4 : 2);
-        if (talk) talkBox(rows, cols);
+        // one band along the bottom for the hint row or the talk box: on the couch above Voyager's controls bar, on touch
+        // above the A and B rings; Harold's thoughts keep out of it
+        const ringRow = touchUI ? (() => { const P2 = pads(); return Math.floor((Math.min(P2.A[1], P2.B[1]) - P2.r) / 16) - 1; })() : rows;
+        const hr = Math.min(rows - (window.WK_HOST && WK_HOST.hosted() ? 4 : 2), ringRow);
+        thoughts((talk ? hr - 6 : hr - 1) * 16);
+        if (talk) talkBox(rows, cols, hr);
         else if (hs) centre(hr, hs, P.beigeDim, true);
         else { const t = chasing() ? null : talker(), ps = pressSpot(); if (ps) centre(hr, '{A}: ' + (ps.label || 'look'), P.beige); else if (t) centre(hr, '{A}: talk to ' + (t.def.id || t.def.who), P.beige); }
         if (nameW && nameW.till > T) inkText(1, 0, nameW.text, P.beigeDim);
@@ -1069,6 +1085,7 @@
         runJob(areas[0], performance.now() + 30);
         if (!areas[0].ready) { loading(); return; }
         moveCam(0, true); render(true); ready = true; window.__wkReady = true;
+        if (!(window.WK_HOST && WK_HOST.hosted())) soundPref();
         // reloaded while playing on its own page: straight back in, as PLAY would (no title to press through)
         if (wasPlaying && !SHOT && mode === 'title') choose(0);
       }

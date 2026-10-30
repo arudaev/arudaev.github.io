@@ -138,7 +138,7 @@
   }
   function lamp(W, th) {
     const [c, foot] = th.foot, head = foot - 4;
-    W.ink(c - 1, head - 1, 3, 2); W.put(c, head - 1, '_', P.beigeDim); W.text(c - 1, head, '(o)', P.beige); W.put(c, head, 'o', P.yellow);   // the flame: the one warm thing in the night
+    W.ink(c - 1, head - 1, 3, 2); W.put(c, head - 1, '_', P.beigeDim); W.text(c - 1, head, '(o)', P.beigeDim); W.put(c, head, 'o', P.beige);   // the flame, the brightest beige: duck yellow is Harold's alone (07-LOOK)
     for (let r = head + 1; r <= foot; r++) { W.ink(c, r); W.put(c, r, '|', P.beigeDim); }
   }
   const inHole = (th, c, r) => (th.holes || []).some(([a, b, e, f]) => c >= a && c <= e && r >= b && r <= f);

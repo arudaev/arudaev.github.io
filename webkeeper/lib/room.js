@@ -21,9 +21,25 @@
 
   function sim(sc, o = {}) {
     const p = sc.place, demo = (o.script && p.demo && p.demo[o.script]) || p.demo || {}, words = p.words || [];
-    let st, walkG, occ, holeG, wallG, script;
+    // a place with `cells` (the lab's third area; chapter 1 on – 04-PUZZLES.md): every letter sits on a cell and moves
+    // one cell per push, a row of them as one; the quack takes a built word back into its letters instead of
+    // scattering them; B undoes (when Malifex isn't there to switch to); a letter can be in a word across and one down
+    const CELLS = !!p.cells;
+    // Harold stands on two cells side by side – his sprite's width, the box the eye reads as him – not one: the pair his
+    // sprite covers most. Walls, pushes and exits are decided by those two (the cast walk on one)
+    const footL = (c) => Math.round(c - 0.5);
+    const onHarold = (c, r) => Math.round(st.h.r) === r && (c === footL(st.h.c) || c === footL(st.h.c) + 1);
+    let st, walkG, occ, holeG, wallG, streamG, script, undos = [];
     const cellsOf = (w) => w.cells || [...w.text].map((_, j) => (w.dir === 'col' ? [w.at[0], w.at[1] + j] : [w.at[0] + j, w.at[1]]));
     const slots = [];
+    // streams (cells rooms, "streams" in the place): a letter pushed into one floats a cell at a time towards the word
+    // waiting across the water (its x's – the water runs to them from both ends), steers to a free mark of its own
+    // letter and locks in there, in any order; a row pushed in comes in one after another. One with no mark left in
+    // that stream washes up on the bank. Two streams may cross: a letter keeps to the one it went into
+    const STREAMS = CELLS ? (p.streams || []).map((S) => {
+      const path = railCells(S.path), f = [Math.sign(path[path.length - 1][0] - path[0][0]), Math.sign(path[path.length - 1][1] - path[0][1])];
+      return { ...S, path, f, w: S.w ?? 3, marks: [...S.word].map((ch, j) => ({ ch, c: S.at[0] + (S.dir === 'col' ? 0 : j), r: S.at[1] + (S.dir === 'col' ? j : 0) })).filter((m) => m.ch !== ' ') };
+    }) : [];
     for (const s of p.solve || []) { const tx = PL.solveText(p, s), w = tx && { text: tx }; if (w) [...w.text].forEach((ch, j) => { if (ch !== ' ') slots.push({ ch, c: s.at[0] + (s.dir === 'col' ? 0 : j), r: s.at[1] + (s.dir === 'col' ? j : 0), by: null }); }); }
     function reset() {
       const hero = (p.actors || []).find((a) => a.who === 'harold') || { at: [80, 30] };
@@ -32,18 +48,19 @@
       for (const w of words) cellsOf(w).forEach(([c, r], j) => {
         const ch = w.text[j]; if (!ch || ch === ' ') return;
         st.letters.push({ ch, word: w.id, j, x: (c + 0.5) * 8, y: (r + 0.5) * 16, z: 0, vx: 0, vy: 0, vz: 0, home: [c, r], cell: [c, r],
-          state: w.voice ? 'voice' : w.lying ? 'loose' : 'settled', still: !!w.lying, lying: !!w.lying, touched: -99, voice: !!w.voice, hidden: !!w.hidden, wall: !!w.wall, on: w.on, reveal: 0 });
+          state: w.voice ? 'voice' : w.lying ? 'loose' : 'settled', still: !!w.lying, lying: !!w.lying, touched: -99, voice: !!w.voice, hidden: !!w.hidden, wall: !!w.wall, on: w.on, falls: !!w.falls, reveal: 0 });
         // a letter on a track (w.rails, one per letter): it sits on the ground, pushed it hops along its track and
         // nowhere else, and the quack doesn't scatter it (04-PUZZLES.md: the player decides where, not the physics)
         const rl = w.rails && w.rails[j];
         if (rl) { const L = st.letters[st.letters.length - 1]; L.rail = railCells([[c, r], ...rl]); L.ri = 0; L.state = 'settled'; L.still = L.lying = false; }
+        else if (CELLS && !w.voice) { const L = st.letters[st.letters.length - 1]; L.state = 'settled'; L.still = L.lying = false; }
       });
       for (const a of p.actors || []) if (a.who !== 'harold') st.cast.push({ who: a.who, id: a.id || a.who, c: a.at[0], r: a.at[1], flip: a.face !== 'west', pose: a.pose || (a.who === 'bug' ? 'calm' : 'idle'),
         route: a.route, speed: a.speed || 0, u: 0, loop: a.loop !== false, gone: !!a.hidden, skid: -9, moving: false, vx: 0, vy: 0,
         steals: !!a.steals, den: a.den || a.at, job: 'home', rest: 0, carry: null, target: null, hold: a.hold || null, eats: a.eats || null, solid: a.solid || null });
       // a letter already settled in its place holds that place (0.6: E and N lie on the doorstep from the start)
       for (const s of slots) s.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s.c && l.cell[1] === s.r && l.ch === s.ch) || null;
-      walkG = null; occ = null; script = { i: 0, t0: 0, best: 1e9, since: 0 };
+      walkG = null; occ = null; script = { i: 0, t0: 0, best: 1e9, since: 0 }; undos = [];
     }
     // a track's waypoints (straight runs along a row or a column) as the cells it passes, in order
     function railCells(pts) {
@@ -59,22 +76,82 @@
     const PUSH_HOLD = 0.14, QUACK_HOPS = 2;   // a quack hops a letter on its track two cells on
     function pushRail(a, c, r, dx, dy) {
       if (a !== st.h) return;
-      const l = occupancy().get(r * COLS + c); if (!l || !l.rail) return;
+      const l = occupancy().get(r * COLS + c); if (!l || (!l.rail && !CELLS)) return;
+      st.aim = { l, t: st.t };   // (drawn bright while he leans on it: which letter a push moves, beyond doubt)
       if (st.t - (l.pushLast ?? -9) > 0.12) { l.pushT0 = st.t; l.pushed = false; }
       l.pushLast = st.t;   // held through a hop, the push carries on to the next cell without waiting again
       if (l.state !== 'settled') return;
       if (st.t - l.pushT0 < PUSH_HOLD && !l.pushed) return;
+      if (!l.rail) { if (pushCell(l, dx, dy)) l.pushed = true; return; }
       // aim assist: any push moves it one cell on towards its place; only a push plainly back along the track (the
       // way it came) takes it back. Pushing up into a letter whose track first runs sideways still moves it on.
       const cur = l.rail[l.ri], back = l.rail[l.ri - 1];
       const backward = back && dx * (back[0] - cur[0]) + dy * (back[1] - cur[1]) > 0;
       if (railHop(l, backward ? l.ri - 1 : l.ri + 1)) l.pushed = true;
     }
+    // ── cells: a push moves the letter one cell, and the row of letters in front of it with it, if the cell past the
+    // last one is free (ground or a hole – never a wall, another word, or Harold). Nothing else moves them
+    function cellFree(c, r) {
+      if (c < 0 || r < 1 || c >= COLS || r >= ROWS - 1 || occupancy().has(r * COLS + c)) return false;
+      if (wallAt((c + 0.5) * 8, (r + 0.5) * 16)) return false;
+      return !!(grid()[r * COLS + c] || holeAt(c, r) || streamAt(c, r) >= 0) && !onHarold(c, r);
+    }
+    function pushCell(l, dx, dy) {
+      if (l.state !== 'settled' || locked(l)) return false;
+      const row = [l], O = occupancy();
+      let c = l.cell[0] + dx, r = l.cell[1] + dy;
+      for (let x = O.get(r * COLS + c); x; x = O.get(r * COLS + c)) {
+        if (x.state !== 'settled' || locked(x) || row.length >= 8) return false;
+        row.push(x); c += dx; r += dy;
+      }
+      if (!cellFree(c, r)) return false;
+      if (STREAMS.length && row.some((x) => { const c2 = x.cell[0] + dx, r2 = x.cell[1] + dy; return !inWater(c2, r2) && !live(c2, r2); })) { hint('not there – you couldn\'t get behind it again', 2.2); return false; }
+      mark();
+      for (let k = row.length - 1; k >= 0; k--) { const x = row[k]; settleAt(x, x.cell[0] + dx, x.cell[1] + dy, null); x.s0 = st.t - 0.22; x.touched = st.t; }
+      if (!st.flags.pushedCell) { st.flags.pushedCell = true; hint('undo: B or Z', 3); }
+      return true;
+    }
+    // undo (cells only): every letter, every word and Harold back to before the last push or quack
+    function mark() { if (!CELLS) return; undos.push({ L: st.letters.map((l) => [l.cell[0], l.cell[1], l.state]), B: st.becomes.slice(), h: [st.h.c, st.h.r] }); if (undos.length > 64) undos.shift(); }
+    function undo() {
+      const u = undos.pop(); if (!u) { hint('nothing to undo', 1.6); return; }
+      st.letters.forEach((l, k) => { const v = u.L[k]; if (!v) return; l.cell = [v[0], v[1]]; l.x = (v[0] + 0.5) * 8; l.y = (v[1] + 0.5) * 16; l.z = 0; l.vx = l.vy = l.vz = 0; l.state = v[2] === 'settling' ? 'settled' : v[2]; l.s0 = -9; });
+      st.becomes = u.B; st.h.c = u.h[0]; st.h.r = u.h[1]; occ = null; walkG = null;
+      if (window.WK_SOUND && !o.demo) WK_SOUND.letter('z');
+    }
+    // a built word quacked (cells): back into its letters where they stand; the ones left in a hole or a wall hop to the
+    // nearest free cell Harold can reach, so taking a bridge apart behind you never strands its letters
+    function unmake(l) {
+      const i = st.letters.indexOf(l), bs = st.becomes.filter((b) => b.idx && b.idx.includes(i)); if (!bs.length) return;
+      mark();
+      st.becomes = st.becomes.filter((b) => !bs.includes(b)); occ = null; walkG = null;
+      const still = new Set(st.becomes.flatMap((b) => b.idx || [])), freed = [...new Set(bs.flatMap((b) => b.idx))].filter((k) => !still.has(k)).map((k) => st.letters[k]);
+      for (const x of freed) x.state = 'settled';
+      occ = null;
+      // (and with open ground on all four sides, so it can be pushed on any way – dropped against the bank, a letter
+      // could never be got behind again)
+      const reach = reachable(), N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], beside = (c, r) => N4.some(([a, b]) => reach.has((r + b) * COLS + c + a));
+      const open = (c, r) => N4.every(([a, b]) => ground(c + a, r + b));
+      for (const x of freed) {
+        const [c, r] = x.cell; if (grid()[r * COLS + c] && !holeAt(c, r) && !inWater(c, r) && beside(c, r) && open(c, r)) continue;
+        land(x, reach);
+      }
+      if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch);
+    }
+    // the cells Harold can walk to from where he stands (letters in the way count as walls)
+    function reachable() {
+      const out = new Set(), q = [[footL(st.h.c), Math.round(st.h.r)]];
+      while (q.length && out.size < COLS * ROWS) {
+        const [c, r] = q.pop(), k = r * COLS + c; if (out.has(k) || !walkable(c, r)) continue;
+        out.add(k); q.push([c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1]);
+      }
+      return out;
+    }
     // a letter on a track hops to cell k of it, if that's free (not another letter, not Harold): a quick two-step hop
     function railHop(l, k) {
       const nx = l.rail[k]; if (!nx || l.state !== 'settled') return false;
       const o2 = occupancy().get(nx[1] * COLS + nx[0]); if (o2 && o2 !== l) return false;
-      if (Math.round(st.h.c) === nx[0] && Math.round(st.h.r) === nx[1]) return false;
+      if (onHarold(nx[0], nx[1])) return false;
       for (const s of slots) if (s.by === l) s.by = null;
       const end = k === l.rail.length - 1 ? slots.find((s) => s.c === nx[0] && s.r === nx[1] && s.ch === l.ch && !s.by) : null;
       l.ri = k; settleAt(l, nx[0], nx[1], end || null); l.s0 = st.t - 0.22; l.touched = st.t;
@@ -92,12 +169,53 @@
         if (tx >= 0 && ty >= 0 && ty < F.rows && tx < F.cols && F.hole[ty * F.cols + tx]) holeG[r * COLS + c] = 1;
       }
       for (const [c0, r0, c1, r1] of sc.feet) for (let r = Math.max(0, Math.floor(r0)); r < Math.min(ROWS, Math.ceil(r1)); r++) for (let c = Math.max(0, Math.floor(c0)); c < Math.min(COLS, Math.ceil(c1)); c++) wallG[r * COLS + c] = 1;
+      // a stream's cells: the wet ones within its width of its path (+1: none is a stream)
+      streamG = new Int8Array(COLS * ROWS);
+      // (the band runs on past the path's ends by its width, as the water drawn round it does)
+      STREAMS.forEach((S, k) => { const P0 = S.path[0], P1 = S.path[S.path.length - 1], ends = [];
+        for (let e = 1; e <= S.w; e++) ends.push([P0[0] - S.f[0] * e, P0[1] - S.f[1] * e], [P1[0] + S.f[0] * e, P1[1] + S.f[1] * e]);
+        for (const [pc, pr] of [...S.path, ...ends]) for (let d = -S.w; d <= S.w; d++) {
+        const c = pc + (S.f[1] ? d : 0), r = pr + (S.f[0] ? d : 0); if (c < 0 || r < 0 || c >= COLS || r >= ROWS) continue;
+        // (wet anywhere in the cell, as lib/place.js's walk grid has it: a cell too wet to walk is one to float in)
+        const x0 = Math.floor((c * 8 - sc.G.x) / F.cw), x1 = Math.floor(((c + 1) * 8 - 0.01 - sc.G.x) / F.cw), y0 = Math.floor((r * 16 - sc.G.y) / F.ch), y1 = Math.floor(((r + 1) * 16 - 0.01 - sc.G.y) / F.ch);
+        for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (y >= 0 && x >= 0 && y < F.rows && x < F.cols && F.wet[y * F.cols + x]) streamG[r * COLS + c] = k + 1;
+      } });
     }
     const holeAt = (c, r) => { statics(); return holeG && c >= 0 && r >= 0 && c < COLS && r < ROWS ? holeG[r * COLS + c] : 0; };
+    const streamAt = (c, r) => { if (!STREAMS.length) return -1; statics(); return streamG && c >= 0 && r >= 0 && c < COLS && r < ROWS ? streamG[r * COLS + c] - 1 : -1; };
+    // a letter on a mark of its own letter in a stream's word is locked in: pushes leave it (a quack takes the word apart)
+    const markOf = (S, c, r) => S.marks.some((m) => m.c === c && m.r === r);
+    // water a letter floats in (a stream's cell, unless a word laid across it – a bridge – made it ground)
+    const inWater = (c, r) => streamAt(c, r) >= 0 && !grid()[r * COLS + c];
+    const ground = (c, r) => c >= 0 && r >= 0 && c < COLS && r < ROWS && !!grid()[r * COLS + c] && !holeAt(c, r) && !inWater(c, r) && !wallAt((c + 0.5) * 8, (r + 0.5) * 16);
+    // where a letter may go, in a room with streams: a cell it can still be pushed on from, all the way into some water
+    // (Harold able to stand behind it at every step). Found backwards from the water; a push that would leave a letter
+    // anywhere else – a corner, the far side of a hedge – doesn't happen, so no letter is ever lost to a wall
+    let liveG = null, liveFor = null;
+    function live(c, r) {
+      if (!STREAMS.length) return true;
+      const g = grid();
+      if (liveFor !== g) {
+        liveFor = g; liveG = new Uint8Array(COLS * ROWS); const q = [];
+        for (let i = 0; i < COLS * ROWS; i++) if (inWater(i % COLS, (i / COLS) | 0)) { liveG[i] = 1; q.push(i); }
+        while (q.length) {
+          const i = q.pop(), c0 = i % COLS, r0 = (i / COLS) | 0;
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const xc = c0 - dx, xr = r0 - dy, j = xr * COLS + xc;   // a letter here, pushed from (xc - dx, xr - dy), lands on a live cell
+            // (Harold is two cells wide: pushing across, both stand behind it; up or down, one beside the other)
+            const behind = dx ? ground(xc - dx, xr) && ground(xc - 2 * dx, xr) : ground(xc, xr - dy) && (ground(xc - 1, xr - dy) || ground(xc + 1, xr - dy));
+            if (xc < 0 || xr < 0 || xc >= COLS || xr >= ROWS || liveG[j] || !ground(xc, xr) || !behind) continue;
+            liveG[j] = 1; q.push(j);
+          }
+        }
+      }
+      return c >= 0 && r >= 0 && c < COLS && r < ROWS && !!liveG[r * COLS + c];
+    }
+    const locked = (l) => l.state === 'settled' && STREAMS.some((S) => S.marks.some((m) => m.c === l.cell[0] && m.r === l.cell[1] && m.ch === l.ch));
     const doorShut = (c, r) => sc.doors.some((d) => !st.open.has(d.id) && c >= d.cells[0] && c < d.cells[2] && r >= d.cells[1] && r < d.cells[3]);
     const wallAt = (x, y) => { statics(); const c = Math.floor(x / 8), r = Math.floor(y / 16); if (c < 0 || r < 1 || c >= COLS || r >= ROWS - 1) return true; return (wallG && wallG[r * COLS + c]) || doorShut(c, r); };
-    const occupancy = () => { if (!occ) { occ = new Map(); for (const l of st.letters) if ((l.state === 'settled' || l.state === 'settling') && !l.voice && !l.hidden) occ.set(l.cell[1] * COLS + l.cell[0], l); } return occ; };
-    const blocksFeet = (l) => l.state === 'settled' || l.state === 'settling';
+    const occupancy = () => { if (!occ) { occ = new Map(); for (const l of st.letters) if ((l.state === 'settled' || l.state === 'settling' || l.state === 'afloat' || (CELLS && l.state === 'word')) && !l.voice && !l.hidden) occ.set(l.cell[1] * COLS + l.cell[0], l); } return occ; };
+    const blocksFeet = (l) => l.state === 'settled' || l.state === 'settling';   // (a word's letters are its thing now: sc.walk decides)
     function walkable(c, r) {
       if (c < 0 || r < 0 || c >= COLS || r >= ROWS || !grid()[r * COLS + c]) return false;
       // someone sitting (an actor's `solid`: [columns wide, rows tall] up from the feet) is walked round, not through
@@ -110,30 +228,65 @@
     const exitOk = (e) => !e.needs || st.flags[e.needs];
 
     // the nearest walkable cell to (c, r), rows counting double (the camera's foreshortening); itself if it's open
-    function openNear(c, r) {
-      const c0 = Math.round(c), r0 = Math.round(r);
-      if (walkable(c0, r0)) return [c, r];
+    // (wide: for Harold, both his cells – he's put down centred on the pair)
+    function openNear(c, r, wide) {
+      const ok = (cc, rr) => (wide ? walkable(footL(cc), rr) && walkable(footL(cc) + 1, rr) : walkable(Math.round(cc), rr));
+      const c0 = Math.round(c), r0 = Math.round(r), h = wide ? 0.5 : 0;
+      if (ok(c, r0)) return [c, r];
       let best = null, bd = 1e9;
       for (let dr = -10; dr <= 10; dr++) for (let dc = -24; dc <= 24; dc++) {
-        const d = Math.abs(dc) + Math.abs(dr) * 2; if (d >= bd || !walkable(c0 + dc, r0 + dr)) continue;
-        bd = d; best = [c0 + dc, r0 + dr];
+        const d = Math.abs(dc) + Math.abs(dr) * 2; if (d >= bd || !ok(c0 + dc + h, r0 + dr)) continue;
+        bd = d; best = [c0 + dc + h, r0 + dr];
       }
       return best || [c, r];
     }
-    // ── walking: smooth, decided by the feet's cell (one cell, not the sprite); an edge or a door with an exit leads on
+    // ── walking: smooth, decided by the feet's cells (Harold's two, the cast's one – not the sprite); an edge or a door
+    // with an exit leads on
     function move(a, dx, dy, dt) {
       const m = Math.hypot(dx, dy); a.moving = m > 0.15;
       if (!a.moving) { a.vx = a.vy = 0; return; }
       if (m > 1) { dx /= m; dy /= m; }
       if (Math.abs(dx) > 0.2) a.flip = dx > 0;
       a.head = Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'w' : 'e') : (dy < 0 ? 'n' : 's');   // the way he's going, for a squad behind him
+      // (cells) Harold keeps to the grid's lines, so a push from where a letter looks level with him lands: walking
+      // across, he eases onto a whole row – the row of a letter just ahead at his body's height (one above his feet)
+      // if there's one, since that's where the eye puts it – and walking up or down, onto a whole column
+      if (CELLS && a === st.h) {
+        const L = footL(a.c), rr = Math.round(a.r), O = occupancy();
+        if (Math.abs(dx) > Math.abs(dy)) {
+          // he walks 22 columns a second and 11 rows: the letter is looked for three columns past his leading cell, and
+          // right in front of it he waits for the row before stepping on
+          const sx = Math.sign(dx), lead = sx > 0 ? L + 1 : L;
+          let tr = rr, k = 1;
+          for (; k <= 3; k++) {
+            const ahead = lead + sx * k, up = O.get((rr - 1) * COLS + ahead);
+            if (O.get(rr * COLS + ahead) || !walkable(L + sx * (k - 1), rr - 1) || !walkable(L + 1 + sx * (k - 1), rr - 1)) break;
+            if (up && up.state === 'settled' && !locked(up)) { tr = rr - 1; break; }
+          }
+          dy = Math.max(-1, Math.min(1, (tr - a.r) * 6));
+          if (tr !== rr && k === 1) dx = 0;
+        } else if (Math.abs(dy) > 0) dx = Math.max(-1, Math.min(1, (L + 0.5 - a.c) * 6)) * Math.abs(dy);   // square on his two columns
+      }
       const c0 = a.c, r0 = a.r, nc = a.c + dx * SPEED * dt, nr = a.r + dy * VS * dt;
       // inside something already (it shouldn't happen, but if it does): he can always walk out
+      if (a === st.h) { moveWide(a, dx, dy, c0, r0, nc, nr, dt); return; }
       if (!walkable(Math.round(a.c), Math.round(a.r))) { a.c = nc; a.r = nr; a.vx = (a.c - c0) * 8 / dt; a.vy = (a.r - r0) * 16 / dt; return; }
       if (walkable(Math.round(nc), Math.round(a.r))) a.c = nc; else { edge(a, nc, a.r); if (Math.abs(dx) > 0.3) pushRail(a, Math.round(nc), Math.round(a.r), Math.sign(dx), 0); }
       if (walkable(Math.round(a.c), Math.round(nr))) a.r = nr; else { edge(a, a.c, nr); if (Math.abs(dy) > 0.3) pushRail(a, Math.round(a.c), Math.round(nr), 0, Math.sign(dy)); }
       a.vx = (a.c - c0) * 8 / dt; a.vy = (a.r - r0) * 16 / dt;
       if (a === st.h) for (const e of p.exits || []) if (e.cells && !e.press && exitOk(e)) { const [x0, y0, x1, y1] = e.cells, c = Math.round(a.c), r = Math.round(a.r); if (c >= x0 && c < x1 && r >= y0 && r < y1) st.exit = e; }
+    }
+    // Harold on his two cells: he stands where both are walkable; walking into a letter, the cell that leads pushes it
+    // (walking up or down, a letter under either cell is pushed)
+    function moveWide(a, dx, dy, c0, r0, nc, nr, dt) {
+      const stand = (c, r) => walkable(footL(c), Math.round(r)) && walkable(footL(c) + 1, Math.round(r));
+      if (!stand(a.c, a.r)) { a.c = nc; a.r = nr; }
+      else {
+        if (stand(nc, a.r)) a.c = nc; else { const lead = dx > 0 ? footL(nc) + 1 : footL(nc); edge(a, lead, a.r); if (Math.abs(dx) > 0.3) pushRail(a, lead, Math.round(a.r), Math.sign(dx), 0); }
+        if (stand(a.c, nr)) a.r = nr; else { edge(a, a.c, nr); if (Math.abs(dy) > 0.3) for (const c of [footL(a.c), footL(a.c) + 1]) pushRail(a, c, Math.round(nr), 0, Math.sign(dy)); }
+      }
+      a.vx = (a.c - c0) * 8 / dt; a.vy = (a.r - r0) * 16 / dt;
+      for (const e of p.exits || []) if (e.cells && !e.press && exitOk(e)) { const [x0, y0, x1, y1] = e.cells, c = footL(a.c), r = Math.round(a.r); if (c + 1 >= x0 && c < x1 && r >= y0 && r < y1) st.exit = e; }
     }
     function edge(a, c, r) {
       if (a !== st.h) return;
@@ -158,7 +311,7 @@
       if (window.WK_SOUND && !o.demo) WK_SOUND.quack();
     }
     function toggle() {
-      if (!mal()) { hint('malifex isn\'t here yet'); return; }
+      if (!mal()) { if (CELLS) undo(); else hint('malifex isn\'t here yet'); return; }
       st.as = st.as === 'malifex' ? 'harold' : 'malifex'; st.h.moving = false;
     }
     // ── letters
@@ -166,6 +319,14 @@
       // a quack at Bug's den sends what he hoarded home; a letter in his mouth comes only from a quack that meets him
       if (l.state === 'den') { giveBack(l); return; }
       if (l.state === 'carried' || l.state === 'flying') return;
+      // (cells) only a built word comes apart; a lone letter hops where it stands, so the quack is seen to reach it
+      if (CELLS) {
+        if (l.state === 'word') unmake(l);
+        // a letter locked on its mark with the word not made (pushed back into the last stream): the quack frees it
+        else if (locked(l)) { mark(); if (land(l, reachable())) { walkG = null; if (!st.flags.freed) { st.flags.freed = true; hint('shaken loose', 2); } } }
+        else if (l.state === 'settled') { l.vz = 70; if (!st.flags.cellQuack) { st.flags.cellQuack = true; hint('here a quack takes built words apart – walk into a letter to push it', 4); } }
+        return;
+      }
       // a letter on a track isn't scattered: the quack hops it one cell on towards its place (STOP's wall opens a
       // step at a time; quacks and pushes together walk letters home)
       if (l.rail) { if (l.state === 'settled' && railHop(l, l.ri + 1)) l.more = QUACK_HOPS - 1; return; }
@@ -174,6 +335,10 @@
       if (l.state === 'settled' || l.state === 'settling') { for (const s of slots) if (s.by === l) s.by = null; occ = null; }
       l.state = 'loose'; l.still = false; l.touched = st.t; l.slot = null;
       l.vz = 80 + h1 * 40; l.vx += ((l.x - R.x) / d) * 14 + (h1 - 0.5) * (l.wall ? 70 : 16); l.vy += ((l.y - R.y) / d) * 6 + (h2 - 0.5) * (l.wall ? 40 : 8);
+      // a sign whose letters fall ("falls": the lab's RAIN, with no wind to carry them): knocked off its board onto the
+      // ground below it, about four rows down and a little aside – nudged as the others are, they'd settle straight
+      // back onto the sign and the quack would seem to do nothing (chapter 0's signs hop back, or ride the wind)
+      if (l.falls && l.cell[0] === l.home[0] && l.cell[1] === l.home[1]) { l.vz = 120 + h1 * 30; l.vy = 95 + h2 * 25; l.vx = Math.sign(l.x - R.x || 1) * 18 + (h1 - 0.5) * 24; }
     }
     const slotFor = (l, rc, rr) => {
       let best = null, bd = 1e9;
@@ -181,7 +346,7 @@
       return best;
     };
     function freeCell(l) {
-      const c0 = Math.floor(l.x / 8), r0 = Math.floor(l.y / 16), O = occupancy(), hc = Math.round(st.h.c), hr = Math.round(st.h.r);
+      const c0 = Math.floor(l.x / 8), r0 = Math.floor(l.y / 16), O = occupancy(), hc = footL(st.h.c) + 0.5, hr = Math.round(st.h.r);
       let best = null, bd = 1e9;
       for (let dr = -4; dr <= 4; dr++) for (let dc = -12; dc <= 12; dc++) {
         const c = c0 + dc, r = r0 + dr, d = Math.abs(dc) + Math.abs(dr) * 2.2; if (d >= bd) continue;
@@ -201,10 +366,74 @@
       // a sign's letters hop and settle back onto the sign, if they haven't gone far
       if (l.on && Math.abs(l.x / 8 - 0.5 - l.home[0]) < 3.5 && Math.abs(l.y / 16 - 0.5 - l.home[1]) < 1.6 && !occupancy().has(l.home[1] * COLS + l.home[0])) { settleAt(l, l.home[0], l.home[1], null); return; }
       const s = slotFor(l, l.lying ? 6.5 : 3.2, l.lying ? 3.2 : 2); if (s) settleAt(l, s.c, s.r, s); else { const [c, r] = freeCell(l); settleAt(l, c, r, null); } }
+    // afloat: one cell every FLOW seconds, drawn in three steps between cells, bobbing a pixel
+    const FLOW = 0.2;
+    let claims = new Map(), claimT = -1;
+    function stepAfloat(l, i) {
+      const tx = (l.cell[0] + 0.5) * 8, ty = (l.cell[1] + 0.5) * 16, age = st.t - (l.s0 ?? -9);
+      if (age < FLOW) { const a = STEP3[Math.min(2, Math.floor(age / (FLOW / 3)))]; l.x = tx + ((l.fx ?? tx) - tx) * a; l.y = ty + ((l.fy ?? ty) - ty) * a; l.z = 0; return false; }
+      l.x = tx; l.y = ty; l.z = (st.t * 2 + i * 0.37) % 1 < 0.5 ? 1 : 0;
+      const [c, r] = l.cell;
+      // its stream is the one it went into (where two cross, it keeps to its own); out of the water, it's ashore
+      if (l.si == null || !STREAMS[l.si]) l.si = streamAt(c, r);
+      if (l.si < 0 || (streamAt(c, r) < 0 && !markOf(STREAMS[l.si], c, r))) { l.state = 'settled'; l.z = 0; l.si = null; occ = null; return true; }
+      const S = STREAMS[l.si], O = occupancy(), [fx, fy] = S.f;
+      if (claimT !== st.t) { claims = new Map(); claimT = st.t; }
+      // its mark: the nearest free one of its letter, not already claimed this frame by a letter ahead of it
+      let m = null, bd = 1e9;
+      for (const x of S.marks) { if (x.ch !== l.ch || claims.has(x)) continue; const y = O.get(x.r * COLS + x.c); if (y && y !== l) continue; const d = Math.abs(x.c - c) + Math.abs(x.r - r); if (d < bd) { bd = d; m = x; } }
+      // no mark for it here: it bobs a moment, then washes up on the bank Harold can reach
+      if (!m) { if (age > 0.6) ashore(l); return false; }
+      claims.set(m, l);
+      if (m.c === c && m.r === r) { l.state = 'settled'; l.z = 0; l.si = null; occ = null; walkG = null; if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch); return true; }
+      // any water will do on the way (where streams cross), and the cells of its own marks
+      const go = (c2, r2) => { if ((streamAt(c2, r2) < 0 && !markOf(S, c2, r2)) || O.get(r2 * COLS + c2)) return false; l.fx = l.x; l.fy = l.y; l.cell = [c2, r2]; l.s0 = st.t; occ = null; return true; };
+      // the water runs to the marks from both ends: along the stream towards their row, across it towards its own
+      const along = (cc, rr) => cc * fx + rr * fy, across = (cc, rr) => cc * fy + rr * fx;
+      const da = along(m.c, m.r) - along(c, r), dp = across(m.c, m.r) - across(c, r), sa = Math.sign(da), sp = Math.sign(dp);
+      // far off, it keeps going along and steps across when it can; near, it steps across to its own column first. It
+      // only enters the marks' row at its own mark, or where there's no mark (where two streams meet, a pool)
+      const across1 = () => !!dp && go(c + sp * fy, r + sp * fx);
+      const along1 = () => (Math.abs(da) > 1 || (Math.abs(da) === 1 && (!dp || !STREAMS.some((T) => markOf(T, c + sa * fx, r + sa * fy))))) && go(c + sa * fx, r + sa * fy);
+      if (Math.abs(da) > 1 ? along1() || across1() : across1() || along1()) return false;
+      if (!da && dp && (go(c + fx, r + fy) || go(c - fx, r - fy))) return false;          // in the marks' row, hemmed in: out of it a row to go round
+      l.s0 = st.t - FLOW + 0.05;   // nothing to do: look again in a moment
+      return false;
+    }
+    // out of the water (no mark for it, a word taken apart, a quack at a locked letter): it hops onto ground Harold can
+    // reach, with a clear cell all round it if there is one – far enough from the bank to get behind it – and somewhere
+    // it can still be pushed into water from
+    function land(x, reach) {
+      // (first choice: ground two columns either side and a row above and below, and no other letter touching it, so
+      // Harold can walk round it and get behind it any way; then just the ground round it; then anywhere live)
+      const [c, r] = x.cell, O = occupancy(), N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      const clear = (c2, r2, w) => { for (let b = -1; b <= 1; b++) for (let a = -w; a <= w; a++) if (!ground(c2 + a, r2 + b)) return false; return true; };
+      const apart = (c2, r2) => N4.every(([a, b]) => { const y = O.get((r2 + b) * COLS + c2 + a); return !y || y === x; });
+      let best = null;
+      for (let pass = 0; pass < 3 && !best; pass++) {
+        let bd = 1e9;
+        for (let dr = -8; dr <= 8; dr++) for (let dc = -16; dc <= 16; dc++) {
+          const c2 = c + dc, r2 = r + dr, d = Math.abs(dc) + Math.abs(dr) * 2.2;
+          if (d >= bd || !reach.has(r2 * COLS + c2) || holeAt(c2, r2) || inWater(c2, r2) || !cellFree(c2, r2) || !live(c2, r2)) continue;
+          if ((pass === 0 && !(clear(c2, r2, 2) && apart(c2, r2))) || (pass === 1 && !clear(c2, r2, 1))) continue;
+          bd = d; best = [c2, r2];
+        }
+      }
+      if (!best) return false;
+      x.state = 'settled'; x.z = 0; x.si = null; occ = null; settleAt(x, best[0], best[1], null);
+      return true;
+    }
+    function ashore(l) {
+      if (!land(l, reachable())) { l.s0 = st.t; return; }
+      if (!st.flags.ashore) { st.flags.ashore = true; hint('no place for the ' + l.ch + ' – the stream left it on the bank', 3); }
+    }
     function stepLetter(l, i, dt, pushers) {
+      if (l.state === 'afloat') return stepAfloat(l, i);
+      if (l.state === 'settled' && STREAMS.length && inWater(l.cell[0], l.cell[1]) && !locked(l)) { l.state = 'afloat'; l.si = streamAt(l.cell[0], l.cell[1]); l.s0 = -9; return false; }   // (after an undo or a load)
+      if (l.state === 'settled' && (l.z > 0 || l.vz > 0)) { l.vz -= 440 * dt; l.z = Math.max(0, l.z + l.vz * dt); if (l.z === 0) l.vz = 0; return false; }
       if (l.state === 'settling') {
         const s = st.t - l.s0, tx = (l.cell[0] + 0.5) * 8, ty = (l.cell[1] + 0.5) * 16;
-        if (s >= 0.45) { l.state = 'settled'; l.x = tx; l.y = ty; occ = null; walkG = null; if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch); if (l.more > 0) { l.more--; railHop(l, l.ri + 1); } return true; }
+        if (s >= 0.45) { l.state = 'settled'; l.x = tx; l.y = ty; occ = null; walkG = null; if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch); if (l.more > 0) { l.more--; railHop(l, l.ri + 1); } if (inWater(l.cell[0], l.cell[1]) && !locked(l)) { l.state = 'afloat'; l.si = streamAt(l.cell[0], l.cell[1]); l.s0 = st.t; l.fx = l.x; l.fy = l.y; } return true; }
         const a = STEP3[Math.floor(s / 0.15)]; l.x = tx + (l.fx - tx) * a; l.y = ty + (l.fy - ty) * a; return false;
       }
       if (l.state === 'flying') {
@@ -260,21 +489,23 @@
     // ── words: settled letters that spell one in a row or a column become the thing (not when they are back home)
     function words2() {
       const O = occupancy();
+      const crossed = (x, dir) => { const k = st.letters.indexOf(x); return st.becomes.some((b) => b.dir === dir && b.idx && b.idx.includes(k)); };
       for (const [K, def] of Object.entries(PL.WORDS)) {
         if (!def.settled) continue;
         for (const l of O.values()) {
-          if (l.ch !== K[0] || l.state !== 'settled') continue;
+          if (l.ch !== K[0] || !(l.state === 'settled' || (CELLS && l.state === 'word'))) continue;
           for (const dir of ['row', 'col']) {
             const ls = []; let ok = true;
             for (let j = 0; j < K.length && ok; j++) {
               const c = l.cell[0] + (dir === 'row' ? j : 0), r = l.cell[1] + (dir === 'col' ? j : 0), x = O.get(r * COLS + c);
-              if (K[j] === ' ') { if (x) ok = false; } else if (!x || x.ch !== K[j] || x.state !== 'settled') ok = false; else ls.push(x);
+              // (cells: a letter already in a word can be in a second one, across and down – but not two words the same way)
+              if (K[j] === ' ') { if (x) ok = false; } else if (!x || x.ch !== K[j] || !(x.state === 'settled' || (CELLS && x.state === 'word' && !crossed(x, dir)))) ok = false; else ls.push(x);
             }
-            if (!ok || ls.every((x) => x.cell[0] === x.home[0] && x.cell[1] === x.home[1])) continue;
+            if (!ok || ls.every((x) => x.state === 'word') || ls.every((x) => x.cell[0] === x.home[0] && x.cell[1] === x.home[1])) continue;
             // letters on tracks spell only from their places at the tracks' ends (moving in step, STOP's letters
             // would spell STOP again one cell over and turn to brick)
             if (ls.some((x) => x.rail && x.ri !== x.rail.length - 1)) continue;
-            becomeNow(K, def, ls, dir); return;
+            becomeNow(K, def, ls, dir); words2(); return;   // (another word may be waiting on the same letter)
           }
         }
       }
@@ -283,7 +514,7 @@
       const at = ls[0].cell.slice();
       for (const l of ls) l.state = 'word';
       if (window.WK_SOUND && !o.demo) WK_SOUND.word(K);
-      st.becomes.push({ text: K, at, dir, t: st.t, thing: sc.thing(K, at, dir), letters: ls.map((l) => ({ ch: l.ch, x: (l.cell[0] + 0.5) * 8, y: (l.cell[1] + 0.5) * 16 })) });
+      st.becomes.push({ text: K, at, dir, t: st.t, thing: sc.thing(K, at, dir), idx: ls.map((l) => st.letters.indexOf(l)), letters: ls.map((l) => ({ ch: l.ch, x: (l.cell[0] + 0.5) * 8, y: (l.cell[1] + 0.5) * 16 })) });
       if (def.opens) { const d = sc.doors.filter((x) => x.opens === K || !x.opens).sort((a, b) => Math.abs((a.cells[0] + a.cells[2]) / 2 - at[0]) - Math.abs((b.cells[0] + b.cells[2]) / 2 - at[0]))[0]; if (d && Math.abs(d.cells[1] - at[1]) < 8) st.open.add(d.id); }
       st.flags.solved = true; st.flags[K.toLowerCase()] = true; occ = null; walkG = null;
     }
@@ -296,17 +527,15 @@
       for (let i = 0; i < n; i++) { if (s <= seg[i] || i === n - 1) { const a = route[i], b = route[(i + 1) % route.length], f = seg[i] ? Math.min(1, s / seg[i]) : 1; return { c: a[0] + (b[0] - a[0]) * f, r: a[1] + (b[1] - a[1]) * f, end: !loop && u >= tot }; } s -= seg[i]; }
       return { c: route[0][0], r: route[0][1], end: true };
     }
-    // Malifex, perceived (quacked at, or talked to): he blushes, goes up in a poof as the cat, and comes back – every
-    // time, but not twice at once
-    const BACK = ['...we don\'t talk about the cat.', '...that didn\'t happen.', '...stop perceiving me.', '...'];
+    // Malifex, perceived (quacked at, or talked to): he blushes and pulls his hood down. The cat is rare – a scene's own
+    // `poof`, three times in the whole night (book/00-the-bible.md) – never a quack's or a talk's
+    const SHY = ['...', '...don\'t.', '...stop perceiving me.', '...', '...i\'m fine.'];
     function perceive(a) {
       if (a.cat || a.perc > st.t || a.gone || a.hidden) return;
-      a.blush = st.t + 1.4; a.perc = st.t + 4.4; a.poofAt = st.t + 1.1; a.backAt = st.t + 3.4;
+      a.blush = st.t + 1.6; a.perc = st.t + 4; a.shyAt = st.t + 0.8;
     }
     function perceived(a) {
-      const loud = window.WK_SOUND && !o.demo;
-      if (a.poofAt && st.t >= a.poofAt) { a.poofAt = 0; a.cat = true; a.poofT = st.t; if (loud) WK_SOUND.wizard(); say('...meow.', a.id, 1.6); }
-      if (a.backAt && st.t >= a.backAt) { a.backAt = 0; a.cat = false; a.poofT = st.t; if (loud) WK_SOUND.poof(); say(BACK[(a.backs = (a.backs || 0) + 1) % BACK.length], a.id, 2); }
+      if (a.shyAt && st.t >= a.shyAt) { a.shyAt = 0; say(SHY[(a.shys = (a.shys || 0) + 1) % SHY.length], a.id, 1.8); }
     }
     // where the two who follow stand, by the way the leader is going: [columns, rows] from him
     const FORM = { w: [[6, -1.3], [6, 1.3]], e: [[-6, -1.3], [-6, 1.3]], n: [[-5, 1.8], [5, 1.8]], s: [[-5, -1.8], [5, -1.8]] };
@@ -366,7 +595,7 @@
     // where a letter on a track goes back to: the cell it was taken from, or the nearest free one before it
     function railBack(l) {
       let k = Math.max(0, l.rail.findIndex(([c, r]) => c === l.from[0] && r === l.from[1]));
-      const O = occupancy(), busy = ([c, r]) => (O.get(r * COLS + c) && O.get(r * COLS + c) !== l) || (Math.round(st.h.c) === c && Math.round(st.h.r) === r);
+      const O = occupancy(), busy = ([c, r]) => (O.get(r * COLS + c) && O.get(r * COLS + c) !== l) || onHarold(c, r);
       while (k > 0 && busy(l.rail[k])) k--;
       const [c, r] = l.rail[k]; return { c, r, k };
     }
@@ -468,7 +697,8 @@
       if (st.as === 'malifex' && !mal()) st.as = 'harold';
       if (inp.b && !st.bWas) toggle();
       if (inp.a && !st.aWas) act();
-      st.aWas = !!inp.a; st.bWas = !!inp.b;
+      if (inp.u && !st.uWas && CELLS) undo();
+      st.aWas = !!inp.a; st.bWas = !!inp.b; st.uWas = !!inp.u;
       const M = mal(), who = st.as === 'malifex' && M ? M : st.h;
       if (!st.h.gone) move(who, inp.x || 0, inp.y || 0, dt);
       if (who !== st.h) st.h.moving = false;
@@ -515,10 +745,11 @@
       const pos = (a) => ({ x: (a.c + 0.5) * 8, y: (a.r + 1) * 16 });
       const sayings = st.sayings.map((s) => { const a = s.who === 'harold' ? h : st.cast.find((x) => x.id === s.who || x.who === s.who); const P2 = a ? pos(a) : { x: 640, y: 360 }; return { text: s.text, x: P2.x, y: P2.y - (a && a.who === 'malifex' ? 128 : 72) }; });
       return {
-        t, harold: { ...pos(h), c: h.c, r: h.r, flip: h.flip, moving: h.moving, vx: h.vx, vy: h.vy, gone: h.gone, pose: h.moving ? 'walk' : 'idle' },
+        t, harold: { ...pos(h), c: h.c, r: h.r, feet: CELLS && st.as === 'harold' && !h.gone ? [footL(h.c), Math.round(h.r)] : null, flip: h.flip, moving: h.moving, vx: h.vx, vy: h.vy, gone: h.gone, pose: h.moving ? 'walk' : 'idle' },
         cast: st.cast.map((a) => ({ who: a.cat ? 'malicat' : a.who, id: a.id, ...pos(a), flip: a.flip, pose: a.cat ? 'idle' : a.blush > t ? 'blush' : a.pose, moving: a.moving, vx: a.vx, vy: a.vy, gone: a.gone, poofT: a.poofT, hold: a.hold, eats: a.eats })),
-        letters: st.letters.map((l) => ({ ch: l.ch, x: l.x, y: l.y, z: l.z, state: l.state, voice: l.voice, hidden: l.hidden, wall: l.wall, reveal: l.reveal, on: l.on, rail: l.rail, ri: l.ri,
+        letters: st.letters.map((l) => ({ ch: l.ch, x: l.x, y: l.y, z: l.z, state: l.state, aim: !!(st.aim && st.aim.l === l && t - st.aim.t < 0.2), voice: l.voice, hidden: l.hidden, wall: l.wall, reveal: l.reveal, on: l.on, rail: l.rail, ri: l.ri,
           ang: l.state === 'loose' || l.state === 'pulled' ? Math.sin(ft * 6 + l.j * 1.7) * 0.32 * Math.min(1, Math.hypot(l.vx || 0, l.vy || 0) / 30 + (l.z > 0 ? 1 : 0.15)) : 0 })),
+        marks: STREAMS.flatMap((S) => S.marks.filter((m) => !occupancy().get(m.r * COLS + m.c)).map((m) => ({ x: (m.c + 0.5) * 8, y: (m.r + 0.5) * 16 }))),
         rings: st.rings, becomes: st.becomes.map((b) => ({ ...b, age: t - b.t })), say: sayings, open: st.open, solved: !!st.flags.solved, as: st.as,
         hint: st.hintTill > t ? st.hint : null, outline: outline(), counter: st.counter, jam: st.jam, walkState: walkState(), exit: st.exit, flags: st.flags,
       };
@@ -527,9 +758,13 @@
     return { step, state, reset, get t() { return st.t; }, get exit() { return st.exit; }, clearExit() { st.exit = null; },
       // the world's hooks: is a cell walkable, fire an event now, take harold over from next door or hand him on
       walkable: (c, r) => walkable(Math.round(c), Math.round(r)), fire, say,
+      // (the checks and the debug panel) can a letter be left at this cell – could it still be pushed into water from it
+      live: (c, r) => live(c, r),
+      /** the cells that count as Harold: [column, row, how many columns] */
+      feet: () => [footL(st.h.c), Math.round(st.h.r), 2],
       // a save, a jump or the next area's seam may land him inside something solid (a rock's footprint): he goes to
       // the nearest cell he can stand on instead, so he's never stuck
-      take(c, r, flip) { const [c2, r2] = openNear(c, r); st.h.c = c2; st.h.r = r2; st.h.flip = flip; st.h.gone = false; st.cross = null; },
+      take(c, r, flip) { const [c2, r2] = openNear(c, r, true); st.h.c = c2; st.h.r = r2; st.h.flip = flip; st.h.gone = false; st.cross = null; },
       leave() { st.h.gone = true; st.h.moving = false; st.cross = null; },
       // what the area remembers when it's unloaded or saved: flags, open doors, every letter where it lies, the words
       // that became things, and the cast where they stand (lib/world.js keeps it on the area and in the save)
@@ -538,7 +773,7 @@
           // only the letters that moved, so a save code stays short: [index, column, row, state, place on its track]
           letters: st.letters.filter((l) => !l.digit).map((l, k) => (l.cell[0] !== l.home[0] || l.cell[1] !== l.home[1] || l.state === 'word' || (l.rail && l.ri > 0)
             ? [k, l.cell[0], l.cell[1], l.state === 'den' || l.state === 'carried' || l.state === 'flying' ? 'settled' : l.state, l.rail ? l.ri : -1] : null)).filter(Boolean),
-          becomes: st.becomes.map((b) => ({ text: b.text, at: b.at, dir: b.dir, letters: b.letters })),
+          becomes: st.becomes.map((b) => ({ text: b.text, at: b.at, dir: b.dir, letters: b.letters, idx: b.idx })),
           // the digit Bug dropped and Harold hasn't picked up yet: `dropped` alone, it would never come back
           digit: st.letters.filter((l) => l.digit && l.state !== 'gone').map((l) => [l.ch, Math.round(l.x), Math.round(l.y)])[0] || null,
           cast: st.cast.map((a) => ({ id: a.id, c: +a.c.toFixed(2), r: +a.r.toFixed(2), gone: !!a.gone, order: a.order || null, flip: !!a.flip, route: a.route || null, speed: a.speed || 0, loop: a.loop !== false, u: a.u || 0, cat: !!a.cat })) };
@@ -555,7 +790,7 @@
         }
         for (const b of m.becomes || []) st.becomes.push({ ...b, t: -99, thing: sc.thing(b.text, b.at, b.dir) });
         if (m.digit && !st.letters.some((l) => l.digit)) st.letters.push(digitAt(...m.digit));
-        for (const s0 of m.cast || []) { const a = st.cast.find((x) => x.id === s0.id); if (a) Object.assign(a, { c: s0.c, r: s0.r, gone: s0.gone, order: s0.order || undefined, flip: s0.flip, route: s0.route, speed: s0.speed, loop: s0.loop, u: s0.u, cat: s0.cat }); }   // (Bug keeps running his loop)
+        for (const s0 of m.cast || []) { const a = st.cast.find((x) => x.id === s0.id); if (a) Object.assign(a, { c: s0.c, r: s0.r, gone: s0.gone, order: s0.order || undefined, flip: s0.flip, route: s0.route, speed: s0.speed, loop: s0.loop, u: s0.u, cat: false }); }   // (Bug keeps running his loop)
         for (const s2 of slots) s2.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s2.c && l.cell[1] === s2.r && l.ch === s2.ch) || null;
         occ = null; walkG = null;
       },

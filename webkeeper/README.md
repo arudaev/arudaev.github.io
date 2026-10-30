@@ -12,11 +12,12 @@ run, measured and fixed on real devices. The project's handback it came from is 
 - **On the couch:** <http://localhost:5173/#/couch> – Harold climbs aboard, the TV shows the title, and the
   first time he leans in by himself; `[ start ]` plays, full screen (after `sit back`, START on the TV leans
   him in again).
-- **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab> – two areas of test stations, the second
+- **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab>, or `puzzle lab` in the game's menu on its own page – four areas of test stations (the third: one cell per push, undo, streams that carry letters to their marks, words taken apart and crossed; the fourth: streams that sort two words, a wall that is the word rearranged, a row pushed in whole), the second
   one Bug the thief's
   ([04 – Puzzles](../../design/couch-games/04-PUZZLES.md)).
-- **Debug panel:** add `?debug` (on its own) or `?wkdebug` (on the couch, since `?debug` is Voyager's own debug
-  mode). On a phone too: that's the point.
+- **Debug panel:** `debug: on` in the game's menu on its own page (the device remembers it, so it stays on across
+  a reload and the lab), or add `?debug` (on its own) or `?wkdebug` (on the couch, since `?debug` is Voyager's own
+  debug mode; there Voyager's settings have `debug mode`). On a phone too: that's the point.
 
 ## What's here
 
@@ -35,11 +36,11 @@ run, measured and fixed on real devices. The project's handback it came from is 
 | `lib/marks.js` | every grass, flower and leaf mark drawn on the GPU (WebGL2), the wind in its vertex shader |
 | `lib/world.js` | the meadow: areas joined at their edges, the camera, input, the title and menu, the frame loop |
 | `lib/host.js` | the bridge to Voyager on the couch (messages, both ways – the list is at its top) |
-| `lib/debug.js` | the debug panel (only loaded with `?debug`) |
+| `lib/debug.js` | the debug panel (only loaded with `?debug` or the menu's `debug: on`) |
 | (scenes) | a place's `scenes`: the book's scripts (`design/couch-games/book`), run by `lib/world.js` – lines, bubbles, waits, room events, thoughts in the sky, title cards |
 | `lib/sound.js` | the sound, synthesized but for one sample: letters are notes (a pentatonic scale, so any order sounds right and a word is a tune), a word chimes when it becomes, the quack, Mishka's hum, Harold's theme on NES-style voices (two pulse waves, a triangle, noise); on the couch it follows Voyager's sound setting |
 | `sounds/mew-1.wav`, `mew-2.wav` | Mishka's mews: the two mews in a real cat's recording, "Cat purr & meow" by Kerzoven on OpenGameArt (CC0), each cut out and crushed to 8 bits at 8 kHz (2 KB each) |
-| `places/*.json` | the place files: `0.1-couch.json`, the prologue: the party round the TV (the couch, four beanbags and the snack table, framed as one picture); one per area of chapter 0 (0.2–0.7, and 0.6i, the room inside the yard's homepage: its door leads in, Bug's tunnel leads on to 0.7, the hermit's clearing), `lab.json` + `lab-2.json`, the puzzle lab; and `cast.json`, the cast at size in the world – a test place for the Webkeeper Design System's card (`cards/cast/world.html`), not loaded by the game |
+| `places/*.json` | the place files: `0.1-couch.json`, the prologue: the party round the TV (the couch, four beanbags and the snack table, framed as one picture); one per area of chapter 0 (0.2–0.7, and 0.6i, the room inside the yard's homepage: its door leads in, Bug's tunnel leads on to 0.7, the hermit's clearing), `lab.json` + `lab-2.json` + `lab-3.json` + `lab-4.json`, the puzzle lab (`lab-3` and `lab-4` have `"cells": true`: letters one cell per push, undo, unmaking, crossings, and `"streams"` that carry letters to their x's – lib/room.js); and `cast.json`, the cast at size in the world – a test place for the Webkeeper Design System's card (`cards/cast/world.html`), not loaded by the game |
 | `fonts/vt323.woff2` | VT323 (SIL Open Font License), served from here so the game never waits on another site |
 
 Plain scripts, each setting one global (`WK_WORLD`, `WK_BRUSH`, …) – how Claude Design wrote them. They're
@@ -57,7 +58,8 @@ Everything it shows is measured on the device it runs on:
   reeds, flowers, lamps, light pools, fireflies, the light) counted from its place file
 - **the clock:** pause, one frame, ¼× to 4×
 - **Harold:** to the start of any area (its name is a button; one not built yet is built first, then he goes)
-- **overlays:** the big-cell grid, where Harold can walk, the area seams, Harold's box and cell
+- **overlays:** the big-cell grid, where Harold can walk (in rooms with streams, the cells a letter can't be left on in red), the area seams, Harold's box and cells – his feet's
+  cells in green (two side by side: his sprite's width) (walls, pushes and exits are decided there, not by the sprite) and the grass his walk parts in grey
 - **save:** a picture of the canvas; the whole report as JSON (copy or save) – send it with a bug
 - **errors:** every error and warning as it happens
 

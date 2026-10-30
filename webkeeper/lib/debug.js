@@ -1,4 +1,4 @@
-// Webkeeper's debug panel: ?debug on the page (index.html loads this file only then), or on the couch in Voyager
+// Webkeeper's debug panel: ?debug on the page, or the menu's "debug" row (index.html loads this file only then), or on the couch in Voyager
 // with ?debug in the address. It shows what the game is doing as you play, on the device you play on – a phone
 // included – so slowness and bugs are measured where they happen, not guessed from a desktop:
 //   · frames: frames a second, and each frame's bake and draw time (median, p90, worst over the last 4 s), a graph
@@ -9,7 +9,7 @@
 //     reeds, flowers, lamps, light pools, fireflies) counted from its place file
 //   · the clock: pause, one frame, slower and faster
 //   · Harold: to the start of any area
-//   · overlays: the big-cell grid, where Harold can walk, the area seams
+//   · overlays: the big-cell grid, where Harold can walk (and, with streams, where a letter can't be left), the area seams
 //   · a picture of the canvas, and a report (everything above as JSON) to copy or save
 //   · errors and warnings, as they happen
 // ` (backquote) folds the panel away and back. Nothing here changes the game unless you press something.
@@ -191,7 +191,12 @@
           for (let wy = Math.floor(cy / 16) * 16; wy < cy + V.h; wy += 16) for (let wx = Math.floor(cx / 8) * 8; wx < cx + V.w; wx += 8) {
             const c = (wx - A.ox) / 8, r = (wy - A.oy) / 16;
             if (c < A.E[0] || c >= A.E[2]) continue;
-            if (W.walkable(A.i, c, r)) x.fillRect(X(wx), Y(wy), 8 * s, 16 * s);
+            if (!W.walkable(A.i, c, r)) continue;
+            // (rooms with streams) ground a letter can't be left on – it could never be pushed into water from there – in red
+            const dead = A.sim && A.sim.live && !A.sim.live(c, r);
+            if (dead) x.fillStyle = 'rgba(230,57,70,0.35)';
+            x.fillRect(X(wx), Y(wy), 8 * s, 16 * s);
+            if (dead) x.fillStyle = 'rgba(255,210,63,0.22)';
           }
         }
       }
@@ -202,11 +207,16 @@
       if (ovs.has('hero') && W.cur) {
         const h = W.hero(); x.strokeStyle = P.yellow; x.lineWidth = 2; x.strokeRect(X(h.x) - 8 * s, Y(h.y) - 12 * s, 16 * s, 24 * s);
         x.fillStyle = P.yellow; x.font = '16px VT323'; const c = W.cur.sim.st().h; x.fillText(`${c.c.toFixed(1)}, ${c.r.toFixed(1)}`, X(h.x) + 10 * s, Y(h.y) - 12 * s);
+        // what the game counts as Harold: his feet's cells – one, or two side by side in rooms where letters move a cell at a
+        // time (walls, pushes and exits are decided there, not by the
+        // sprite), and the grass his walk parts round it
+        const [fc, fr, fw] = W.cur.sim.feet ? W.cur.sim.feet() : [Math.round(c.c), Math.round(c.r), 1]; x.strokeStyle = P.phosphor; x.strokeRect(X(W.cur.ox + fc * 8), Y(W.cur.oy + fr * 16), 8 * fw * s, 16 * s);
+        if (W.touch) { x.strokeStyle = P.dim; x.beginPath(); x.ellipse(X(h.x), Y(h.y + 2), W.touch * 8 * s, (W.touch * 8 * s) / 1.8 * 2, 0, 0, Math.PI * 2); x.stroke(); }
       }
     })();
     window.WK_DEBUG.report = report;
   }
   // the couch's menu switches the panel (lib/host.js): shown or hidden, overlays and all
-  function show(on) { for (const el of document.querySelectorAll('.wkd, .wkd-ov')) el.style.display = on ? '' : 'none'; }
-  window.WK_DEBUG = { attach, show };
+  function show(on) { WK_DEBUG.on = !!on; for (const el of document.querySelectorAll('.wkd, .wkd-ov')) el.style.display = on ? '' : 'none'; }
+  window.WK_DEBUG = { attach, show, on: true };
 })();

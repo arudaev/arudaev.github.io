@@ -9,7 +9,7 @@
 //   G.bench(opt) → per-frame bake and draw times while Harold walks from 0.2 to 0.6
 (function () {
   const { P, hash } = Webkeeper, B = WK_BRUSH, PL = WK_PLACE, L = WK_LAYERS, RM = WK_ROOM;
-  const AC = 160, AR = 45, AW = AC * 8, PAD = 48, TOUCH = 3, DT = 1 / 60;
+  const AC = 160, AR = 45, AW = AC * 8, PAD = 48, TOUCH = 4.5, DT = 1 / 60;
   const AREAS = ['0.2-landing', '0.3-quack', '0.4-ditch', '0.5-keep-out', '0.6-yard', '0.6i-page', '0.7-hermit', '0.1-couch'];
   // where an area lies in the strip, in area widths: its place in the list, unless it stands apart – the couch (the
   // prologue) is two widths west of the landing, past the dark, so the meadow never shows it and the list's numbers
@@ -137,7 +137,15 @@
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
     const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
-    const items = () => (mode === 'menu' ? ['continue', 'controls', zoomName(), 'save code', 'load code', 'restart: prologue', window.WK_HOST && WK_HOST.hosted() ? 'sit back' : 'back to voyager'] : ['play']);
+    // the puzzle lab is the page's other list of areas (?lab): on its own page the menu goes between the two – the
+    // couch's TV plays the night only
+    const labRow = () => (window.WK_HOST && WK_HOST.hosted() ? [] : [cfg.areas ? 'back to the night' : 'puzzle lab']);
+    // the debug panel (lib/debug.js) on the game's own page: a menu row switches it, and the page remembers it, so it
+    // stays on across a reload or the lab (on the couch, Voyager's own menu has the switch – lib/host.js)
+    const debugRow = () => (window.WK_HOST && WK_HOST.hosted() ? [] : ['debug: ' + (window.WK_DEBUG && WK_DEBUG.on ? 'on' : 'off')]);
+    // a new night wipes the save, so it asks first (the menu turns into the question until it's answered)
+    let sure = false;
+    const items = () => (mode === 'menu' ? (sure ? ['keep this night', 'a new night: yes'] : ['continue', 'controls', zoomName(), 'restart the room', 'save code', 'load code', 'restart: prologue', ...debugRow(), ...labRow(), window.WK_HOST && WK_HOST.hosted() ? 'sit back' : 'back to voyager']) : ['play']);
     function choose(i) {
       const it = items()[i];
       // (the A that chose is still held as the game starts – PLAY, continue, a new night, a loaded code: holdA keeps it
@@ -148,7 +156,12 @@
       else if (it === 'load code') { const code = prompt('paste a webkeeper save code'); if (code && SAVE.load(code)) { mode = 'play'; talk = null; scene = null; card = null; hint('loaded – welcome back', 2.6); } else if (code) hint('that code doesn\'t look like a save', 2.6); }
       else if (it === 'controls') showControls = !showControls;
       else if (it === zoomName()) setZoom(ZOOMS[(ZOOMS.indexOf(zoomK) + 1) % ZOOMS.length]);   // 1x → 0.75x → 0.5x → 1x
-      else if (it === 'restart: prologue') { G.newNight(); mode = 'play'; }
+      else if (it === 'restart: prologue') { sure = true; sel = 0; }
+      else if (it === 'keep this night') { sure = false; sel = 0; }
+      else if (it === 'a new night: yes') { sure = false; G.newNight(); mode = 'play'; }
+      else if (it === 'restart the room') { G.restartRoom(); mode = 'play'; }
+      else if (it.startsWith('debug: ')) G.debug(!(window.WK_DEBUG && WK_DEBUG.on));
+      else if (it === 'puzzle lab' || it === 'back to the night') { SAVE.write(); const q = new URLSearchParams(location.search); if (cfg.areas) q.delete('lab'); else q.set('lab', ''); location.search = q.toString().replace(/=(&|$)/g, '$1'); }
       // sitting back is Voyager's (lib/host.js tells the couch); played on its own there's no couch to sit back on
       // on its own page: back to Voyager, the portfolio round it (the save stays; this tab forgets it was playing)
       else if (it === 'back to voyager') { saidPlaying = false; playing(false); location.href = '/'; }
@@ -161,7 +174,7 @@
       if (inMenu()) {
         const N = items().length;
         if (k === 'arrowup' || k === 'w') sel = (sel + N - 1) % N; else if (k === 'arrowdown' || k === 's') sel = (sel + 1) % N;
-        else if (k === 'enter' || k === ' ' || k === 'j') choose(sel); else if (k === 'escape' && mode === 'menu') mode = 'play';
+        else if (k === 'enter' || k === ' ' || k === 'j') choose(sel); else if (k === 'escape' && mode === 'menu') { if (sure) { sure = false; sel = 0; } else mode = 'play'; }
         return;
       }
       // on the couch the menu is Voyager's (one menu for the game and the couch: src/ui/CouchGame.tsx)
@@ -198,7 +211,7 @@
     function input() {
       let x = (keys.has('arrowright') || keys.has('d') ? 1 : 0) - (keys.has('arrowleft') || keys.has('a') ? 1 : 0);
       let y = (keys.has('arrowdown') || keys.has('s') ? 1 : 0) - (keys.has('arrowup') || keys.has('w') ? 1 : 0);
-      let a = keys.has(' ') || keys.has('j') || tapA, b = keys.has('shift') || keys.has('k') || tapB;
+      let a = keys.has(' ') || keys.has('j') || tapA, b = keys.has('shift') || keys.has('k') || tapB, u = keys.has('z') || keys.has('backspace');
       const ext = window.WK_HOST && WK_HOST.pad;
       if (ext) { if (Math.abs(ext.x) + Math.abs(ext.y) > 0.1) { x = ext.x; y = ext.y; } a = a || ext.a; b = b || ext.b; }
       if (stick) { const dx = stick.x - stick.x0, dy = (stick.y - stick.y0) * 1.8, d = Math.hypot(dx, dy); if (d > 6) { x = dx / Math.max(d, 36); y = dy / Math.max(d, 36); } }
@@ -207,7 +220,7 @@
         const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0, bt = (i) => gp.buttons[i] && gp.buttons[i].pressed;
         if (Math.hypot(ax, ay) > 0.22) { x = ax; y = ay; }
         if (bt(14)) x = -1; if (bt(15)) x = 1; if (bt(12)) y = -1; if (bt(13)) y = 1;
-        a = a || bt(0); b = b || bt(1);
+        a = a || bt(0); b = b || bt(1); u = u || bt(2);
         const st = bt(9);
         if (inMenu()) { const N = items().length; if (bt(12) && !padWas.u) sel = (sel + N - 1) % N; if (bt(13) && !padWas.d) sel = (sel + 1) % N; if ((bt(0) || st) && !padWas.a) choose(sel); }
         else if (st && !padWas.s) { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('menu'); else { mode = 'menu'; sel = 0; } }
@@ -215,7 +228,7 @@
         if (Math.abs(x) + Math.abs(y) > 0 || a || b) idle = 0;
       }
       if (holdA) { if (a) a = false; else holdA = false; }
-      return { x, y, a, b };
+      return { x, y, a, b, u };
     }
     const hint = (text, dur = 2.6) => { hintW = { text, till: T + dur }; };
 
@@ -280,6 +293,7 @@
 
     // ── stepping: harold's area and its neighbours, in steps of at most 1/60 s; a seam hands him on
     const near = (A) => A.ready && (A === cur || Math.abs(A.slot - cur.slot) <= 1);
+    let entered = null;
     function stepAll(dt, inp) {
       const n = Math.max(1, Math.ceil(dt / DT - 1e-6)), h = dt / n;
       for (let k = 0; k < n; k++) {
@@ -290,6 +304,8 @@
       }
       tapA = tapB = false;
       for (const A of areas) if (near(A)) A.S = A.sim.state();
+      // the room as Harold came into it, for `restart the room`
+      if (cur !== entered && cur.sim) { entered = cur; const h = cur.sim.st().h; cur.entry = { mem: cur.sim.snapshot(), done: [...(cur.done || [])], at: [h.c, h.r, h.flip] }; }
       feet();
     }
     function cross(c) {
@@ -319,7 +335,8 @@
       else N.sim.take(start ? start.at[0] : 2, start ? start.at[1] : 30, true);   // no way back here (the TV): his landing spot
       cur.sim.leave(); cur = N; arrived = N; nameW = { text: N.place.place + ' · ' + N.place.name, till: T + 3 }; moveCam(0, true);
     }
-    // whoever walks parts the grass (a radius of 3.5 big columns, loose for about a second, every frame) and leaves
+    // whoever walks parts the grass (a radius of 4.5 big columns, the inner half leaning all the way, loose for about a
+    // second, every frame; at 3 with the lean fading from the middle out, Harold barely stirred it) and leaves
     // prints where the ground is soil
     let ghost = false;   // the bench moves Harold by hand; he still counts as walking
     function walkers(A) { const S = A.S, out = []; if (!S) return out; if (!S.harold.gone) out.push(['harold', ghost ? { ...S.harold, moving: true } : S.harold, 'harold']); (S.cast || []).forEach((a, j) => { if (!a.gone && a.moving) out.push([a.who + j, a, a.who]); }); return out; }
@@ -962,7 +979,7 @@
         if (!lift) menuList(Math.max(r1 + 3, rows - 6), items());
       }
       if (mode === 'menu') {
-        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(1, Math.round(rows / 2 - 9)), h = items().length * 2 + 4 + (showControls ? 5 : 0);
+        const w = Math.min(cols - 4, 44), c0 = Math.round(cols / 2 - w / 2), r0 = Math.max(1, Math.round(rows / 2 - 9)), h = items().length * 2 + 5 + (showControls ? 5 : 0);
         Wm.ink(c0, r0, w + 1, h + 1); Wm.box(c0, r0, c0 + w, r0 + h, P.beigeDim);
         centre(r0 + 1, 'webkeeper · harold\'s copy', P.phosphor); centre(r0 + 2, 'temporary internet files', P.beigeDim);
         menuList(r0 + 4, items());
@@ -1119,7 +1136,17 @@
       get held() { return held; }, set held(v) { if (held && !v) holdA = true; held = !!v; },
       /** the player's zoom: 1, 0.75 or 0.5 (Voyager's settings on the couch, lib/host.js) */
       get zoom() { return zoomK; }, set zoom(z) { setZoom(+z); },
+      /** how far a walk parts the grass, in big columns (the debug panel draws it round Harold) */
+      touch: TOUCH,
       menu() { if (mode === 'play') { mode = 'menu'; sel = 0; } },
+      /** the debug panel shown or hidden, loaded the first time it's asked for; remembered on this device */
+      debug(on) {
+        try { if (on) localStorage.setItem('wk-debug', '1'); else localStorage.removeItem('wk-debug'); } catch (e) { /* private window: just this time */ }
+        if (window.WK_DEBUG) { WK_DEBUG.show(on); return; }
+        if (!on || document.querySelector('script[data-wk-debug]')) return;
+        const sc = document.createElement('script'); sc.src = base + 'lib/debug.js'; sc.dataset.wkDebug = '';
+        sc.onload = () => WK_DEBUG.attach(G); document.body.appendChild(sc);
+      },
       start() { if (!ready) return; if (mode === 'title') choose(0); else if (mode === 'menu') { mode = 'play'; holdA = true; } },
       title() { mode = 'title'; sel = 0; idle = 0; attract = null; showControls = false; if (saidPlaying) { saidPlaying = false; playing(false); } },
       saveCode() { return SAVE.code(); },
@@ -1134,6 +1161,12 @@
         const couch = areas.find((A) => A.place.place === '0.1');
         if (couch && couch.ready) { G.put(couch.i, ...couch.place.actors.find((a) => a.who === 'harold').at); arrived = couch; }
         else if (couch) { wantArea = couch.i; resume = true; }
+      },
+      /** the room back as it was when Harold came into it: its letters, words and doors, and him at the way in */
+      restartRoom() {
+        const E = cur && cur.entry; if (!E || !cur.sim) return;
+        cur.sim.reset(); cur.sim.restore(E.mem); cur.done = new Set(E.done); cur.sim.take(E.at[0], E.at[1], E.at[2]);
+        talk = null; scene = null; card = null; hint('the room is as you found it', 2);
       },
       loadCode(code) { const ok = SAVE.load(code); if (ok) { mode = 'play'; talk = null; scene = null; card = null; } return ok; },
       /** on the couch the title counts Voyager's real visitors (lib/host.js) */

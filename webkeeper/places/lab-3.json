@@ -1,0 +1,721 @@
+{
+ "place": "lab-3",
+ "name": "the lab: one cell at a time",
+ "chapter": 0,
+ "idea": "letters that move one cell per push, a row of them as one, with undo: the wall is the lamp; letters pushed into a stream float to their x's and sort themselves into a bridge; the bridge taken apart and carried on to a second stream; and two streams that cross, LAMP across and POST down sharing one P (design/couch-games/04-PUZZLES.md#the-lab)",
+ "learn": "the obstacle is the tool",
+ "version": 1,
+ "seed": 929,
+ "grade": "night",
+ "cells": true,
+ "light": {
+  "ambient": 0.28,
+  "pools": [
+   {
+    "at": [
+     12,
+     29
+    ],
+    "rad": 220,
+    "k": 0.7
+   },
+   {
+    "at": [
+     58,
+     28
+    ],
+    "rad": 240,
+    "k": 0.65
+   },
+   {
+    "at": [
+     90,
+     28
+    ],
+    "rad": 220,
+    "k": 0.6
+   },
+   {
+    "at": [
+     116,
+     30
+    ],
+    "rad": 150,
+    "k": 0.45
+   }
+  ]
+ },
+ "wind": {
+  "toward": "east",
+  "k": 0,
+  "area": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "fog": {
+  "far": 0.22,
+  "banks": 0.5,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     36,
+     29,
+     9,
+     5
+    ],
+    "k": 0.75
+   },
+   {
+    "line": [
+     [
+      72,
+      -12
+     ],
+     [
+      72,
+      52
+     ]
+    ],
+    "width": 4,
+    "k": 0.5
+   },
+   {
+    "line": [
+     [
+      100,
+      -12
+     ],
+     [
+      100,
+      52
+     ]
+    ],
+    "width": 4,
+    "k": 0.5
+   },
+   {
+    "disc": [
+     126,
+     21,
+     8,
+     3
+    ],
+    "k": 0.7
+   },
+   {
+    "disc": [
+     148,
+     38,
+     8,
+     3
+    ],
+    "k": 0.7
+   }
+  ]
+ },
+ "deep": {
+  "stars": 0.5,
+  "words": [
+   "ctrl+z",
+   "under construction"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    164,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    14,
+    42,
+    12,
+    3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    86,
+    19,
+    9,
+    2.4
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    60,
+    40,
+    6,
+    1.8
+   ]
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     40,
+     29.6
+    ],
+    [
+     80,
+     30
+    ],
+    [
+     120,
+     29.6
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     40,
+     29.6
+    ],
+    [
+     80,
+     30
+    ],
+    [
+     120,
+     29.6
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.8
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     72,
+     -12
+    ],
+    [
+     72,
+     52
+    ]
+   ],
+   "width": 4.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     72,
+     -12
+    ],
+    [
+     72,
+     52
+    ]
+   ],
+   "width": 3,
+   "edge": 0.6
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     100,
+     -12
+    ],
+    [
+     100,
+     52
+    ]
+   ],
+   "width": 4.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     100,
+     -12
+    ],
+    [
+     100,
+     52
+    ]
+   ],
+   "width": 3,
+   "edge": 0.6
+  },
+  {
+   "brush": "soil",
+   "disc": [
+    36,
+    29,
+    6,
+    2
+   ],
+   "amt": 0.6,
+   "edge": 0.8
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     135,
+     26
+    ],
+    [
+     135,
+     52
+    ]
+   ],
+   "width": 2.4,
+   "edge": 0.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     108,
+     32
+    ],
+    [
+     157,
+     32
+    ]
+   ],
+   "width": 2.4,
+   "edge": 0.6
+  },
+  {
+   "stamp": "rock",
+   "at": [
+    118,
+    41
+   ],
+   "r": [
+    3.6,
+    1.4
+   ],
+   "seed": 101,
+   "moss": 0.4
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     164,
+     -2.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 103
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     26,
+     -2
+    ],
+    [
+     26,
+     25.4
+    ]
+   ],
+   "r": [
+    3.6,
+    1.5
+   ],
+   "seed": 104
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 731,
+   "at": [
+    10,
+    15
+   ],
+   "h": 13
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 744,
+   "at": [
+    88,
+    14
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 757,
+   "at": [
+    136,
+    15
+   ],
+   "h": 14
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     160,
+     25.4
+    ],
+    [
+     160,
+     54
+    ]
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 105
+  }
+ ],
+ "front": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     26,
+     32.2
+    ],
+    [
+     26,
+     52
+    ]
+   ],
+   "r": [
+    3.6,
+    1.5
+   ],
+   "seed": 106
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 739,
+   "at": [
+    44,
+    47
+   ],
+   "h": 13
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     164,
+     52.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 107
+  }
+ ],
+ "things": [],
+ "words": [
+  {
+   "id": "v1",
+   "text": "lamp out",
+   "at": [
+    16,
+    23
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "lampw",
+   "text": "LAMP",
+   "at": [
+    26,
+    27
+   ],
+   "dir": "col",
+   "wall": true
+  },
+  {
+   "id": "v2",
+   "text": "across",
+   "at": [
+    54,
+    20
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "bridgew",
+   "text": "BRIDGE",
+   "cells": [
+    [
+     52,
+     24
+    ],
+    [
+     58,
+     36
+    ],
+    [
+     55,
+     31
+    ],
+    [
+     63,
+     26
+    ],
+    [
+     61,
+     39
+    ],
+    [
+     50,
+     34
+    ]
+   ]
+  },
+  {
+   "id": "v3",
+   "text": "and across again",
+   "at": [
+    80,
+    20
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "v4",
+   "text": "light both corners",
+   "at": [
+    118,
+    20
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "lightw",
+   "text": "LAMPOST",
+   "cells": [
+    [
+     116,
+     27
+    ],
+    [
+     121,
+     28
+    ],
+    [
+     125,
+     23
+    ],
+    [
+     129,
+     26
+    ],
+    [
+     112,
+     26
+    ],
+    [
+     119,
+     23
+    ],
+    [
+     127,
+     24
+    ]
+   ]
+  }
+ ],
+ "solve": [],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    6,
+    30
+   ],
+   "face": "east"
+  }
+ ],
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    26,
+    36
+   ],
+   "to": "lab-2",
+   "way": "back"
+  },
+  {
+   "edge": "east",
+   "rows": [
+    18,
+    24
+   ],
+   "to": "lab-4",
+   "way": "on"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    17,
+    160,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 8
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ],
+ "streams": [
+  {
+   "id": "across",
+   "path": [
+    [
+     72,
+     17
+    ],
+    [
+     72,
+     43
+    ]
+   ],
+   "w": 4,
+   "word": "BRIDGE",
+   "at": [
+    69,
+    30
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "again",
+   "path": [
+    [
+     100,
+     17
+    ],
+    [
+     100,
+     43
+    ]
+   ],
+   "w": 4,
+   "word": "BRIDGE",
+   "at": [
+    97,
+    30
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "lamp",
+   "path": [
+    [
+     135,
+     26
+    ],
+    [
+     135,
+     43
+    ]
+   ],
+   "w": 3,
+   "word": "LAMP",
+   "at": [
+    133,
+    31
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "post",
+   "path": [
+    [
+     108,
+     32
+    ],
+    [
+     157,
+     32
+    ]
+   ],
+   "w": 2,
+   "word": "POST",
+   "at": [
+    136,
+    31
+   ],
+   "dir": "col"
+  }
+ ]
+}

@@ -36,7 +36,7 @@ html, body { margin: 0; background: #0A1416; overflow: hidden; touch-action: non
 <canvas id="c"></canvas>
 <!-- Webkeeper, the couch game (design/couch-games). Plain scripts, each setting one global, in this order.
      Played on its own here, or inside Voyager on the couch (src/ui/CouchGame.tsx loads this page in the glass).
-     ?debug opens the debug panel (lib/debug.js); ?ms shows bake and draw time in the corner. -->
+     ?debug opens the debug panel (lib/debug.js), and so does the menu's "debug" row (remembered on the device); ?ms shows bake and draw time in the corner. -->
 <script src="lib/webkeeper.js"></script>
 <script src="lib/decisions.js"></script>
 <script src="lib/sound.js"></script>
@@ -60,11 +60,12 @@ html, body { margin: 0; background: #0A1416; overflow: hidden; touch-action: non
   // &still: Harold stands where the area starts him, so the camera holds and only the world moves (the motion probe)
   const shot = q.has('shot') ? (q.get('shot') === 'title' ? { title: true, area: 0 } : { area: +q.get('shot') || 0, still: q.has('still') }) : null;
   // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/04-PUZZLES.md) instead of chapter 0's meadow
-  const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? ['lab', 'lab-2'] : undefined });
+  const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? ['lab', 'lab-2', 'lab-3', 'lab-4'] : undefined });
   WK_HOST.attach(world);
-  if (q.has('debug')) {
+  let wasOn = false; try { wasOn = !!localStorage.getItem('wk-debug'); } catch (e) { /* no storage: only ?debug */ }
+  if (q.has('debug') || (wasOn && !WK_HOST.hosted())) {
     const s = document.createElement('script');
-    s.src = 'lib/debug.js';
+    s.src = 'lib/debug.js'; s.dataset.wkDebug = '';
     // on the couch the panel waits for the game to start: Voyager's menu shows it once you're playing
     s.onload = () => { WK_DEBUG.attach(world); if (WK_HOST.hosted()) WK_DEBUG.show(false); };
     document.body.appendChild(s);

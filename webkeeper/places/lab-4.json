@@ -1,0 +1,638 @@
+{
+ "place": "lab-4",
+ "name": "the lab: streams",
+ "chapter": 0,
+ "idea": "streams that sort: two of them, each wanting its own word, and the letters for both mixed together; a wall of letters that is the word the water wants, rearranged; and a whole row pushed in at once, sorted on the way (design/couch-games/04-PUZZLES.md#the-lab)",
+ "learn": "the water reads for you",
+ "version": 1,
+ "seed": 941,
+ "grade": "night",
+ "cells": true,
+ "light": {
+  "ambient": 0.28,
+  "pools": [
+   {
+    "at": [
+     8,
+     21
+    ],
+    "rad": 200,
+    "k": 0.7
+   },
+   {
+    "at": [
+     44,
+     23
+    ],
+    "rad": 240,
+    "k": 0.6
+   },
+   {
+    "at": [
+     80,
+     28
+    ],
+    "rad": 200,
+    "k": 0.6
+   },
+   {
+    "at": [
+     122,
+     23
+    ],
+    "rad": 200,
+    "k": 0.55
+   }
+  ]
+ },
+ "wind": {
+  "toward": "east",
+  "k": 0,
+  "area": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "fog": {
+  "far": 0.22,
+  "banks": 0.5,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     106,
+     38,
+     10,
+     5
+    ],
+    "k": 0.75
+   }
+  ]
+ },
+ "deep": {
+  "stars": 0.5,
+  "words": [
+   "ctrl+z",
+   "under construction"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    164,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    20,
+    41,
+    10,
+    3
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    148,
+    40,
+    8,
+    2.4
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    80,
+    40,
+    6,
+    1.8
+   ]
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     21
+    ],
+    [
+     30,
+     21.4
+    ],
+    [
+     70,
+     21
+    ],
+    [
+     86,
+     24
+    ],
+    [
+     90,
+     28.5
+    ],
+    [
+     100,
+     28.5
+    ],
+    [
+     118,
+     24
+    ],
+    [
+     164,
+     22
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     21
+    ],
+    [
+     30,
+     21.4
+    ],
+    [
+     70,
+     21
+    ],
+    [
+     86,
+     24
+    ],
+    [
+     90,
+     28.5
+    ],
+    [
+     100,
+     28.5
+    ],
+    [
+     118,
+     24
+    ],
+    [
+     164,
+     22
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.8
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     36,
+     26.5
+    ],
+    [
+     36,
+     52
+    ]
+   ],
+   "width": 3.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     36,
+     27
+    ],
+    [
+     36,
+     52
+    ]
+   ],
+   "width": 2,
+   "edge": 0.6
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     56,
+     26.5
+    ],
+    [
+     56,
+     52
+    ]
+   ],
+   "width": 3.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     56,
+     27
+    ],
+    [
+     56,
+     52
+    ]
+   ],
+   "width": 2,
+   "edge": 0.6
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     104,
+     27.5
+    ],
+    [
+     104,
+     52
+    ]
+   ],
+   "width": 3.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     104,
+     28
+    ],
+    [
+     104,
+     52
+    ]
+   ],
+   "width": 2,
+   "edge": 0.6
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     132,
+     16.5
+    ],
+    [
+     132,
+     52
+    ]
+   ],
+   "width": 3.6
+  },
+  {
+   "brush": "water",
+   "line": [
+    [
+     132,
+     17
+    ],
+    [
+     132,
+     52
+    ]
+   ],
+   "width": 2,
+   "edge": 0.6
+  },
+  {
+   "brush": "soil",
+   "disc": [
+    106,
+    38,
+    5,
+    2
+   ],
+   "amt": 0.6,
+   "edge": 0.8
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     164,
+     -2.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 203
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     90,
+     -2
+    ],
+    [
+     90,
+     25.4
+    ]
+   ],
+   "r": [
+    3.6,
+    1.5
+   ],
+   "seed": 204
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     160,
+     -2
+    ],
+    [
+     160,
+     54
+    ]
+   ],
+   "r": [
+    4,
+    1.6
+   ],
+   "seed": 205
+  }
+ ],
+ "front": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     90,
+     32.2
+    ],
+    [
+     90,
+     52
+    ]
+   ],
+   "r": [
+    3.6,
+    1.5
+   ],
+   "seed": 206
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     164,
+     52.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 207
+  }
+ ],
+ "things": [],
+ "words": [
+  {
+   "id": "v1",
+   "text": "which water",
+   "at": [
+    40,
+    18
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "mixed",
+   "text": "WINDRAIN",
+   "cells": [
+    [
+     20,
+     23
+    ],
+    [
+     28,
+     25
+    ],
+    [
+     46,
+     19
+    ],
+    [
+     48,
+     24
+    ],
+    [
+     62,
+     20
+    ],
+    [
+     40,
+     25
+    ],
+    [
+     52,
+     25
+    ],
+    [
+     66,
+     23
+    ]
+   ]
+  },
+  {
+   "id": "v2",
+   "text": "stop, then post",
+   "at": [
+    72,
+    18
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "stopw",
+   "text": "STOP",
+   "at": [
+    90,
+    27
+   ],
+   "dir": "col",
+   "wall": true
+  },
+  {
+   "id": "v3",
+   "text": "all at once",
+   "at": [
+    114,
+    18
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "boat",
+   "text": "TAOB",
+   "at": [
+    124,
+    22
+   ],
+   "dir": "row"
+  }
+ ],
+ "solve": [],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    4,
+    21
+   ],
+   "face": "east"
+  }
+ ],
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    18,
+    24
+   ],
+   "to": "lab-3",
+   "way": "back"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    17,
+    158,
+    43
+   ]
+  ]
+ },
+ "air": {
+  "fireflies": 8
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ],
+ "streams": [
+  {
+   "id": "wind",
+   "path": [
+    [
+     36,
+     27
+    ],
+    [
+     36,
+     43
+    ]
+   ],
+   "w": 3,
+   "word": "WIND",
+   "at": [
+    34,
+    36
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "rain",
+   "path": [
+    [
+     56,
+     27
+    ],
+    [
+     56,
+     43
+    ]
+   ],
+   "w": 3,
+   "word": "RAIN",
+   "at": [
+    54,
+    36
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "post",
+   "path": [
+    [
+     104,
+     28
+    ],
+    [
+     104,
+     43
+    ]
+   ],
+   "w": 3,
+   "word": "POST",
+   "at": [
+    102,
+    38
+   ],
+   "dir": "row"
+  },
+  {
+   "id": "boat",
+   "path": [
+    [
+     132,
+     17
+    ],
+    [
+     132,
+     43
+    ]
+   ],
+   "w": 3,
+   "word": "BOAT",
+   "at": [
+    130,
+    32
+   ],
+   "dir": "row"
+  }
+ ]
+}

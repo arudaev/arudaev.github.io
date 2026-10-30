@@ -764,7 +764,8 @@
     23
    ],
    "dir": "row",
-   "on": "rain"
+   "on": "rain",
+   "falls": true
   }
  ],
  "solve": [

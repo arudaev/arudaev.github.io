@@ -449,15 +449,15 @@
     C.stamp = (kind, c, r) => { ST.push({ kind, c, r }); gen++; return C; };
     C.has = (name) => layers.has(name);
     C.weight = (name, c, r) => { const L = layers.get(name); return L && c >= 0 && r >= 0 && c < cols && r < rows ? L.a[r * cols + c] : 0; };
-    // a walker brushing through: the blades under it lean the way it goes (and aside, walking up or down the screen), the
-    // most at its middle and less out to its edge, and spring back behind it – a path through the grass, not a disc
+    // a walker brushing through: the blades under it lean the way it goes (and aside, walking up or down the screen), all
+    // the way in its inner half and less out to its edge, and spring back behind it – a path through the grass, not a disc
     // cleared round it (a touch leaned every blade in its reach all the way, and the walker carried a ring of parted
     // grass about). The lean is kept signed in touchRG (its size: how hard); a weaker brush doesn't undo a stronger one
     C.touch = (c, r, t, rad = 3, hx = 0) => {
       for (let rr = Math.floor(r - rad / 1.8); rr <= r + rad / 1.8; rr++) for (let cc = Math.floor(c - rad); cc <= c + rad; cc++) {
         const d = Math.hypot(cc - c, (rr - r) * 1.8) / rad;
         if (cc >= 0 && rr >= 0 && cc < cols && rr < rows && d <= 1) {
-          const i = rr * cols + cc, s = 1 - d, was = Math.abs(touchRG[i * 2 + 1]) * (1 - springAt(t - touchRG[i * 2]));
+          const i = rr * cols + cc, s = Math.min(1, (1 - d) * 2), was = Math.abs(touchRG[i * 2 + 1]) * (1 - springAt(t - touchRG[i * 2]));
           if (s < was) continue;
           touchT[i] = t; touchRG[i * 2] = t; touchRG[i * 2 + 1] = Math.max(-1, Math.min(1, hx * 0.85 + (cc >= c ? 1 : -1) * (1 - Math.abs(hx)) * 0.7)) * s;
           if (rr < tr0) tr0 = rr; if (rr + 1 > tr1) tr1 = rr + 1;

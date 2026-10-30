@@ -99,7 +99,7 @@
     if (l.hidden) { if (l.reveal) { inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, l.reveal > 1 ? P.phosphor : P.phosphorDim, 0, 16); } else W.loose(Math.round(l.x), Math.round(y), l.ch, HID, 0, 16); return; }
     if (l.voice) { inkBox(W, l.x + 2, y, 11, 17); italicAt(W, Math.round(l.x), Math.round(y), l.ch, col || P.beige); return; }
     if (l.z > 2) { W.g.fillStyle = P.ink; W.g.fillRect(Math.round(l.x - 4), Math.round(l.y + 5), 9, 3); }
-    inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, col || (l.state === 'loose' ? P.beige : l.wall ? P.redDim : P.beige), l.ang || 0, 16);
+    inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, col || (l.aim ? P.phosphor : l.state === 'loose' ? P.beige : l.wall ? P.redDim : P.beige), l.ang || 0, 16);
   }
   function shadowUnder(W, x, y, w) {
     const g = W.g; g.fillStyle = P.ink; const x0 = Math.round(x - w * 0.35), y0 = Math.round(y);
@@ -492,14 +492,20 @@
   function playItems(W, sc, S, t, items = []) {
     for (const B of S.becomes) if (!B.thing || B.thing.lies) items.push({ feet: -1e9, f: () => become(W, B, t) });
     if (S.letters.some((l) => l.rail && l.state !== 'word')) items.push({ feet: -1e9 + 1, f: () => tracks(W, S) });
+    // a stream's marks (lib/room.js): an x on the water where each letter of the word waiting there will lock in
+    if ((S.marks || []).length) items.push({ feet: -1e9 + 2, f: () => { for (const m of S.marks) { inkBox(W, m.x, m.y, 9, 16); W.loose(m.x, m.y, 'x', P.beigeDim, 0, 16); } } });
     for (const th of sc.things) items.push({ feet: (th.foot[1] + 1) * 16, f: () => (STILL[th.thing] ? stillThing(W, sc, th, S, t) : (THINGS[th.thing] || (() => 0))(W, th, S, t)) });
     // a thing with a near half (the couch's back, a beanbag's lip) sorts that half again, after whoever sits in it
     for (const th of sc.things) if (th.over != null && THINGS[th.thing]) items.push({ feet: (th.over + 1) * 16, f: () => THINGS[th.thing](W, th, S, t, 'over') });
     for (const B of S.becomes) if (B.thing && !B.thing.lies) items.push({ feet: B.thing.feet, f: () => become(W, B, t) });
+    // (cells rooms) the two cells under his feet, bracketed: those are Harold, as far as walls and pushes go
+    if (!S.harold.gone && S.harold.feet) { const [fc, fr] = S.harold.feet; items.push({ feet: S.harold.y - 0.5, f: () => { W.g.fillStyle = P.beigeDim; W.g.fillRect(fc * 8, (fr + 1) * 16, 16, 1); W.g.fillRect(fc * 8, (fr + 1) * 16 - 3, 1, 3); W.g.fillRect(fc * 8 + 15, (fr + 1) * 16 - 3, 1, 3); } }); }
     if (!S.harold.gone) items.push({ feet: S.harold.y, f: () => actor(W, 'harold', S.harold, t) });
     for (const a of S.cast || []) if (!a.gone) items.push({ feet: a.y, f: () => actor(W, a.who, a, t) });
     const onFeet = {}; for (const th of sc.things) onFeet[th.id] = (th.foot[1] + 1) * 16 + 1;
-    for (const l of S.letters) if (l.state !== 'word' && l.state !== 'gone') items.push({ feet: l.voice ? 1e6 : l.on && l.state === 'settled' && onFeet[l.on] ? onFeet[l.on] : l.y + 8, f: () => letter(W, l) });
+    // (a letter in a station's line – a voice – is drawn over it, not hidden under its ink)
+    const said = new Set(); for (const l of S.letters) if (l.voice && l.state !== 'gone') for (const dx of [-8, 0, 8]) said.add(Math.floor((l.x + dx) / 8) + ',' + Math.floor(l.y / 16));
+    for (const l of S.letters) if (l.state !== 'word' && l.state !== 'gone') items.push({ feet: l.voice ? 1e6 : said.has(Math.floor(l.x / 8) + ',' + Math.floor(l.y / 16)) ? 1e6 + 1 : l.on && l.state === 'settled' && onFeet[l.on] ? onFeet[l.on] : l.y + 8, f: () => letter(W, l) });
     return items;
   }
   // a letter's track on the ground (lib/room.js rails): dim dots where it can go, a + where it belongs; gone once

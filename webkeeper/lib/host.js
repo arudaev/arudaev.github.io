@@ -15,6 +15,7 @@
 //                 { voyager: 'save-code' }     → { webkeeper: 'save-code', code }
 //                 { voyager: 'load-code', code } → { webkeeper: 'loaded', ok }
 //                 { voyager: 'new-night' }     start again from the couch (the prologue)
+//                 { voyager: 'restart-room' }  the room Harold is in, as he found it
 //   to Voyager, too: { webkeeper: 'menu' }     Esc, Start or the menu corner pressed in the game
 // Played on its own, none of this happens and the page is the whole game.
 (() => {
@@ -59,6 +60,7 @@
     else if (m.voyager === 'save-code') H.send('save-code', { code: W.saveCode() });
     else if (m.voyager === 'load-code') H.send('loaded', { ok: W.loadCode(m.code) });
     else if (m.voyager === 'new-night') W.newNight();
+    else if (m.voyager === 'restart-room') W.restartRoom();
     else if (m.voyager === 'sound') { if (window.WK_SOUND) WK_SOUND.on = !!m.on; }
     else if (m.voyager === 'zoom') W.zoom = m.z;
     else if (m.voyager === 'debug') {

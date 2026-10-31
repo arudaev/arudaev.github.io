@@ -59,8 +59,10 @@ html, body { margin: 0; background: #0A1416; overflow: hidden; touch-action: non
   // ?shot=<area> (or ?shot=title): no clock of its own – scripts/motion/capture.mjs asks for each moment with __frame(t)
   // &still: Harold stands where the area starts him, so the camera holds and only the world moves (the motion probe)
   const shot = q.has('shot') ? (q.get('shot') === 'title' ? { title: true, area: 0 } : { area: +q.get('shot') || 0, still: q.has('still') }) : null;
-  // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/04-PUZZLES.md) instead of chapter 0's meadow
-  const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? ['lab', 'lab-2', 'lab-3', 'lab-4'] : undefined });
+  // ?lab: the puzzle lab on its own (places/lab.json, design/couch-games/04-PUZZLES.md) instead of chapter 0's meadow;
+  // ?lab=5 starts in its fifth area alone (chapter 1's editing, to try on a phone without walking through the rest)
+  const LAB = ['lab', 'lab-2', 'lab-3', 'lab-4', 'lab-5'], labAt = +q.get('lab') || 0;
+  const world = WK_WORLD.create({ canvas: document.getElementById('c'), base: './', bench: q.has('bench'), shot, areas: q.has('lab') ? (labAt > 1 ? LAB.slice(labAt - 1) : LAB) : undefined });
   WK_HOST.attach(world);
   let wasOn = false; try { wasOn = !!localStorage.getItem('wk-debug'); } catch (e) { /* no storage: only ?debug */ }
   if (q.has('debug') || (wasOn && !WK_HOST.hosted())) {

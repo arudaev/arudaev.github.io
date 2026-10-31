@@ -99,7 +99,7 @@
     if (l.hidden) { if (l.reveal) { inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, l.reveal > 1 ? P.phosphor : P.phosphorDim, 0, 16); } else W.loose(Math.round(l.x), Math.round(y), l.ch, HID, 0, 16); return; }
     if (l.voice) { inkBox(W, l.x + 2, y, 11, 17); italicAt(W, Math.round(l.x), Math.round(y), l.ch, col || P.beige); return; }
     if (l.z > 2) { W.g.fillStyle = P.ink; W.g.fillRect(Math.round(l.x - 4), Math.round(l.y + 5), 9, 3); }
-    inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, col || (l.aim ? P.phosphor : l.state === 'loose' ? P.beige : l.wall ? P.redDim : P.beige), l.ang || 0, 16);
+    inkBox(W, l.x, y, 10, 17); W.loose(Math.round(l.x), Math.round(y), l.ch, col || (l.aim ? P.phosphor : l.ok ? P.phosphorDim : l.state === 'loose' ? P.beige : l.wall ? P.redDim : P.beige), l.ang || 0, 16);
   }
   function shadowUnder(W, x, y, w) {
     const g = W.g; g.fillStyle = P.ink; const x0 = Math.round(x - w * 0.35), y0 = Math.round(y);

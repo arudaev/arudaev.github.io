@@ -137,7 +137,7 @@
 
     // ── input: keys, a gamepad, touch (drag the left half to walk; A and B bottom right; the menu top right)
     let menuBox = { x0: 0, y0: 0, x1: 0, y1: 0 };
-    const keys = new Set(); let stick = null, tapA = false, tapB = false, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
+    const keys = new Set(); let stick = null, tapA = false, tapB = false, bPtr = null, touchUI = false, padWas = {}, hits = [], holdA = false, held = false;
     let hand = window.matchMedia && matchMedia('(pointer: coarse)').matches ? 'touch' : 'keys';   // the last hand used: keys, touch or pad
     // the title is the key art and PLAY, nothing else; the rest lives in the menu (esc, start, [=])
     // the puzzle lab is the page's other list of areas (?lab): on its own page the menu goes between the two – the
@@ -207,11 +207,11 @@
       }
       if (p.x > V.w - 48 && p.y < 40) { if (window.WK_HOST && WK_HOST.hosted()) WK_HOST.send('menu'); else { mode = 'menu'; sel = 0; } return; }
       if (p.x < V.w / 2) stick = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y };
-      else { const P2 = pads(); if (Math.hypot(p.x - P2.B[0], p.y - P2.B[1]) < P2.r * 1.3) tapB = true; else tapA = true; }
+      else { const P2 = pads(); if (Math.hypot(p.x - P2.B[0], p.y - P2.B[1]) < P2.r * 1.3) { tapB = true; bPtr = e.pointerId; } else tapA = true; }
     });
     canvas.addEventListener('pointermove', (e) => { if (stick && e.pointerId === stick.id) { const p = local(e); stick.x = p.x; stick.y = p.y; } });
     // (a touch the browser takes over – a scroll, a system gesture – ends in pointercancel, not pointerup)
-    const lift = (e) => { if (stick && e.pointerId === stick.id) stick = null; };
+    const lift = (e) => { if (stick && e.pointerId === stick.id) stick = null; if (e.pointerId === bPtr) bPtr = null; };
     addEventListener('pointerup', lift); addEventListener('pointercancel', lift);
     // A and B on a phone: both on the arc the right thumb sweeps from where it rests (the screen's bottom-right corner),
     // about a third of the short side out – A higher, B lower and further in, like a handheld's pair – in css px turned
@@ -224,7 +224,7 @@
     function input() {
       let x = (keys.has('arrowright') || keys.has('d') ? 1 : 0) - (keys.has('arrowleft') || keys.has('a') ? 1 : 0);
       let y = (keys.has('arrowdown') || keys.has('s') ? 1 : 0) - (keys.has('arrowup') || keys.has('w') ? 1 : 0);
-      let a = keys.has(' ') || keys.has('j') || tapA, b = keys.has('shift') || keys.has('k') || tapB, u = keys.has('z') || keys.has('backspace');
+      let a = keys.has(' ') || keys.has('j') || tapA, b = keys.has('shift') || keys.has('k') || tapB || bPtr !== null, u = keys.has('z') || keys.has('backspace');
       const ext = window.WK_HOST && WK_HOST.pad;
       if (ext) { if (Math.abs(ext.x) + Math.abs(ext.y) > 0.1) { x = ext.x; y = ext.y; hand = 'pad'; } if (ext.a || ext.b) hand = 'pad'; a = a || ext.a; b = b || ext.b; }
       if (stick) { const dx = stick.x - stick.x0, dy = (stick.y - stick.y0) * 1.8, d = Math.hypot(dx, dy); if (d > 6) { x = dx / Math.max(d, 36); y = dy / Math.max(d, 36); } }

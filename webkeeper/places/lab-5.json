@@ -1,0 +1,858 @@
+{
+ "place": "lab-5",
+ "name": "the lab: editing",
+ "chapter": 0,
+ "idea": "chapter 1's editing, built to be played: Harold and Malifex move a cell a step, so a push is always one letter; a line of a guestbook closes up over a letter pushed out of it; a letter only Malifex sees comes out in his hood; two letters the wrong way round swap under the cat's spell (design/couch-games/04-PUZZLES.md#the-lab)",
+ "learn": "the duck pushes, the hood lifts, the cat swaps",
+ "version": 1,
+ "seed": 941,
+ "grade": "night",
+ "cells": true,
+ "step": true,
+ "spell": true,
+ "join": "joined",
+ "light": {
+  "ambient": 0.3,
+  "pools": [
+   {
+    "at": [
+     20,
+     28
+    ],
+    "rad": 240,
+    "k": 0.7
+   },
+   {
+    "at": [
+     66,
+     27
+    ],
+    "rad": 240,
+    "k": 0.65
+   },
+   {
+    "at": [
+     122,
+     27
+    ],
+    "rad": 240,
+    "k": 0.65
+   }
+  ]
+ },
+ "wind": {
+  "toward": "east",
+  "k": 0,
+  "area": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "fog": {
+  "far": 0.22,
+  "banks": 0.5,
+  "streaks": 0.2,
+  "hollows": [
+   {
+    "disc": [
+     20,
+     28,
+     10,
+     5
+    ],
+    "k": 0.75
+   },
+   {
+    "disc": [
+     66,
+     27,
+     10,
+     5
+    ],
+    "k": 0.7
+   },
+   {
+    "disc": [
+     122,
+     27,
+     10,
+     5
+    ],
+    "k": 0.7
+   }
+  ]
+ },
+ "deep": {
+  "stars": 0.5,
+  "words": [
+   "ctrl+z",
+   "select all",
+   "spellcheck"
+  ]
+ },
+ "ground": [
+  {
+   "brush": "grass",
+   "rect": [
+    -4,
+    -8.6,
+    164,
+    55.6
+   ],
+   "amt": 0.95,
+   "edge": 3,
+   "rough": 2.2
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    14,
+    40,
+    10,
+    2.5
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "tall",
+   "disc": [
+    80,
+    40,
+    9,
+    2.4
+   ],
+   "amt": 0.8,
+   "edge": 2.5
+  },
+  {
+   "brush": "flowers",
+   "disc": [
+    132,
+    40,
+    6,
+    1.8
+   ]
+  },
+  {
+   "brush": "clear",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     40,
+     29.6
+    ],
+    [
+     80,
+     30
+    ],
+    [
+     120,
+     29.6
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 2.2,
+   "edge": 1.2
+  },
+  {
+   "brush": "trample",
+   "line": [
+    [
+     -4,
+     30
+    ],
+    [
+     40,
+     29.6
+    ],
+    [
+     80,
+     30
+    ],
+    [
+     120,
+     29.6
+    ],
+    [
+     164,
+     30
+    ]
+   ],
+   "width": 5.4,
+   "amt": 0.8
+  },
+  {
+   "brush": "clear",
+   "rect": [
+    4,
+    20.5,
+    38,
+    37
+   ],
+   "edge": 1.5
+  },
+  {
+   "brush": "soil",
+   "rect": [
+    4,
+    20.5,
+    38,
+    37
+   ],
+   "amt": 0.35,
+   "edge": 1.5
+  },
+  {
+   "brush": "clear",
+   "rect": [
+    48,
+    20.5,
+    90,
+    36
+   ],
+   "edge": 1.5
+  },
+  {
+   "brush": "soil",
+   "rect": [
+    48,
+    20.5,
+    90,
+    36
+   ],
+   "amt": 0.35,
+   "edge": 1.5
+  },
+  {
+   "brush": "clear",
+   "rect": [
+    100,
+    20.5,
+    146,
+    35
+   ],
+   "edge": 1.5
+  },
+  {
+   "brush": "soil",
+   "rect": [
+    100,
+    20.5,
+    146,
+    35
+   ],
+   "amt": 0.35,
+   "edge": 1.5
+  }
+ ],
+ "mid": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     -2
+    ],
+    [
+     164,
+     -2.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 503
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     41,
+     -2
+    ],
+    [
+     41,
+     26.6
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 504
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     93,
+     -2
+    ],
+    [
+     93,
+     26.6
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 505
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     151,
+     -2
+    ],
+    [
+     151,
+     26.6
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 506
+  },
+  {
+   "stamp": "tree",
+   "kind": "oak",
+   "seed": 741,
+   "at": [
+    30,
+    15
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "young",
+   "seed": 752,
+   "at": [
+    78,
+    14
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "tree",
+   "kind": "old",
+   "seed": 763,
+   "at": [
+    140,
+    15
+   ],
+   "h": 13
+  }
+ ],
+ "front": [
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     41,
+     33.4
+    ],
+    [
+     41,
+     52
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 507
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     93,
+     33.4
+    ],
+    [
+     93,
+     52
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 508
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     151,
+     33.4
+    ],
+    [
+     151,
+     52
+    ]
+   ],
+   "r": [
+    3.4,
+    1.4
+   ],
+   "seed": 509
+  },
+  {
+   "stamp": "tree",
+   "kind": "wide",
+   "seed": 771,
+   "at": [
+    60,
+    47
+   ],
+   "h": 12
+  },
+  {
+   "stamp": "hedge",
+   "line": [
+    [
+     -4,
+     52
+    ],
+    [
+     164,
+     52.2
+    ]
+   ],
+   "r": [
+    4.2,
+    1.7
+   ],
+   "seed": 510
+  }
+ ],
+ "things": [],
+ "words": [
+  {
+   "id": "s1",
+   "text": "entries must be legible",
+   "at": [
+    6,
+    19
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "e1",
+   "text": "cooool",
+   "at": [
+    6,
+    22
+   ],
+   "dir": "row",
+   "entry": "cool",
+   "gate": "g1"
+  },
+  {
+   "id": "e2",
+   "text": "hiii",
+   "at": [
+    16,
+    22
+   ],
+   "dir": "row",
+   "entry": "hi",
+   "gate": "g1"
+  },
+  {
+   "id": "e3",
+   "text": "pleeeease",
+   "at": [
+    6,
+    26
+   ],
+   "dir": "row",
+   "entry": "please",
+   "gate": "g1"
+  },
+  {
+   "id": "e5",
+   "text": "u rockk",
+   "at": [
+    28,
+    34
+   ],
+   "dir": "row",
+   "entry": "u rock",
+   "gate": "g1"
+  },
+  {
+   "id": "e4",
+   "text": "grrr my modem",
+   "at": [
+    22,
+    35
+   ],
+   "dir": "row",
+   "entry": "gr my modem",
+   "gate": "g1"
+  },
+  {
+   "id": "gate1",
+   "text": "SHUT",
+   "cells": [
+    [
+     40,
+     29
+    ],
+    [
+     41,
+     29
+    ],
+    [
+     40,
+     30
+    ],
+    [
+     41,
+     30
+    ]
+   ],
+   "shut": "g1"
+  },
+  {
+   "id": "s2",
+   "text": "white on white",
+   "at": [
+    50,
+    19
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "e6",
+   "text": "cool pa ge",
+   "at": [
+    52,
+    23
+   ],
+   "dir": "row",
+   "entry": "cool page",
+   "gate": "g2"
+  },
+  {
+   "id": "e6x",
+   "text": "x",
+   "at": [
+    59,
+    23
+   ],
+   "dir": "row",
+   "in": "e6",
+   "hidden": true
+  },
+  {
+   "id": "e7",
+   "text": "fir st",
+   "at": [
+    64,
+    27
+   ],
+   "dir": "row",
+   "entry": "first",
+   "gate": "g2"
+  },
+  {
+   "id": "e7x",
+   "text": "w",
+   "at": [
+    67,
+    27
+   ],
+   "dir": "row",
+   "in": "e7",
+   "hidden": true
+  },
+  {
+   "id": "e8",
+   "text": "sitee",
+   "at": [
+    54,
+    33
+   ],
+   "dir": "row",
+   "entry": "site",
+   "gate": "g2"
+  },
+  {
+   "id": "gate2",
+   "text": "SHUT",
+   "cells": [
+    [
+     92,
+     29
+    ],
+    [
+     93,
+     29
+    ],
+    [
+     92,
+     30
+    ],
+    [
+     93,
+     30
+    ]
+   ],
+   "shut": "g2"
+  },
+  {
+   "id": "s3",
+   "text": "spelled as typed",
+   "at": [
+    102,
+    19
+   ],
+   "dir": "row",
+   "voice": true
+  },
+  {
+   "id": "e9",
+   "text": "mroe",
+   "at": [
+    104,
+    23
+   ],
+   "dir": "row",
+   "entry": "more",
+   "gate": "g3"
+  },
+  {
+   "id": "e10",
+   "text": "lnik",
+   "at": [
+    116,
+    23
+   ],
+   "dir": "row",
+   "entry": "link",
+   "gate": "g3"
+  },
+  {
+   "id": "e11",
+   "text": "teh pgae",
+   "at": [
+    106,
+    32
+   ],
+   "dir": "row",
+   "entry": "the page",
+   "gate": "g3"
+  },
+  {
+   "id": "gate3",
+   "text": "SHUT",
+   "cells": [
+    [
+     150,
+     29
+    ],
+    [
+     151,
+     29
+    ],
+    [
+     150,
+     30
+    ],
+    [
+     151,
+     30
+    ]
+   ],
+   "shut": "g3"
+  }
+ ],
+ "solve": [],
+ "actors": [
+  {
+   "who": "harold",
+   "at": [
+    6,
+    30
+   ],
+   "face": "east"
+  },
+  {
+   "who": "malifex",
+   "id": "malifex",
+   "at": [
+    46,
+    26
+   ],
+   "face": "east"
+  },
+  {
+   "who": "uniclone",
+   "id": "uni",
+   "at": [
+    44,
+    24
+   ],
+   "face": "east"
+  },
+  {
+   "who": "uniclone",
+   "id": "uni1",
+   "at": [
+    44,
+    28
+   ],
+   "face": "east"
+  }
+ ],
+ "events": [
+  {
+   "at": 0,
+   "do": "flag",
+   "set": "met"
+  }
+ ],
+ "tips": [
+  {
+   "area": [
+    0,
+    17,
+    40,
+    43
+   ],
+   "as": "harold",
+   "text": "walk into a letter to push it",
+   "for": 4
+  },
+  {
+   "area": [
+    40,
+    17,
+    60,
+    43
+   ],
+   "as": "harold",
+   "set": "joined",
+   "say": "...there's a letter in there you can't see.",
+   "text": "{B}: switch to malifex",
+   "for": 4
+  },
+  {
+   "area": [
+    42,
+    17,
+    92,
+    43
+   ],
+   "as": "malifex",
+   "text": "{A}: lift it into the hood",
+   "for": 4
+  },
+  {
+   "area": [
+    94,
+    17,
+    150,
+    43
+   ],
+   "as": "harold",
+   "say": "...i know a spell. ...don't make me.",
+   "text": "quack at malifex",
+   "for": 4
+  },
+  {
+   "area": [
+    94,
+    17,
+    150,
+    43
+   ],
+   "as": "cat",
+   "text": "{A}: swap it with the next letter",
+   "for": 4
+  }
+ ],
+ "exits": [
+  {
+   "edge": "west",
+   "rows": [
+    26,
+    36
+   ],
+   "to": "lab-4",
+   "way": "back"
+  }
+ ],
+ "walk": {
+  "area": [
+   [
+    0,
+    17,
+    40,
+    43
+   ],
+   [
+    40,
+    29,
+    42,
+    31
+   ],
+   [
+    42,
+    17,
+    92,
+    43
+   ],
+   [
+    92,
+    29,
+    94,
+    31
+   ],
+   [
+    94,
+    17,
+    150,
+    43
+   ],
+   [
+    150,
+    29,
+    152,
+    31
+   ],
+   [
+    152,
+    17,
+    160,
+    43
+   ]
+  ]
+ },
+ "extent": [
+  0,
+  -10,
+  160,
+  57
+ ]
+}

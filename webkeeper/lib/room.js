@@ -25,6 +25,11 @@
     // one cell per push, a row of them as one; the quack takes a built word back into its letters instead of
     // scattering them; B undoes (when Malifex isn't there to switch to); a letter can be in a word across and one down
     const CELLS = !!p.cells;
+    // a place with `step` too (the lab's fifth area, 30 October): Harold and Malifex move a whole cell at a time, the
+    // way the letters do – a tap is one cell, held it repeats after a beat – and a step into a letter pushes that one
+    // letter, never two. Its `entries` are guestbook lines that close up when a letter leaves them; Malifex's hood
+    // lifts what Harold can't push, and the cat's spell swaps two letters (design/couch-games/04-PUZZLES.md#the-lab)
+    const STEP = CELLS && !!p.step, STEP_T = { col: 0.07, row: 0.12, hold: 0.22, undo: 0.45 };
     // Harold stands on two cells side by side – his sprite's width, the box the eye reads as him – not one: the pair his
     // sprite covers most. Walls, pushes and exits are decided by those two (the cast walk on one)
     const footL = (c) => Math.round(c - 0.5);
@@ -54,6 +59,7 @@
         const rl = w.rails && w.rails[j];
         if (rl) { const L = st.letters[st.letters.length - 1]; L.rail = railCells([[c, r], ...rl]); L.ri = 0; L.state = 'settled'; L.still = L.lying = false; }
         else if (CELLS && !w.voice) { const L = st.letters[st.letters.length - 1]; L.state = 'settled'; L.still = L.lying = false; }
+        if (STEP) { const L = st.letters[st.letters.length - 1]; if (w.entry) L.entry = w.id; else if (w.in) L.entry = w.in; if (w.shut) L.shut = w.shut; }
       });
       for (const a of p.actors || []) if (a.who !== 'harold') st.cast.push({ who: a.who, id: a.id || a.who, c: a.at[0], r: a.at[1], flip: a.face !== 'west', pose: a.pose || (a.who === 'bug' ? 'calm' : 'idle'),
         route: a.route, speed: a.speed || 0, u: 0, loop: a.loop !== false, gone: !!a.hidden, skid: -9, moving: false, vx: 0, vy: 0,
@@ -61,6 +67,9 @@
       // a letter already settled in its place holds that place (0.6: E and N lie on the doorstep from the start)
       for (const s of slots) s.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s.c && l.cell[1] === s.r && l.ch === s.ch) || null;
       walkG = null; occ = null; script = { i: 0, t0: 0, best: 1e9, since: 0 }; undos = [];
+      // (step) Malifex walks behind Harold until he's played, and the unicorns behind Malifex
+      if (STEP) for (const a of st.cast) { if (a.who === 'malifex') a.tag = true; if (a.who === 'uniclone') a.order = 'follow'; }
+      if (STEP) entries();
     }
     // a track's waypoints (straight runs along a row or a column) as the cells it passes, in order
     function railCells(pts) {
@@ -97,23 +106,77 @@
       return !!(grid()[r * COLS + c] || holeAt(c, r) || streamAt(c, r) >= 0) && !onHarold(c, r);
     }
     function pushCell(l, dx, dy) {
-      if (l.state !== 'settled' || locked(l)) return false;
+      const firm = (x) => x.state === 'settled' || (STEP && x.state === 'settling');   // (step: a line still closing up can be pushed again at once)
+      if (!firm(l) || locked(l) || l.shut) return false;
+      // (step) a letter in an entry is written in: it comes out up or down, never along its line, and not into another line
+      if (l.entry && dx) { hint('written in – push it up or down', 2.2); return false; }
       const row = [l], O = occupancy();
       let c = l.cell[0] + dx, r = l.cell[1] + dy;
       for (let x = O.get(r * COLS + c); x; x = O.get(r * COLS + c)) {
-        if (x.state !== 'settled' || locked(x) || row.length >= 8) return false;
+        if (!firm(x) || locked(x) || x.shut || row.length >= 8) return false;
+        if (STEP && x.entry) { if (!st.flags.wedged) { st.flags.wedged = true; hint('wedged – free it first', 2.6); } return false; }
         row.push(x); c += dx; r += dy;
       }
       if (!cellFree(c, r)) return false;
       if (STREAMS.length && row.some((x) => { const c2 = x.cell[0] + dx, r2 = x.cell[1] + dy; return !inWater(c2, r2) && !live(c2, r2); })) { hint('not there – you couldn\'t get behind it again', 2.2); return false; }
       mark();
+      const was = l.entry ? l.cell.slice() : null;
       for (let k = row.length - 1; k >= 0; k--) { const x = row[k]; settleAt(x, x.cell[0] + dx, x.cell[1] + dy, null); x.s0 = st.t - 0.22; x.touched = st.t; }
-      if (!st.flags.pushedCell) { st.flags.pushedCell = true; hint('undo: {undo}', 3); }
+      if (was) closeUp(l, was);
+      if (!st.flags.pushedCell) { st.flags.pushedCell = true; hint(STEP && mal() ? 'undo: hold {B}' : 'undo: {undo}', 3); }
       return true;
+    }
+    // ── (step) entries: a line of a guestbook. A letter that leaves it (pushed out, lifted, carried off) leaves a gap the
+    // rest of the line closes up over, the way text does; an entry that reads as it should (`entry`) is legible and
+    // lights up, and when every entry of a gate (`gate`) is legible the gate's own letters (`shut`) are gone
+    const ENTRIES = STEP ? words.filter((w) => w.entry).map((w) => ({ id: w.id, want: w.entry, gate: w.gate || null })) : [];
+    function lineOf(id) {
+      const ls = st.letters.filter((x) => x.entry === id && x.state !== 'gone').sort((a, b) => a.cell[0] - b.cell[0]);
+      let t = ''; ls.forEach((x, k) => { if (k) t += ' '.repeat(Math.max(0, x.cell[0] - ls[k - 1].cell[0] - 1)); t += x.ch; });
+      return { ls, text: t };
+    }
+    function closeUp(l, [c0, r0]) {
+      const id = l.entry; l.entry = null; if (!id) return;
+      for (const x of lineOf(id).ls) if (x.cell[1] === r0 && x.cell[0] > c0) { settleAt(x, x.cell[0] - 1, r0, null); x.s0 = st.t - 0.12; }
+      entries();
+    }
+    // (step) a place's `tips`: [{ area: [c0, r0, c1, r1], as: 'harold' | 'malifex' | 'cat', text, say, who, set, unless, after }]
+    // – shown once, the first time whoever you play stands in its area (unless a flag is already set; after one is)
+    function tips() {
+      const m = mal(), as = st.as === 'malifex' ? (m && m.cat ? 'cat' : 'malifex') : 'harold', a = st.as === 'malifex' && m ? m : st.h;
+      (p.tips || []).forEach((T, k) => {
+        const key = 'tip' + k; if (st.flags[key] || (T.as && T.as !== as) || (T.unless && st.flags[T.unless]) || (T.after && !st.flags[T.after])) return;
+        const [c0, r0, c1, r1] = T.area; if (a.c < c0 || a.c > c1 || a.r < r0 || a.r > r1) return;
+        st.flags[key] = true; if (T.set) st.flags[T.set] = true; if (T.text) hint(T.text, T.for || 3.4); if (T.say) say(T.say, T.who || (m && m.id) || 'malifex', T.for || 2.6);
+      });
+    }
+    function entries() {
+      if (!ENTRIES.length) return;
+      const gates = new Map();
+      for (const E of ENTRIES) {
+        const { ls, text } = lineOf(E.id), ok = text === E.want;
+        if (ok && !E.ok && st.t > 0.1 && window.WK_SOUND && !o.demo) WK_SOUND.word(E.want);
+        E.ok = ok; for (const x of ls) x.legible = ok;
+        if (E.gate) gates.set(E.gate, (gates.get(E.gate) ?? true) && ok);
+      }
+      for (const [g, ok] of gates) {
+        const was = st.open.has(g);
+        if (ok) st.open.add(g); else st.open.delete(g);
+        st.flags[g] = ok || undefined; if (!ok) delete st.flags[g];
+        for (const x of st.letters) if (x.shut === g) x.state = ok ? 'gone' : x.state === 'gone' ? 'settled' : x.state;
+        if (ok && !was && st.t > 0.1) { st.flags.solved = true; if (window.WK_SOUND && !o.demo) WK_SOUND.solved(); }
+      }
+      occ = null; walkG = null;
     }
     // undo (cells only): every letter, every word and Harold back to before the last push or quack
     // (a word's flags and the doors it opened go back too, or an undone word would leave its way on open)
-    function mark() { if (!CELLS) return; undos.push({ L: st.letters.map((l) => [l.cell[0], l.cell[1], l.state]), B: st.becomes.slice(), h: [st.h.c, st.h.r], F: { ...st.flags }, O: [...st.open] }); if (undos.length > 64) undos.shift(); }
+    function mark() {
+      if (!CELLS) return;
+      const m = mal();
+      undos.push({ L: st.letters.map((l) => [l.cell[0], l.cell[1], l.state, l.entry || null, !!l.hidden]), B: st.becomes.slice(), h: [st.h.c, st.h.r], F: { ...st.flags }, O: [...st.open],
+        M: m ? { c: m.c, r: m.r, cat: !!m.cat, carry: m.carry ? st.letters.indexOf(m.carry) : -1 } : null });
+      if (undos.length > 64) undos.shift();
+    }
     function undo() {
       const u = undos.pop(); if (!u) { hint('nothing to undo', 1.6); return; }
       st.letters.forEach((l, k) => { const v = u.L[k]; if (!v) return; l.cell = [v[0], v[1]]; l.x = (v[0] + 0.5) * 8; l.y = (v[1] + 0.5) * 16; l.z = 0; l.vx = l.vy = l.vz = 0; l.state = v[2] === 'settling' ? 'settled' : v[2]; l.s0 = -9; });
@@ -121,6 +184,13 @@
       st.becomes = u.B; st.h.c = u.h[0]; st.h.r = u.h[1]; occ = null; walkG = null;
       for (const k of words) { if (u.F[k]) st.flags[k] = true; else delete st.flags[k]; }
       st.open = new Set(u.O);
+      if (STEP) {
+        st.letters.forEach((l, k) => { const v = u.L[k]; if (v) { l.entry = v[3]; l.hidden = v[4]; } });
+        for (const k of Object.keys(st.flags)) if (ENTRIES.some((E) => E.gate === k) && !u.F[k]) delete st.flags[k];
+        st.h.step = null; const m = mal();
+        if (m && u.M) { m.c = u.M.c; m.r = u.M.r; m.cat = u.M.cat; m.carry = u.M.carry >= 0 ? st.letters[u.M.carry] : null; m.step = null; }
+        entries();
+      }
       if (window.WK_SOUND && !o.demo) WK_SOUND.letter('z');
     }
     // a built word quacked (cells): back into its letters where they stand; the ones left in a hole or a wall hop to the
@@ -224,10 +294,14 @@
       if (c < 0 || r < 0 || c >= COLS || r >= ROWS || !grid()[r * COLS + c]) return false;
       // someone sitting (an actor's `solid`: [columns wide, rows tall] up from the feet) is walked round, not through
       for (const a of st.cast) if (a.solid && !a.gone && !a.pull && Math.abs(c - a.c) <= a.solid[0] / 2 && r <= Math.round(a.r) && r > a.r - a.solid[1]) return false;
-      const l = occupancy().get(r * COLS + c); return !(l && blocksFeet(l));
+      const l = occupancy().get(r * COLS + c); if (l && blocksFeet(l)) return false;
+      // (step) a letter written white on white is still there: nobody walks through it, though only Malifex sees it
+      if (STEP && st.letters.some((x) => x.hidden && x.state === 'settled' && x.cell[0] === c && x.cell[1] === r)) return false;
+      return true;
     }
     const mal = () => st.cast.find((a) => a.who === 'malifex' && !a.gone);
-    const say = (text, who, dur = 2.4) => st.sayings.push({ text, who, till: st.t + dur });
+    // (step: a new line replaces the speaker's last one, so two never print over each other)
+    const say = (text, who, dur = 2.4) => { if (STEP) st.sayings = st.sayings.filter((x) => x.who !== who); st.sayings.push({ text, who, till: st.t + dur }); };
     const hint = (text, dur = 2.6) => { st.hint = text; st.hintTill = st.t + dur; };
     const exitOk = (e) => !e.needs || st.flags[e.needs];
 
@@ -247,6 +321,7 @@
     // ── walking: smooth, decided by the feet's cells (Harold's two, the cast's one – not the sprite); an edge or a door
     // with an exit leads on
     function move(a, dx, dy, dt) {
+      if (STEP && (a === st.h || a === mal())) { stepMove(a, dx, dy, dt); return; }
       const m = Math.hypot(dx, dy); a.moving = m > 0.15;
       if (!a.moving) { a.vx = a.vy = 0; return; }
       if (m > 1) { dx /= m; dy /= m; }
@@ -292,6 +367,59 @@
       a.vx = (a.c - c0) * 8 / dt; a.vy = (a.r - r0) * 16 / dt;
       for (const e of p.exits || []) if (e.cells && !e.press && exitOk(e)) { const [x0, y0, x1, y1] = e.cells, c = footL(a.c), r = Math.round(a.r); if (c + 1 >= x0 && c < x1 && r >= y0 && r < y1) st.exit = e; }
     }
+    // ── (step) a cell at a time. The direction is the stick's main axis; a new direction moves at once, one cell, and
+    // only after a beat does a held one keep going. Walking into a letter pushes it – one letter a step: walking across,
+    // the one ahead; walking up or down (Harold is two cells wide), the one in the way, or if both are, the one on the
+    // side he faces. The letter a step would push is drawn bright before he takes it (st.aim)
+    const sgn = (v) => (v > 0 ? 1 : v < 0 ? -1 : 0);
+    function letterAt(c, r) { return occupancy().get(r * COLS + c) || null; }
+    function nextPush(a, d) {
+      if (a !== st.h || !d) return null;
+      const L = footL(a.c), R = Math.round(a.r);
+      if (d[0]) return letterAt(d[0] > 0 ? L + 2 : L - 1, R);
+      const f = a.flip ? L + 1 : L, b = a.flip ? L : L + 1;
+      return letterAt(f, R + d[1]) || letterAt(b, R + d[1]);
+    }
+    function snap(a) {
+      // (an actor walked freely – Malifex following – comes onto the grid where he stands, or the nearest cell he can)
+      const wide = a === st.h, ok = (c, r) => (wide ? walkable(c, r) && walkable(c + 1, r) : walkable(c, r));
+      const c0 = wide ? footL(a.c) : Math.round(a.c), r0 = Math.round(a.r);
+      for (let k = 0; k < 6; k++) for (let dr = -k; dr <= k; dr++) for (let dc = -k * 2; dc <= k * 2; dc++) if (ok(c0 + dc, r0 + dr)) { a.c = c0 + dc + (wide ? 0.5 : 0); a.r = r0 + dr; return; }
+      a.c = c0 + (wide ? 0.5 : 0); a.r = r0;
+    }
+    function stepMove(a, dx, dy, dt) {
+      const S = a.step || (a.step = { dir: null, held: 0, n: 0, tw: null }), wide = a === st.h;
+      if (!S.tw && !S.on) { snap(a); S.on = true; }
+      const big = Math.max(Math.abs(dx), Math.abs(dy)) > 0.35;
+      const d = big ? (Math.abs(dx) >= Math.abs(dy) ? [sgn(dx), 0] : [0, sgn(dy)]) : null;
+      if (d && S.dir && d[0] === S.dir[0] && d[1] === S.dir[1]) S.held += dt; else { S.dir = d; S.held = 0; S.n = 0; }
+      if (d) { if (d[0]) a.flip = d[0] > 0; a.face = d; a.head = d[0] ? (d[0] < 0 ? 'w' : 'e') : (d[1] < 0 ? 'n' : 's'); }
+      const face = a.face || [a.flip ? 1 : -1, 0], pre = nextPush(a, face);
+      if (pre && pre.state === 'settled' && !pre.shut) st.aim = { l: pre, t: st.t };
+      if (S.tw) {
+        S.tw.u = Math.min(1, S.tw.u + dt / S.tw.dur);
+        const k = S.tw.u; a.c = S.tw.c0 + (S.tw.c1 - S.tw.c0) * k; a.r = S.tw.r0 + (S.tw.r1 - S.tw.r0) * k; a.moving = true;
+        a.vx = (S.tw.c1 - S.tw.c0) * 8 / S.tw.dur; a.vy = (S.tw.r1 - S.tw.r0) * 16 / S.tw.dur;
+        if (k < 1) return;
+        a.c = S.tw.c1; a.r = S.tw.r1; S.tw = null;
+        if (wide) for (const e of p.exits || []) if (e.cells && !e.press && exitOk(e)) { const [x0, y0, x1, y1] = e.cells, c = footL(a.c), r = Math.round(a.r); if (c + 1 >= x0 && c < x1 && r >= y0 && r < y1) st.exit = e; }
+      }
+      if (!d) { a.moving = false; a.vx = a.vy = 0; return; }
+      if (S.n === 1 && S.held < STEP_T.hold) { a.moving = false; return; }   // one tap, one cell: a held one goes on after a beat
+      S.n = Math.min(S.n + 1, 2);
+      const L = wide ? footL(a.c) : Math.round(a.c), R = Math.round(a.r), nc = L + d[0], nr = R + d[1];
+      const stand = (c, r) => (wide ? walkable(c, r) && walkable(c + 1, r) : walkable(c, r));
+      const go = () => { S.tw = { c0: a.c, r0: a.r, c1: nc + (wide ? 0.5 : 0), r1: nr, u: 0, dur: d[0] ? STEP_T.col : STEP_T.row }; a.moving = true; };
+      if (stand(nc, nr)) { go(); return; }
+      const l = nextPush(a, d);
+      if (l && pushCell(l, d[0], d[1])) { occ = null; if (stand(nc, nr)) go(); else a.moving = false; return; }
+      // off the area's edge: the next area (or an exit)
+      const out = (c, r) => c < 0 || c >= COLS || r < 0 || r >= ROWS;
+      const lead = d[0] ? (d[0] > 0 ? L + (wide ? 2 : 1) : L - 1) : L;
+      if (out(lead, nr)) { edge(a, lead, nr); return; }
+      a.moving = false; a.bump = st.t;
+      if (wide && !st.flags.unseen && st.letters.some((x) => x.hidden && x.state === 'settled' && x.cell[1] === nr && (d[0] ? x.cell[0] === lead : x.cell[0] === L || x.cell[0] === L + 1))) { st.flags.unseen = true; hint('something\'s there you can\'t see', 2.6); }
+    }
     function edge(a, c, r) {
       if (a !== st.h) return;
       const ci = Math.round(c), ri = Math.round(r), side = ci < 0 ? 'west' : ci >= COLS ? 'east' : ri < 0 ? 'north' : ri >= ROWS ? 'south' : null;
@@ -302,7 +430,39 @@
     }
     // ── A: a press exit in reach (the one target), an order as malifex, or the quack
     const nearBox = (a, [c0, r0, c1, r1], k) => a.c > c0 - k && a.c < c1 + k && a.r > r0 - k / 2 && a.r < r1 + k / 2;
+    // ── (step) Malifex's two things. In his hood: A lifts the letter in front of him into it – one he alone can see
+    // (white on white, in a line), or one lying loose – and A again puts it down in front of him; a letter written into
+    // a line he can see, he leaves (that's Harold's push). As the cat (a quack makes him one): A, ba-la-la, swaps the
+    // two letters in front of him, and he's himself again
+    function ahead(m, k) { const f = m.face || [m.flip ? 1 : -1, 0]; return [Math.round(m.c) + f[0] * k, Math.round(m.r) + f[1] * k]; }
+    const cellLetter = (c, r) => st.letters.find((x) => x.cell[0] === c && x.cell[1] === r && (x.state === 'settled' || x.state === 'settling') && !x.voice);
+    function hood(m) {
+      const [c, r] = ahead(m, 1);
+      if (m.carry) {
+        if (!cellFree(c, r) || cellLetter(c, r)) { say('...not there.', m.id, 1.4); return; }
+        mark(); const l = m.carry; m.carry = null; l.state = 'settled'; l.cell = [c, r]; settleAt(l, c, r, null); l.s0 = st.t - 0.1;
+        if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch); occ = null; return;
+      }
+      const l = cellLetter(c, r);
+      if (!l || l.wall || l.shut || l.rail) { say('...', m.id, 1); return; }
+      if (l.entry && !l.hidden) { say('...that one\'s written in. the duck pushes.', m.id, 2.2); return; }
+      mark(); const was = l.entry ? l.cell.slice() : null;
+      l.state = 'carried'; l.hidden = false; m.carry = l; occ = null;
+      if (was) closeUp(l, was);
+      if (window.WK_SOUND && !o.demo) WK_SOUND.letter(l.ch);
+      if (!st.flags.hooded) { st.flags.hooded = true; hint('{A} again: put it down', 2.6); }
+    }
+    function spell(m) {
+      const f = m.face || [m.flip ? 1 : -1, 0], [c1, r1] = ahead(m, 1), [c2, r2] = f[0] ? ahead(m, 2) : [c1 + 1, r1], x = cellLetter(c1, r1), y = cellLetter(c2, r2);
+      if (!x || !y || x.wall || y.wall || x.shut || y.shut) { say('...ba-la-la-- no. two letters.', m.id, 1.8); return; }
+      mark();
+      const e = x.entry; x.entry = y.entry; y.entry = e;
+      settleAt(x, c2, r2, null); settleAt(y, c1, r1, null); x.z = y.z = 10; x.vz = y.vz = 60;
+      if (window.WK_SOUND && !o.demo) WK_SOUND.wizard();
+      m.unpoof = st.t + 0.9; entries();
+    }
     function act() {
+      if (st.as === 'malifex' && STEP) { const m = mal(); if (m) (m.cat ? spell : hood)(m); return; }
       if (st.as === 'malifex') {
         const m = mal(), u = st.cast.filter((x) => x.who === 'uniclone').sort((x, y) => Math.hypot(x.c - m.c, x.r - m.r) - Math.hypot(y.c - m.c, y.r - m.r))[0];
         // the book: both of them take it, one word each (copy, paste) – and follow exactly as told
@@ -317,6 +477,7 @@
     function toggle() {
       if (!mal()) { if (CELLS) undo(); else hint('malifex isn\'t here yet'); return; }
       st.as = st.as === 'malifex' ? 'harold' : 'malifex'; st.h.moving = false;
+      if (STEP) { const m = mal(); if (m) m.step = null; st.h.step = null; }
     }
     // ── letters
     function loosen(l, R, i) {
@@ -432,6 +593,7 @@
       if (!st.flags.ashore) { st.flags.ashore = true; hint('no place for the ' + l.ch + ' – the stream left it on the bank', 3); }
     }
     function stepLetter(l, i, dt, pushers) {
+      if (l.state === 'carried') return false;
       if (l.state === 'afloat') return stepAfloat(l, i);
       if (l.state === 'settled' && STREAMS.length && inWater(l.cell[0], l.cell[1]) && !locked(l)) { l.state = 'afloat'; l.si = streamAt(l.cell[0], l.cell[1]); l.s0 = -9; return false; }   // (after an undo or a load)
       if (l.state === 'settled' && (l.z > 0 || l.vz > 0)) { l.vz -= 440 * dt; l.z = Math.max(0, l.z + l.vz * dt); if (l.z === 0) l.vz = 0; return false; }
@@ -567,6 +729,14 @@
         if (q.end && a.stopAtEnd) { a.route = null; a.moving = false; a.pose = a.who === 'bug' ? 'calm' : 'idle'; }
         return;
       }
+      if (STEP && a.tag && a.who === 'malifex' && (!p.join || st.flags[p.join])) {
+        // (step) a few columns behind Harold and a row up, walking (through anything – he's the one who isn't pushed)
+        a.step = null;
+        const tc = st.h.c + (st.h.flip ? -5 : 5), tr = st.h.r - 1, dx = tc - a.c, dy = tr - a.r, d = Math.hypot(dx, dy * 3.6);
+        a.moving = d > 1.2; if (a.moving) { const v = Math.min(d, SPEED * 0.9 * dt); a.c += (dx / d) * v; a.r += (dy * 3.6 / d) * v / 3.6; if (Math.abs(dx) > 0.3) a.flip = dx > 0; }
+        if (a.carry) { const l = a.carry; l.x = (a.c + 0.5) * 8; l.y = (a.r + 0.5) * 16 - 18; }
+        return;
+      }
       if (a.order === 'follow') {
         // two in formation behind him, one each side of the way he's going (west: up and down to his east; north:
         // left and right below him), so they never walk into one spot. No bumping, just walking to their places
@@ -699,7 +869,12 @@
       // played as Malifex when he goes (hidden, pulled, walked off): Harold again – A gave orders from no one (and threw
       // with two uniclones there), and B couldn't switch back without him
       if (st.as === 'malifex' && !mal()) st.as = 'harold';
-      if (inp.b && !st.bWas) toggle();
+      if (STEP && mal()) {
+        // (step, with Malifex there) B tapped switches who you are; B held undoes, and keeps undoing while held
+        if (inp.b && !st.bWas) { st.b0 = st.t; st.bUndo = 0; }
+        if (inp.b && st.t - st.b0 >= STEP_T.undo + st.bUndo * 0.35) { undo(); st.bUndo++; }
+        if (!inp.b && st.bWas && !st.bUndo) toggle();
+      } else if (inp.b && !st.bWas) toggle();
       if (inp.a && !st.aWas) act();
       if (inp.u && !st.uWas && CELLS) undo();
       st.aWas = !!inp.a; st.bWas = !!inp.b; st.uWas = !!inp.u;
@@ -723,7 +898,12 @@
         // a quack that reaches Mishka: his next hum ends in a mew (lib/world.js reads st.mewNext)
         if (!R.mishka) for (const m of st.cast) if (m.who === 'mishka' && !m.gone && Math.hypot((m.c + 0.5) * 8 - R.x, ((m.r + 0.5) * 16 - R.y) * GR) <= front) { R.mishka = true; st.mewNext = true; }
         // a quack that reaches Malifex (once he's met Harold): perceived
-        const M = mal(); if (M && st.flags.met && st.as !== 'malifex' && !R.mal && Math.hypot((M.c + 0.5) * 8 - R.x, ((M.r + 0.5) * 16 - R.y) * GR) <= front) { R.mal = true; perceive(M); }
+        const M = mal(); if (M && st.flags.met && st.as !== 'malifex' && !R.mal && Math.hypot((M.c + 0.5) * 8 - R.x, ((M.r + 0.5) * 16 - R.y) * GR) <= front) {
+          R.mal = true;
+          // (step, a place with `spell`) perceived, he poofs into the ba-la-la cat until he's cast one spell
+          if (STEP && p.spell && !M.cat) { M.cat = true; M.poofT = st.t; M.blush = st.t + 1.2; if (window.WK_SOUND && !o.demo) WK_SOUND.poof(); say('...oh no.', M.id, 1.6); if (!st.flags.catOnce) { st.flags.catOnce = true; hint('{B}: be the cat · {A}: ba-la-la', 3.4); } }
+          else perceive(M);
+        }
       }
       st.rings = st.rings.filter((R) => st.t - R.t0 < 2.5);
       const pushers = [st.h, ...st.cast.filter((a) => a.moving && !a.gone && !a.pull)].filter((a) => a.moving && !a.gone);
@@ -732,6 +912,13 @@
       if (settled) words2();
       // the digit: harold picks it up when he walks over it
       for (const l of st.letters) if (l.digit && l.state !== 'gone' && Math.abs(l.x - (st.h.c + 0.5) * 8) < 16 && Math.abs(l.y - (st.h.r + 0.5) * 16) < 12) { l.state = 'gone'; st.flags.digit = true; st.flags.solved = true; hint('the counter\'s ' + l.ch + ' – the way on is open'); }
+      // (step) the letter in the hood rides above it; the cat, his spell cast, is himself again; tips by where you stand
+      if (STEP) {
+        const mm = mal();
+        if (mm && mm.carry) { const l = mm.carry; l.x = (mm.c + 0.5) * 8; l.y = (mm.r + 0.5) * 16 - 18; l.z = 0; }
+        if (mm && mm.unpoof && st.t >= mm.unpoof) { mm.unpoof = 0; mm.cat = false; mm.poofT = st.t; mm.blush = st.t + 1.6; if (window.WK_SOUND && !o.demo) WK_SOUND.poof(); say('...we don\'t talk about that.', mm.id, 2); }
+        tips();
+      }
       // malifex reads what is written in the background's colour, near him
       const m = mal();
       for (const l of st.letters) if (l.hidden) { const d = m && st.as === 'malifex' ? Math.hypot((l.x - (m.c + 0.5) * 8) / 8, (l.y - (m.r + 0.5) * 16) / 16 * 2.2) : 1e9; l.reveal = d < 14 ? 2 : d < 22 ? 1 : 0; if (l.reveal) st.flags.read = true; }
@@ -751,7 +938,7 @@
       return {
         t, harold: { ...pos(h), c: h.c, r: h.r, feet: CELLS && st.as === 'harold' && !h.gone ? [footL(h.c), Math.round(h.r)] : null, flip: h.flip, moving: h.moving, vx: h.vx, vy: h.vy, gone: h.gone, pose: h.moving ? 'walk' : 'idle' },
         cast: st.cast.map((a) => ({ who: a.cat ? 'malicat' : a.who, id: a.id, ...pos(a), flip: a.flip, pose: a.cat ? 'idle' : a.blush > t ? 'blush' : a.pose, moving: a.moving, vx: a.vx, vy: a.vy, gone: a.gone, poofT: a.poofT, hold: a.hold, eats: a.eats })),
-        letters: st.letters.map((l) => ({ ch: l.ch, x: l.x, y: l.y, z: l.z, state: l.state, aim: !!(st.aim && st.aim.l === l && t - st.aim.t < 0.2), voice: l.voice, hidden: l.hidden, wall: l.wall, reveal: l.reveal, on: l.on, rail: l.rail, ri: l.ri,
+        letters: st.letters.map((l) => ({ ch: l.ch, x: l.x, y: l.y, z: l.z, ok: !!l.legible, state: l.state === 'carried' ? 'settled' : l.state, aim: !!(st.aim && st.aim.l === l && t - st.aim.t < 0.2), voice: l.voice, hidden: l.hidden, wall: l.wall, reveal: l.reveal, on: l.on, rail: l.rail, ri: l.ri,
           ang: l.state === 'loose' || l.state === 'pulled' ? Math.sin(ft * 6 + l.j * 1.7) * 0.32 * Math.min(1, Math.hypot(l.vx || 0, l.vy || 0) / 30 + (l.z > 0 ? 1 : 0.15)) : 0 })),
         marks: STREAMS.flatMap((S) => S.marks.filter((m) => !occupancy().get(m.r * COLS + m.c)).map((m) => ({ x: (m.c + 0.5) * 8, y: (m.r + 0.5) * 16 }))),
         rings: st.rings, becomes: st.becomes.map((b) => ({ ...b, age: t - b.t })), say: sayings, open: st.open, solved: !!st.flags.solved, as: st.as,
@@ -780,7 +967,9 @@
           becomes: st.becomes.map((b) => ({ text: b.text, at: b.at, dir: b.dir, letters: b.letters, idx: b.idx })),
           // the digit Bug dropped and Harold hasn't picked up yet: `dropped` alone, it would never come back
           digit: st.letters.filter((l) => l.digit && l.state !== 'gone').map((l) => [l.ch, Math.round(l.x), Math.round(l.y)])[0] || null,
-          cast: st.cast.map((a) => ({ id: a.id, c: +a.c.toFixed(2), r: +a.r.toFixed(2), gone: !!a.gone, order: a.order || null, flip: !!a.flip, route: a.route || null, speed: a.speed || 0, loop: a.loop !== false, u: a.u || 0, cat: !!a.cat })) };
+          cast: st.cast.map((a) => ({ id: a.id, c: +a.c.toFixed(2), r: +a.r.toFixed(2), gone: !!a.gone, order: a.order || null, flip: !!a.flip, route: a.route || null, speed: a.speed || 0, loop: a.loop !== false, u: a.u || 0, cat: !!a.cat })),
+          // (step) which line each letter is in, and whether it's still white on white
+          ...(STEP ? { ent: st.letters.filter((l) => !l.digit).map((l) => [l.entry || 0, l.hidden ? 1 : 0]) } : {}) };
       },
       restore(m) {
         if (!m) return;
@@ -796,6 +985,7 @@
         if (m.digit && !st.letters.some((l) => l.digit)) st.letters.push(digitAt(...m.digit));
         for (const s0 of m.cast || []) { const a = st.cast.find((x) => x.id === s0.id); if (a) Object.assign(a, { c: s0.c, r: s0.r, gone: s0.gone, order: s0.order || undefined, flip: s0.flip, route: s0.route, speed: s0.speed, loop: s0.loop, u: s0.u, cat: false }); }   // (Bug keeps running his loop)
         for (const s2 of slots) s2.by = st.letters.find((l) => l.state === 'settled' && l.cell[0] === s2.c && l.cell[1] === s2.r && l.ch === s2.ch) || null;
+        if (STEP && Array.isArray(m.ent)) { base.forEach((l, k) => { const v = m.ent[k]; if (Array.isArray(v)) { l.entry = v[0] || null; l.hidden = !!v[1]; } }); entries(); }
         occ = null; walkG = null;
       },
       get cross() { return st.cross; }, get here() { return !st.h.gone; },

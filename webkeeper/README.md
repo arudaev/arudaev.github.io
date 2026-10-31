@@ -12,7 +12,7 @@ run, measured and fixed on real devices. The project's handback it came from is 
 - **On the couch:** <http://localhost:5173/#/couch> – Harold climbs aboard, the TV shows the title, and the
   first time he leans in by himself; `[ start ]` plays, full screen (after `sit back`, START on the TV leans
   him in again).
-- **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab>, or `puzzle lab` in the game's menu on its own page – four areas of test stations (the third: one cell per push, undo, streams that carry letters to their marks, words taken apart and crossed; the fourth: streams that sort two words, a wall that is the word rearranged, a row pushed in whole), the second
+- **The puzzle lab:** <http://localhost:5173/webkeeper/index.html?lab>, or `puzzle lab` in the game's menu on its own page – five areas of test stations (the third: one cell per push, undo, streams that carry letters to their marks, words taken apart and crossed; the fourth: streams that sort two words, a wall that is the word rearranged, a row pushed in whole; the fifth: chapter 1's editing – Harold and Malifex a cell a step, lines that close up, Malifex's hood and the cat's spell), the second
   one Bug the thief's
   ([04 – Puzzles](../../design/couch-games/04-PUZZLES.md)).
 - **Debug panel:** `debug: on` in the game's menu on its own page (the device remembers it, so it stays on across
